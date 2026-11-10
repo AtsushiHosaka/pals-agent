@@ -182,7 +182,7 @@ class RecordingFaultStore:
 def _pipeline(
     store: RecordingFaultStore,
     *,
-    max_repair_attempts: int = 12,
+    max_repair_attempts: int = 6,
 ) -> tuple[ProofPipeline, AlwaysBrokenGenerator, FailingVerifier]:
     generator = AlwaysBrokenGenerator()
     verifier = FailingVerifier()
@@ -210,13 +210,13 @@ def test_pae_016_strict_repair_budget_accepts_only_ascii_base10_range(
     assert AgentSettings.from_env().max_repair_attempts == int(value)
 
 
-def test_pae_016_missing_repair_budget_uses_three(
+def test_pae_016_missing_repair_budget_uses_six(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv("PALS_MAX_REPAIR_ATTEMPTS", raising=False)
     monkeypatch.delenv("PALS_AGENT_MAX_REPAIR_ATTEMPTS", raising=False)
 
-    assert AgentSettings.from_env().max_repair_attempts == 3
+    assert AgentSettings.from_env().max_repair_attempts == 6
 
 
 @pytest.mark.parametrize(

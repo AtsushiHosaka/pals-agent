@@ -191,3 +191,107 @@ def _without_lean_comments_and_literals(source: str) -> str:
         elif character == "«":
             in_quoted_identifier = True
     return "".join(output)
+
+
+def strip_redundant_parentheses(value: str) -> str | None:
+    """Strip only balanced pairs that surround the complete expression."""
+    depth = 0
+    for character in value:
+        if character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+            if depth < 0:
+                return None
+    if depth != 0:
+        return None
+
+    while value.startswith("(") and value.endswith(")"):
+        depth = 0
+        surrounds_complete_expression = True
+        for index, character in enumerate(value):
+            if character == "(":
+                depth += 1
+            elif character == ")":
+                depth -= 1
+            if depth == 0 and index != len(value) - 1:
+                surrounds_complete_expression = False
+                break
+        if not surrounds_complete_expression:
+            break
+        value = value[1:-1]
+    return value
+
+
+_BINDER_NAME = r"[A-Za-z_][A-Za-z0-9_']*"
+_OTHER_PROPERTY_TARGET = re.compile(
+    r"(?<![A-Za-z0-9_.])(?:deriv\w*|fderiv\w*|Differentiable\w*|HasDeriv\w*|HasFDeriv\w*"
+    r"|UniformContinuous\w*|LipschitzWith\w*|AntilipschitzWith\w*)(?![A-Za-z0-9_])"
+)
+
+
+def targets_another_property_of_a_function(proposition: str) -> bool:
+    """Whether the Lean statement is about a derivative, differentiability, uniform continuity or
+    a Lipschitz bound, i.e. a property other than plain continuity."""
+    return _OTHER_PROPERTY_TARGET.search(proposition) is not None
+
+
+def matches_x_squared_continuity(proposition: str) -> bool:
+    """Whether a formalized proposition is `Continuous` of the real square function.
+
+    Recognised: `fun x : ℝ => x ^ 2` with the binder as `x : ℝ` or `(x : ℝ)`, `Real` for `ℝ`,
+    a type-ascribed body `(x ^ 2 : ℝ)`, the exponent `(2 : ℕ)`, the product `x * x`, and the
+    typed sections `((· ^ 2) : ℝ → ℝ)` / `(· * ·  : ℝ → ℝ)`. An untyped function (`fun x => x ^ 2`
+    or `(· ^ 2)`) elaborates over a default type, not necessarily ℝ, so it is not recognised.
+    Everything else (x ^ 3, x ^ 2 + x, (x - 1) ^ 2, x ^ 2 ^ 2, x ^ 22, ContinuousAt, conjunctions,
+    ℕ, 2 ^ x) is not.
+
+    This reads the verified Lean statement, so it does not depend on how the learner phrased the
+    request (language, `x^{2}`, `xの2乗`, full-width characters, ...).
+    """
+    declaration = re.sub(r"\s+", "", proposition).replace("²", "^2")
+    declaration = re.sub(r"(?<![A-Za-z0-9_.])Real(?![A-Za-z0-9_.])", "ℝ", declaration)
+    if not declaration.startswith("Continuous"):
+        return False
+    expression = strip_redundant_parentheses(declaration[len("Continuous") :])
+    if expression is None:
+        return False
+    if re.fullmatch(r"\(?(?:·\^2|·\*·)\)?:ℝ→ℝ", expression):
+        return True
+    if not expression.startswith("fun"):
+        return False
+
+    lambda_body = expression[len("fun") :]
+    arrow_positions = [
+        position for position in (lambda_body.find("=>"), lambda_body.find("↦")) if position >= 0
+    ]
+    if not arrow_positions:
+        return False
+    arrow_position = min(arrow_positions)
+    arrow_width = 2 if lambda_body[arrow_position:].startswith("=>") else 1
+    binder = lambda_body[:arrow_position]
+    body = lambda_body[arrow_position + arrow_width :]
+
+    binder_match = re.fullmatch(
+        rf"(?:\((?P<v1>{_BINDER_NAME}):(?P<t1>.+)\)|(?P<v2>{_BINDER_NAME}):(?P<t2>.+))", binder
+    )
+    if binder_match is None:
+        return False
+    variable = binder_match.group("v1") or binder_match.group("v2")
+    binder_type = binder_match.group("t1") or binder_match.group("t2")
+    if strip_redundant_parentheses(binder_type) != "ℝ":
+        return False
+
+    normalized_body = strip_redundant_parentheses(body)
+    if normalized_body is not None and normalized_body.endswith(":ℝ"):
+        normalized_body = strip_redundant_parentheses(normalized_body[: -len(":ℝ")])
+    if normalized_body is None:
+        return False
+    if normalized_body == f"{variable}*{variable}":
+        return True
+    if "^" not in normalized_body:
+        return False
+    base, exponent = normalized_body.rsplit("^", maxsplit=1)
+    normalized_base = strip_redundant_parentheses(base)
+    normalized_exponent = strip_redundant_parentheses(exponent)
+    return normalized_base == variable and normalized_exponent in {"2", "2:ℕ"}

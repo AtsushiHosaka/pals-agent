@@ -127,13 +127,14 @@ def test_flag_off_selects_nothing_and_touches_no_client(monkeypatch: pytest.Monk
 
 
 def test_v1_prompt_is_byte_identical_to_origin_main() -> None:
-    # explanations.py is untouched by this change (git diff origin/main is empty for it); the
-    # digest pins the v1 prompt so any later edit to it is a visible, deliberate change.
+    # The digest pins the v1 prompt so any later edit to it is a visible, deliberate change. It was
+    # re-pinned when the production line was merged into main: the v1 prompt is now main's prompt
+    # combined with the production line's (figure field, linear ending, output-language rules).
     prompt = _explanation_prompt(theorem_statement=STATEMENT_PROVE, lean_code=LEAN, language="en")
     assert hashlib.sha256(prompt.encode()).hexdigest() == V1_PROMPT_SHA256
 
 
-V1_PROMPT_SHA256 = "47acb3d5e1900e88a4a9b9ca618afe2e2693c0907549c1849ac1de0bf05c9354"
+V1_PROMPT_SHA256 = "d3f8b2bb4b8647184ff9817f7fb6f201b5cb612acfc7297beb524056f28d5168"
 
 
 def test_worker_flag_off_uses_v1_writer_and_reviewer_even_with_a_draft(
@@ -509,6 +510,39 @@ def test_worker_v2_revises_once_from_defects_then_completes(
     completed = api.explanation_updates[-1]
     assert completed["state"] == "completed"
     assert completed["content"]["sections"][0]["references"][0]["excerpt"] == "  trivial"
+
+
+def test_worker_v2_tries_the_fixed_x_squared_explanation_before_the_v2_writer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from pals_agent.template_explanation import render_x_squared_epsilon_delta
+
+    x_squared = job(draft=True)
+    x_squared["lean_code"] = render_x_squared_epsilon_delta()
+    x_squared["theorem_statement"] = "f(x) = x² が実数全体で連続であることを証明せよ"
+    api = ClaimApi(claim_response=_envelope("acquired", 600_000), proof_job_response=x_squared)
+    writer_client = ScriptedClient()  # a call would raise: no scripted response
+    reviewer_client = ScriptedClient(APPROVE)
+    assert run_retry(v2_worker(monkeypatch, writer_client, reviewer_client, api))
+    assert writer_client.calls == []
+    assert api.explanation_updates[-1]["state"] == "completed"
+
+
+def test_v2_parse_is_as_strict_as_v1_about_lean_names_in_prose() -> None:
+    from pals_agent.explanation_v2 import validate_v2_payload
+    from pals_agent.explanations import _parse_explanation
+
+    payload = good_payload()
+    payload["sections"][0]["summary"] = "This is the lemma nat_add_zero applied to $n$."
+    completed = derive_references(LEAN, payload)
+    with pytest.raises(ValueError, match="lemma name"):
+        _parse_explanation(
+            completed, LEAN, language="en", require_linear_ending=True, strict_prose=True
+        )
+    with pytest.raises(ValueError, match="lemma name"):
+        validate_v2_payload(
+            payload, theorem_statement=STATEMENT_PROVE, lean_code=LEAN, language="en"
+        )
 
 
 # ---- fallback (B) -------------------------------------------------------------------------

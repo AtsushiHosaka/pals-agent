@@ -53,8 +53,11 @@ def launch(tmp_path: Path, mode: str = "normal") -> subprocess.Popen[bytes]:
 def wait_ready(process: subprocess.Popen[bytes], marker: Path) -> None:
     deadline = time.monotonic() + 8
     while time.monotonic() < deadline:
-        if marker.exists():
-            assert marker.read_text() == str(process.pid)
+        # The supervisor writes the marker in place, so a read can observe the file
+        # between creation and content. An empty marker is not ready yet; a wrong one fails.
+        content = marker.read_text() if marker.exists() else ""
+        if content:
+            assert content == str(process.pid)
             return
         assert process.poll() is None
         time.sleep(.02)

@@ -1,0 +1,898 @@
+{
+ "description": "Reviewed baseline for the worker agent-regression qualification. Every entry must also fail the same way on the retained verifier anchor; see scripts/agent_regression_gate.py.",
+ "minimum_cases": 6000,
+ "core_modules": [
+  "tests/unit/test_pipeline.py",
+  "tests/unit/test_worker_credential_provider_binding.py",
+  "tests/unit/test_proof_request_worker.py",
+  "tests/unit/test_repair_runtime_spec.py",
+  "tests/unit/test_proof_flow_runtime.py",
+  "tests/unit/test_proof_flow_worker_image.py",
+  "tests/unit/test_worker_claim_spec.py",
+  "tests/unit/test_chat_runtime.py",
+  "tests/unit/test_api_repair_stagnation.py",
+  "tests/unit/test_worker_drain.py",
+  "tests/unit/test_worker.py",
+  "tests/unit/test_semantic_token_meter.py",
+  "tests/unit/test_verifier_tls_material.py",
+  "tests/unit/test_worker_processes.py",
+  "tests/unit/test_api_claim_contract_spec.py",
+  "tests/unit/test_runtime_latency.py",
+  "tests/unit/test_http_hard_deadline_spec.py",
+  "tests/unit/test_http_verifier_runtime.py",
+  "tests/unit/test_production_token_factory.py",
+  "tests/unit/test_token_proof_request.py",
+  "tests/unit/test_token_meter.py",
+  "tests/unit/test_worker_api_trust.py",
+  "tests/unit/test_aws_worker_credentials.py",
+  "tests/unit/test_lightweight_http_transport.py",
+  "tests/unit/test_api_verified_update_contract_spec.py",
+  "tests/unit/test_aws_worker_credentials_sdk_rotation.py",
+  "tests/unit/test_worker_lanes.py",
+  "tests/unit/test_lean.py",
+  "tests/unit/test_lean_trusted_audit.py",
+  "tests/unit/test_lean_boundary_attestation_spec.py",
+  "tests/unit/test_lean_source_policy.py",
+  "tests/unit/test_lean_environment.py",
+  "tests/unit/test_lean_container_contract_spec.py",
+  "tests/unit/test_lean_model_policy.py",
+  "tests/unit/test_lean_target.py",
+  "tests/unit/test_lean_process_boundary_spec.py",
+  "tests/unit/test_lean_child_read_allowlist.py",
+  "tests/unit/test_isolated_verifier_http_server.py",
+  "tests/unit/test_recipe_search_client.py",
+  "tests/unit/test_material_context.py",
+  "tests/unit/test_linked_chat.py",
+  "tests/unit/test_chat_pdf_inputs.py"
+ ],
+ "known_failures": [
+  {
+   "id": "tests.integration.test_recipe_admission_verifier_real::test_pinned_recipe_admission_endpoint_compiles_over_mtls",
+   "cause": "lean_toolchain_unavailable",
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+  },
+  {
+   "id": "tests.story.test_worker_story::test_committed_import_transport_failure_keeps_exact_candidate_and_bounded_visibility[False]",
+   "cause": "stale_timing_expectation",
+   "reason": "The asserted fake-clock value (330) differs from the current retry schedule (2000); fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_complimentary_token_claim::test_acquired_qa_claim_works_with_global_flag_off_through_real_token_client",
+   "cause": "token_claim_expectation_mismatch",
+   "reason": "The complimentary token claim and its review disagree with the expectation in this test (failed instead of answered); fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_complimentary_token_claim::test_enabled_paid_token_claim_remains_compatible[marker0]",
+   "cause": "token_claim_expectation_mismatch",
+   "reason": "The complimentary token claim and its review disagree with the expectation in this test (failed instead of answered); fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_complimentary_token_claim::test_enabled_paid_token_claim_remains_compatible[False]",
+   "cause": "token_claim_expectation_mismatch",
+   "reason": "The complimentary token claim and its review disagree with the expectation in this test (failed instead of answered); fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_complimentary_token_claim::test_qa_exemption_preserves_independent_answer_review",
+   "cause": "token_claim_expectation_mismatch",
+   "reason": "The complimentary token claim and its review disagree with the expectation in this test (failed instead of answered); fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_local_worker_boundary::test_only_local_worker_service_gets_privileged_startup",
+   "cause": "cross_repository_fixture_missing",
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_local_worker_boundary::test_healthcheck_keeps_pid_liveness_check_under_same_unprivileged_uid",
+   "cause": "cross_repository_fixture_missing",
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_math_task_evaluation::test_ready_evaluation_captures_preflight_and_drafts_with_three_calls",
+   "cause": "stale_test_double",
+   "reason": "The test double lacks an attribute or response the production path now requires; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_math_task_evaluation::test_ambiguous_evaluation_skips_draft_and_uses_two_calls",
+   "cause": "stale_test_double",
+   "reason": "The test double lacks an attribute or response the production path now requires; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_math_task_evaluation::test_wrong_action_fails_even_when_semantic_judge_passes",
+   "cause": "stale_test_double",
+   "reason": "The test double lacks an attribute or response the production path now requires; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_math_task_evaluation::test_invalid_preflight_is_rejected_before_draft_or_judgment",
+   "cause": "stale_test_double",
+   "reason": "The test double lacks an attribute or response the production path now requires; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_proof_flow_runtime_task6_red::test_pfi_ag_006_production_worker_has_explicit_database_network_deny",
+   "cause": "cross_repository_fixture_missing",
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_proof_flow_runtime_task6_red::test_pfi_ag_006_worker_environment_does_not_receive_database_credentials",
+   "cause": "cross_repository_fixture_missing",
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_proof_flow_runtime_task6_red::test_pfi_ag_006_worker_has_no_host_profile_and_cannot_modify_session_mount",
+   "cause": "cross_repository_fixture_missing",
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_proof_flow_runtime_task6_red::test_pfi_ag_006_local_overlay_uses_distinct_database_network_and_auth_guard",
+   "cause": "cross_repository_fixture_missing",
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_recipe_entry_review::test_entry_is_sealed_only_after_stateless_independent_actual_source_and_answer_review",
+   "cause": "stale_test_double",
+   "reason": "The test double lacks an attribute or response the production path now requires; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_catalog_expansion::test_new_cards_do_not_collide_with_existing_typed_inventory",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_catalog_remaining_profiles::test_api_runtime_bindings_cover_exact_local_validator_bytes",
+   "cause": "cross_repository_fixture_missing",
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_commutative_algebra::test_commutative_algebra_manifest_is_deterministic_generator_output",
+   "cause": "lean_toolchain_unavailable",
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_commutative_algebra_chain_dimension::test_chain_dimension_manifest_is_deterministic_generator_output",
+   "cause": "lean_toolchain_unavailable",
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_commutative_algebra_decomposition::test_generator_reseals_c14n_and_runs_pinned_lean_bundle",
+   "cause": "lean_toolchain_unavailable",
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_commutative_algebra_integral::test_integral_manifest_generator_is_deterministic",
+   "cause": "lean_toolchain_unavailable",
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_commutative_algebra_localization::test_generator_reseals_c14n_and_runs_the_pinned_lean_witnesses",
+   "cause": "lean_toolchain_unavailable",
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_commutative_algebra_modules::test_module_manifest_generator_is_deterministic",
+   "cause": "lean_toolchain_unavailable",
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v2_integration::test_actual_v2_cards_use_pinned_profile_and_remain_authoring[typed-calculus-v2-calculus-v2-batch.json]",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v2_integration::test_actual_v2_cards_use_pinned_profile_and_remain_authoring[typed-linear-algebra-v2-linear-algebra-v2-batch.json]",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v2_integration::test_actual_v2_cards_use_pinned_profile_and_remain_authoring[typed-commalg-modules-v2-commalg-modules-v2-batch.json]",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v2_integration::test_v2_cards_have_no_id_or_canonical_collision_with_existing_catalog",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v3_integration::test_v3_manifest_pins_its_profile_and_remains_local_authoring[typed-calculus-v3-calculus-v3-batch.json]",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v3_integration::test_v3_manifest_pins_its_profile_and_remains_local_authoring[typed-linear-algebra-v3-linear-algebra-v3-batch.json]",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v3_integration::test_v3_manifest_pins_its_profile_and_remains_local_authoring[typed-commalg-v3-commalg-v3-batch.json]",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v3_integration::test_v3_id_and_canonical_xml_differ_from_all_existing_typed_cards",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v4_integration::test_v4_manifest_pins_its_profile_and_remains_local_authoring[typed-calculus-v4-calculus-v4-batch.json]",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v4_integration::test_v4_manifest_pins_its_profile_and_remains_local_authoring[typed-linear-algebra-v4-linear-algebra-v4-batch.json]",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v4_integration::test_v4_manifest_pins_its_profile_and_remains_local_authoring[typed-commalg-v4-commalg-v4-batch.json]",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v4_integration::test_v4_id_and_canonical_xml_differ_from_all_existing_typed_cards",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v5_integration::test_v5_manifest_pins_its_profile_and_remains_local_authoring[typed-calculus-v5-calculus-v5-batch.json]",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v5_integration::test_v5_manifest_pins_its_profile_and_remains_local_authoring[typed-linear-algebra-v5-linear-algebra-v5-batch.json]",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v5_integration::test_v5_manifest_pins_its_profile_and_remains_local_authoring[typed-multivariable-v5-multivariable-v5-batch.json]",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_expansion_v5_integration::test_v5_id_and_canonical_xml_differ_from_all_existing_typed_cards",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_local_catalog::test_supported_manifests_revalidate_with_actual_profile_code",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_local_catalog::test_plane_geometry_sql_is_profile_bound_and_never_executes_a_db_mutation",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_local_catalog::test_every_supported_profile_generates_profile_bound_sql[manifest_path6-typed-plane-geometry-v1-5]",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_local_catalog::test_ddl_only_defines_the_immutable_typed_schema",
+   "cause": "cross_repository_fixture_missing",
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_multivariable_calculus::test_pinned_lean_witnesses_compile",
+   "cause": "lean_toolchain_unavailable",
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_number_theory::test_number_theory_manifest_is_deterministic_generator_output",
+   "cause": "lean_toolchain_unavailable",
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_ode::test_typed_ode_lean_witnesses_compile_in_the_pinned_workspace",
+   "cause": "lean_toolchain_unavailable",
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_plane_geometry::test_plane_geometry_profile_accepts_and_canonicalizes_every_sealed_card",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_plane_geometry::test_plane_geometry_profile_does_not_widen_generic_or_existing_typed_profiles",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_plane_geometry::test_plane_geometry_manifest_binds_current_design_registry_witness_and_generator",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  },
+  {
+   "id": "tests.unit.test_typed_plane_geometry::test_plane_geometry_manifest_rejects_resealed_stale_bindings",
+   "cause": "stale_catalog_or_profile_expectation",
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+  }
+ ],
+ "allowed_skips": [
+  {
+   "id": "tests.integration.test_lean_acceleration_real::test_real_same_corpus_baseline_and_environment_hit[group-kernel-injectivity]",
+   "reason": "set PALS_ACCELERATION_REAL_PROJECT/LEAN/LAKE for real pinned compiler checks"
+  },
+  {
+   "id": "tests.integration.test_lean_acceleration_real::test_real_same_corpus_baseline_and_environment_hit[sequence-limit-addition]",
+   "reason": "set PALS_ACCELERATION_REAL_PROJECT/LEAN/LAKE for real pinned compiler checks"
+  },
+  {
+   "id": "tests.integration.test_lean_acceleration_real::test_real_same_corpus_baseline_and_environment_hit[coprime-product-divisibility]",
+   "reason": "set PALS_ACCELERATION_REAL_PROJECT/LEAN/LAKE for real pinned compiler checks"
+  },
+  {
+   "id": "tests.integration.test_lean_acceleration_real::test_real_same_corpus_baseline_and_environment_hit[linear-kernel-sum]",
+   "reason": "set PALS_ACCELERATION_REAL_PROJECT/LEAN/LAKE for real pinned compiler checks"
+  },
+  {
+   "id": "tests.integration.test_lean_acceleration_real::test_real_concurrent_invalid_source_and_lifecycle_reset",
+   "reason": "set PALS_ACCELERATION_REAL_PROJECT/LEAN/LAKE for real pinned compiler checks"
+  },
+  {
+   "id": "tests.integration.test_lean_acceleration_real::test_real_elan_proxy_path_hits_and_every_request_still_compiles",
+   "reason": "set PALS_ACCELERATION_REAL_PROJECT/ELAN_HOME for the production proxy path"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_real_exit_zero_without_the_source_policy[by_elab]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_real_exit_zero_without_the_source_policy[exact_exploit]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_real_exit_zero_without_the_source_policy[leading_exit_correct_statement]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_real_exit_zero_without_the_source_policy[run_cmd]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_real_exit_zero_without_the_source_policy[run_elab]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_real_exit_zero_without_the_source_policy[run_meta]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_real_exit_zero_without_the_source_policy[run_tac]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_real_exit_zero_without_the_source_policy[section_wrapped]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_transitive_nonstandard_axioms[axiom bad : (1 : Nat) = 2\\ntheorem forged_false : (1 : Nat) = 2 := bad\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_transitive_nonstandard_axioms[axiom bad : False\\ntheorem helper : (1 : Nat) = 2 := bad.elim\\ntheorem forged_false : (1 : Nat) = 2 := helper\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_transitive_nonstandard_axioms[axiom bad : False\\ninstance forgedInstance : Inhabited False := \\u27e8bad\\u27e9\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_transitive_nonstandard_axioms[theorem native_forged : 2 ^ 10 = 1024 := by native_decide\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_transitive_nonstandard_axioms[example : 2 ^ 10 = 1024 := by native_decide\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_transitive_nonstandard_axioms[axiom bad : False\\nexample : (1 : Nat) = 2 := bad.elim\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_kernel_replay_rejects_a_declaration_the_compile_skipped",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_legitimate_plain_lean_is_verified[theorem honest : (1 : Nat) = 1 := rfl\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_legitimate_plain_lean_is_verified[example : True := trivial\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_legitimate_plain_lean_is_verified[example : Nat := 1\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_legitimate_plain_lean_is_verified[example := (2 : Nat)\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_legitimate_plain_lean_is_verified[noncomputable section\\nexample (p : Prop) : p \\u2228 \\xacp := Classical.em p\\nend\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_legitimate_plain_lean_is_verified[namespace A.B\\nprotected theorem honest : True := trivial\\nend A.B\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_legitimate_plain_lean_is_verified[private theorem hidden : True := trivial\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_legitimate_plain_lean_is_verified[theorem \\xabquoted name\\xbb : True := trivial\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_legitimate_plain_lean_is_verified[theorem universe_polymorphic.{u} (\\u03b1 : Sort u) : \\u03b1 = \\u03b1 := rfl\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_legitimate_plain_lean_is_verified[def array := #[1, 2, 3]\\ntheorem size_three : array.size = 3 := by decide\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_legitimate_plain_lean_is_verified[theorem first (h : 1 = 1 \\u2227 2 = 2) : 1 = 1 := h.1\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_legitimate_plain_lean_is_verified[theorem classical (p : Prop) : p \\u2228 \\xacp := Classical.em p\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_legitimate_plain_lean_is_verified[set_option maxRecDepth 1000 in\\n@[simp] theorem marked : (1 : Nat) = 1 := rfl\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_real_mathlib_notation_is_verified_through_lake[proof_job]",
+   "reason": "pinned Mathlib workspace is not configured"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_real_mathlib_notation_is_verified_through_lake[admission]",
+   "reason": "pinned Mathlib workspace is not configured"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_real_mathlib_is_verified_with_reused_environment",
+   "reason": "pinned Mathlib workspace is not configured"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_real_mathlib_exit_is_rejected_on_every_compile_path[proof_job]",
+   "reason": "pinned Mathlib workspace is not configured"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_real_mathlib_exit_is_rejected_on_every_compile_path[admission]",
+   "reason": "pinned Mathlib workspace is not configured"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_real_mathlib_exit_is_rejected_on_every_compile_path[reused_environment]",
+   "reason": "pinned Mathlib workspace is not configured"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_compiled_type_that_differs_from_written_statement[binder_from_variable]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_compiled_type_that_differs_from_written_statement[included_false_hypothesis]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_compiled_type_that_differs_from_written_statement[notation_inside_definition]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_compiled_type_that_differs_from_written_statement[rewriting_macro]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_compiled_type_that_differs_from_written_statement[shadowed_equality]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_rejects_compiled_type_that_differs_from_written_statement[shadowed_numeral]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_accepts_self_contained_statements[namespace N\\ndef twice (n : Nat) : Nat := n + n\\ntheorem t (n : Nat) : twice n = n + n := rfl\\nend N\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_accepts_self_contained_statements[universe u\\ntheorem t {\\u03b1 : Sort u} (a : \\u03b1) : a = a := rfl\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_accepts_self_contained_statements[open Nat in\\ntheorem t : succ 0 = 1 := rfl\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_accepts_self_contained_statements[set_option maxRecDepth 1000 in\\ntheorem t : True := trivial\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_accepts_self_contained_statements[structure P where\\n  x : Nat\\ntheorem t (p : P) : p.x = p.x := rfl\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_forgery_real::test_audit_accepts_self_contained_statements[example : (1 : Nat) = 1 := rfl\\n]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_concurrent_compiles_succeed_and_leave_no_scratch[lake-env]",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_concurrent_compiles_succeed_and_leave_no_scratch[reused-env]",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_a_false_proof_beside_a_true_proof_keeps_each_verdict[false-first-lake-env]",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_a_false_proof_beside_a_true_proof_keeps_each_verdict[false-first-reused-env]",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_a_false_proof_beside_a_true_proof_keeps_each_verdict[true-first-lake-env]",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_a_false_proof_beside_a_true_proof_keeps_each_verdict[true-first-reused-env]",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_killing_one_compile_fails_only_that_compile",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_a_compile_cannot_reach_a_sibling_scratch_or_process",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_a_compile_cannot_signal_even_its_own_spawned_child",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_descendants_cannot_outlive_a_finished_compile_or_starve_a_sibling",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_deadline_kills_detached_descendants_and_a_starved_sibling_is_never_a_verdict",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_killed_supervisor_is_an_interruption_and_its_descendants_are_reaped",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_a_sibling_holding_pids_never_turns_a_true_proof_into_a_verdict[56]",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_a_sibling_holding_pids_never_turns_a_true_proof_into_a_verdict[58]",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_a_sibling_holding_pids_never_turns_a_true_proof_into_a_verdict[60]",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_a_full_scratch_filesystem_fails_closed",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_parallel_real::test_real_server_runs_two_compiles_and_refuses_the_third_retryably",
+   "reason": "set PALS_PARALLEL_REAL_PROJECT/SCRATCH inside the Linux verifier image"
+  },
+  {
+   "id": "tests.integration.test_lean_real::test_real_lean_accepts_a_hole_free_verified_source",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_real::test_real_lean_sorry_warning_is_never_verified[False]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_real::test_real_lean_sorry_warning_is_never_verified[True]",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_real::test_real_mathlib_preserves_normal_and_cached_compilation",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_lean_real::test_real_mathlib_preserves_reviewed_geometry_axiom_audit",
+   "reason": "Lean is not installed"
+  },
+  {
+   "id": "tests.integration.test_synthetic_geometry_runtime::test_real_isosceles_trace_and_transitive_axioms",
+   "reason": "real pinned Lean workspace not configured"
+  },
+  {
+   "id": "tests.integration.test_synthetic_geometry_runtime::test_real_hard_negative_and_degenerate_counterexamples",
+   "reason": "real pinned Lean workspace not configured"
+  },
+  {
+   "id": "tests.unit.test_general_recipe_families::test_real_lean_compiles_each_recipe_with_standard_axioms_its_instances_and_rejects_wrong_ones[power-differentiability-recipe-v1]",
+   "reason": "opt-in: PALS_GENERAL_RECIPE_LEAN=1 with the pinned Lean 4.32.0-rc1 and a built Mathlib"
+  },
+  {
+   "id": "tests.unit.test_general_recipe_families::test_real_lean_compiles_each_recipe_with_standard_axioms_its_instances_and_rejects_wrong_ones[linear-continuity-recipe-v1]",
+   "reason": "opt-in: PALS_GENERAL_RECIPE_LEAN=1 with the pinned Lean 4.32.0-rc1 and a built Mathlib"
+  },
+  {
+   "id": "tests.unit.test_general_recipe_families::test_real_lean_compiles_each_recipe_with_standard_axioms_its_instances_and_rejects_wrong_ones[linear-differentiability-recipe-v1]",
+   "reason": "opt-in: PALS_GENERAL_RECIPE_LEAN=1 with the pinned Lean 4.32.0-rc1 and a built Mathlib"
+  },
+  {
+   "id": "tests.unit.test_general_recipe_families::test_real_lean_compiles_each_recipe_with_standard_axioms_its_instances_and_rejects_wrong_ones[linear-uniform-continuity-recipe-v1]",
+   "reason": "opt-in: PALS_GENERAL_RECIPE_LEAN=1 with the pinned Lean 4.32.0-rc1 and a built Mathlib"
+  },
+  {
+   "id": "tests.unit.test_general_recipe_families::test_real_lean_compiles_each_recipe_with_standard_axioms_its_instances_and_rejects_wrong_ones[affine-continuity-recipe-v1]",
+   "reason": "opt-in: PALS_GENERAL_RECIPE_LEAN=1 with the pinned Lean 4.32.0-rc1 and a built Mathlib"
+  },
+  {
+   "id": "tests.unit.test_general_recipe_families::test_real_lean_compiles_each_recipe_with_standard_axioms_its_instances_and_rejects_wrong_ones[affine-differentiability-recipe-v1]",
+   "reason": "opt-in: PALS_GENERAL_RECIPE_LEAN=1 with the pinned Lean 4.32.0-rc1 and a built Mathlib"
+  },
+  {
+   "id": "tests.unit.test_general_recipe_families::test_real_lean_compiles_each_recipe_with_standard_axioms_its_instances_and_rejects_wrong_ones[affine-uniform-continuity-recipe-v1]",
+   "reason": "opt-in: PALS_GENERAL_RECIPE_LEAN=1 with the pinned Lean 4.32.0-rc1 and a built Mathlib"
+  },
+  {
+   "id": "tests.unit.test_general_recipe_families::test_real_lean_compiles_each_recipe_with_standard_axioms_its_instances_and_rejects_wrong_ones[odd-power-strict-mono-recipe-v1]",
+   "reason": "opt-in: PALS_GENERAL_RECIPE_LEAN=1 with the pinned Lean 4.32.0-rc1 and a built Mathlib"
+  },
+  {
+   "id": "tests.unit.test_lean_child_read_allowlist::test_linux_http_scratch_child_does_not_expose_sibling_runtime_files",
+   "reason": "requires rootless HTTP verifier's exact bounded tmpfs fixture"
+  },
+  {
+   "id": "tests.unit.test_lean_process_boundary_spec::test_interrupted_compile_returns_a_failed_result_without_touching_success",
+   "reason": "the Linux sandbox denies this shell; the real integration test covers it"
+  },
+  {
+   "id": "tests.unit.test_lemma_repair::test_real_lean_abs_add_is_unknown_and_the_table_patch_compiles",
+   "reason": "pinned Lean v4.32.0-rc1 with a built Mathlib is required"
+  },
+  {
+   "id": "tests.unit.test_lemma_repair::test_real_lean_pipeline_verifies_the_abs_add_proof_without_a_model_repair",
+   "reason": "pinned Lean v4.32.0-rc1 with a built Mathlib is required"
+  },
+  {
+   "id": "tests.unit.test_lemma_repair::test_real_lean_every_row_is_unknown_with_the_wrong_name_and_works_with_the_right_one",
+   "reason": "pinned Lean v4.32.0-rc1 with a built Mathlib is required"
+  },
+  {
+   "id": "tests.unit.test_power_continuity_recipe::test_real_lean_compiles_the_recipe_and_its_instances",
+   "reason": "needs a pinned Lean and PALS_POWER_RECIPE_LEAN_PATH (LEAN_PATH of the pinned Mathlib)"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_elaborator_derives_arguments_and_verifier_accepts[example-form-x-cubed-shape]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_elaborator_derives_arguments_and_verifier_accepts[example-form-n-2]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_elaborator_derives_arguments_and_verifier_accepts[two-binders]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_elaborator_derives_arguments_and_verifier_accepts[nested-forall]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_elaborator_derives_arguments_and_verifier_accepts[function-argument]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_elaborator_derives_arguments_and_verifier_accepts[implicit-type-argument]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_elaborator_derives_arguments_and_verifier_accepts[side-condition-closed-by-decide]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_elaborator_derives_arguments_and_verifier_accepts[instance-argument]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_elaborator_derives_arguments_and_verifier_accepts[dependent-binder-fin]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_elaborator_derives_arguments_and_verifier_accepts[higher-order-pattern-lambda-argument]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_lean_refuses_what_is_not_an_instance[negative-exponent-for-nat-binder]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_lean_refuses_what_is_not_an_instance[real-exponent]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_lean_refuses_what_is_not_an_instance[changed-conclusion]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_lean_refuses_what_is_not_an_instance[added-hypothesis]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_lean_refuses_what_is_not_an_instance[type-mismatch-nat-vs-int]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_lean_refuses_what_is_not_an_instance[unprovable-premise]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_lean_refuses_what_is_not_an_instance[wrong-statement]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_lean_refuses_what_is_not_an_instance[dependent-binder-wrong-bound]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_lean_refuses_what_is_not_an_instance[higher-order-two-different-functions]",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_wrong_hint_cannot_make_a_wrong_statement_pass_and_cannot_block_the_right_one",
+   "reason": "pinned Lean v4.32.0-rc1 is required"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_production_recipe_specialises_to_x_squared_with_real_mathlib[Continuous (fun x : \\u211d => x ^ 2)]",
+   "reason": "no built Mathlib for v4.32.0-rc1"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_production_recipe_specialises_to_x_squared_with_real_mathlib[Continuous (fun x : \\u211d => x ^ 3)]",
+   "reason": "no built Mathlib for v4.32.0-rc1"
+  },
+  {
+   "id": "tests.unit.test_recipe_elaboration_lean::test_mathlib_refuses_a_fractional_exponent_for_the_production_recipe",
+   "reason": "no built Mathlib for v4.32.0-rc1"
+  },
+  {
+   "id": "tests.unit.test_recipe_instantiation_lean::test_pinned_toolchain_is_the_expected_release",
+   "reason": "pinned Lean v4.32.0-rc1 is required (PATH lean 4.35 is the wrong toolchain)"
+  },
+  {
+   "id": "tests.unit.test_recipe_instantiation_lean::test_instances_pass_production_verifier_policy_compile_and_axiom_audit[example : \\u2200 (n : Nat), 0 < 2 ^ n := fun n => Nat.two_pow_pos n\\n-bindings0]",
+   "reason": "pinned Lean v4.32.0-rc1 is required (PATH lean 4.35 is the wrong toolchain)"
+  },
+  {
+   "id": "tests.unit.test_recipe_instantiation_lean::test_instances_pass_production_verifier_policy_compile_and_axiom_audit[example : \\u2200 (n : Nat), 0 < 2 ^ n := fun n => Nat.two_pow_pos n\\n-bindings1]",
+   "reason": "pinned Lean v4.32.0-rc1 is required (PATH lean 4.35 is the wrong toolchain)"
+  },
+  {
+   "id": "tests.unit.test_recipe_instantiation_lean::test_instances_pass_production_verifier_policy_compile_and_axiom_audit[theorem add_comm_nat (a b : Nat) : a + b = b + a := Nat.add_comm a b\\n-bindings2]",
+   "reason": "pinned Lean v4.32.0-rc1 is required (PATH lean 4.35 is the wrong toolchain)"
+  },
+  {
+   "id": "tests.unit.test_recipe_instantiation_lean::test_recipe_itself_and_instance_declare_exactly_the_audited_theorems",
+   "reason": "pinned Lean v4.32.0-rc1 is required (PATH lean 4.35 is the wrong toolchain)"
+  },
+  {
+   "id": "tests.unit.test_recipe_instantiation_lean::test_a_wrong_instance_statement_is_rejected_by_lean_not_by_this_module",
+   "reason": "pinned Lean v4.32.0-rc1 is required (PATH lean 4.35 is the wrong toolchain)"
+  },
+  {
+   "id": "tests.unit.test_recipe_instantiation_lean::test_an_argument_outside_the_statement_scope_does_not_typecheck",
+   "reason": "pinned Lean v4.32.0-rc1 is required (PATH lean 4.35 is the wrong toolchain)"
+  },
+  {
+   "id": "tests.unit.test_request_grammar_lean_gate::test_pinned_lean_elaborates_every_combination_as_a_proposition",
+   "reason": "no built Mathlib for v4.32.0-rc1"
+  },
+  {
+   "id": "tests.unit.test_square_continuity_recipe::test_real_pinned_lean_compiles_exact_materialized_source_with_standard_axioms",
+   "reason": "needs the pinned Lean v4.32.0-rc1 binary and a compiled Mathlib project"
+  },
+  {
+   "id": "tests.unit.test_worker_api_trust::test_httpx_observes_exported_trust",
+   "reason": "could not import 'httpx': No module named 'httpx'"
+  },
+  {
+   "id": "tests.integration.test_lean_real::test_real_lean_import_plan_is_applied_and_retried_over_the_written_imports",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_frontier_definition_behind_a_local_definition_is_still_found",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_frontier_definition_resembling_a_mathlib_one_is_recorded_not_rejected",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_frontier_lemma_in_the_proof_only_is_frontier_proof",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_mathlib_only_proof_is_recorded_as_mathlib",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_module_that_was_not_built_cannot_be_imported",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_pinned_statement_is_kept_only_when_the_proof_proves_exactly_it",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_statement_reaching_an_unreviewed_non_frontier_root_is_still_rejected",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_statement_with_a_frontier_definition_is_accepted_and_labelled",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_wrong_proof_is_rejected_by_the_kernel_path",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_sorry_extra_axioms_and_native_evaluation_stay_forbidden",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_profiles_real_frontier::test_a_frontier_module_that_was_not_built_cannot_be_imported",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_profiles_real_frontier::test_a_mathlib_statement_may_be_proved_with_a_frontier_lemma",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_profiles_real_frontier::test_a_statement_reaching_a_frontier_definition_through_a_local_def_is_rejected",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_profiles_real_frontier::test_a_statement_that_mentions_a_frontier_definition_is_rejected",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_profiles_real_frontier::test_a_wrong_proof_is_still_rejected",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_profiles_real_frontier::test_sorry_and_extra_axioms_stay_forbidden",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  }
+ ],
+ "allowed_unexecuted_modules": [
+  {
+   "id": "tests.integration.test_lean_acceleration_real",
+   "reason": "Needs the real pinned Lean compiler and Linux verifier image; not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_lean_real",
+   "reason": "Needs a real Lean installation; not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_synthetic_geometry_runtime",
+   "reason": "Needs the real pinned Lean workspace; not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_recipe_instantiation_lean",
+   "reason": "Needs the pinned Lean v4.32.0-rc1 toolchain; not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real",
+   "reason": "Every case needs the real pinned Lean workspace; not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_profiles_real_frontier",
+   "reason": "Every case needs the real pinned Lean workspace; not provided on this runner."
+  }
+ ]
+}

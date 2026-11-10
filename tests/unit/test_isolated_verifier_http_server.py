@@ -78,7 +78,7 @@ class BlockingVerifier(StubVerifier):
 
 @pytest.fixture
 def tls_contexts() -> Iterator[tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str]]:
-    with tempfile.TemporaryDirectory(prefix="pals-mtls-", dir="/private/tmp") as directory:
+    with tempfile.TemporaryDirectory(prefix="pals-mtls-") as directory:
         root = Path(directory)
         _create_certificates(root)
         server = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextvars import copy_context
-from collections.abc import Callable
 from dataclasses import asdict, dataclass, replace
 from typing import Any, Final, Literal, Protocol, cast
 
@@ -20,6 +20,16 @@ from pals_agent.lean_source_policy import (
     strip_lean_comments_and_strings as _strip_lean_comments_and_strings,
 )
 from pals_agent.lean_target import extract_single_target_declaration
+from pals_agent.lean_templates import template_proof_for_request, template_proof_for_sketch
+from pals_agent.lemma_repair import (
+    LemmaAliasTable,
+    LemmaRepairRun,
+    default_lemma_alias_table,
+    patch_unknown_lemmas,
+    repair_metadata,
+    repair_unknown_lemmas,
+    statement_fingerprint,
+)
 from pals_agent.models import (
     DEFAULT_MAX_REPAIR_ATTEMPTS,
     BenchmarkProblem,
@@ -35,6 +45,7 @@ from pals_agent.models import (
     ProofRunResult,
     RelatedDraftContext,
     RepairRoute,
+    RepairRouteAttemptEvidence,
     RepairRouteDecision,
     RepairRouteSelectionError,
     VerificationHarnessSource,
@@ -70,6 +81,7 @@ _EPSILON_DELTA_SHORTCUT_RE = re.compile(
 _EXACT_DRAFT_PROOF_METHODS: dict[str, Literal["epsilon_delta"]] = {
     "continuous_square": "epsilon_delta",
 }
+_LEMMA_REPAIR_ID = "pals-lemma-alias-v1"
 _NON_REPAIRABLE_DIAGNOSTIC_CODES = frozenset(
     {
         "lake.not_found",
@@ -233,6 +245,20 @@ class ProofPipeline:
     # Consecutive failing attempts the rule needs. The API hands a resumed worker at most the
     # two previous failures, so 3 is the largest window that works in api_reconcile mode.
     repeated_mismatch_window: int = 2
+    # First attempts for requests that exactly match a verified template (the continuity of x²)
+    # are rendered without a model call. The result is compiled like any candidate; a failure
+    # repairs through the model as usual.
+    deterministic_templates: bool = False
+    # A request-linked first attempt whose wording alone selects such a template does not need the
+    # Draft retrieval (three sequential model/API steps) that would only feed a model prompt the
+    # template replaces. The template, its compile, the semantic review and the explanation
+    # review are unchanged; a request the wording does not select still retrieves.
+    template_skips_retrieval: bool = False
+    # When Lean reports a name from the lemma-alias table as unknown, the source is patched with
+    # the right name and recompiled before any model repair (see pals_agent.lemma_repair). The
+    # table defaults to the packaged one.
+    lemma_alias_repair: bool = False
+    lemma_alias_table: LemmaAliasTable | None = None
 
     def __post_init__(self) -> None:
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
@@ -321,12 +347,25 @@ class ProofPipeline:
                 raise ProofFlowRetrievalError("retrieval_unavailable")
             # API repairs already have the durable generated Draft/Sketch/Lean; never
             # re-query a mutable catalog over that compiler failure and its repair seed.
-            request = _request_for_statement(
-                statement, formal_statement=formal_statement,
-                proof_flow_retriever=(
-                    (self.request_linked_typed_retriever or self.natural_draft_retriever)
-                    if api_repair_seed is None else None
-                ),
+            retriever = (
+                (self.request_linked_typed_retriever or self.natural_draft_retriever)
+                if api_repair_seed is None else None
+            )
+            bare: ProofRequest | None = None
+            if (
+                retriever is not None
+                and self.deterministic_templates
+                and self.template_skips_retrieval
+            ):
+                bare = _request_for_statement(
+                    statement, formal_statement=formal_statement, proof_flow_retriever=None,
+                )
+                # The same function decides the first attempt, so a request it accepts here is
+                # rendered from the template there whatever retrieval would have returned.
+                if template_proof_for_request(bare) is None:
+                    bare = None
+            request = bare if bare is not None else _request_for_statement(
+                statement, formal_statement=formal_statement, proof_flow_retriever=retriever,
             )
         else:
             request = self.prepare_statement(statement=statement, formal_statement=formal_statement)
@@ -376,6 +415,7 @@ class ProofPipeline:
         failure_fingerprint_history: list[frozenset[str]]
         model_attempt_verification: VerificationResult | None
         current_repair_route: RepairRouteDecision | None
+        pending_lemma_note: dict[str, Any] | None = None
 
         if api_repair_seed is None:
             diagnostics = []
@@ -432,19 +472,32 @@ class ProofPipeline:
             generated = api_repair_seed.generated
             model_attempt = generated
             model_attempt_verification = api_repair_seed.verification
-            repair_generation = self._repair_after_failure(
+            lemma_repair = self._lemma_repair_after_api_failure(
                 request=request,
-                generated=generated,
-                feedback_diagnostics=repair_feedback_diagnostics,
-                cumulative_diagnostics=diagnostics,
+                seed=api_repair_seed,
+                verification_harness=verification_harness,
                 problem_id=problem_id,
-                attempt=api_repair_seed.attempt,
-                repairs_used=api_repair_seed.repairs_used,
+                cumulative_diagnostics=diagnostics,
                 attempt_evidence=attempts[-1],
-                failure_history=failure_fingerprint_history,
-                proof_job_id=proof_job_id,
                 on_status=on_status,
             )
+            repair_generation: RepairGeneration | None
+            if lemma_repair is not None:
+                repair_generation, pending_lemma_note = lemma_repair
+            else:
+                repair_generation = self._repair_after_failure(
+                    request=request,
+                    generated=generated,
+                    feedback_diagnostics=repair_feedback_diagnostics,
+                    cumulative_diagnostics=diagnostics,
+                    problem_id=problem_id,
+                    attempt=api_repair_seed.attempt,
+                    repairs_used=api_repair_seed.repairs_used,
+                    attempt_evidence=attempts[-1],
+                    failure_history=failure_fingerprint_history,
+                    proof_job_id=proof_job_id,
+                    on_status=on_status,
+                )
             if repair_generation is None:
                 return self._persist_and_emit(
                     request=request,
@@ -499,6 +552,7 @@ class ProofPipeline:
                         repair_route_decision=current_repair_route,
                     )
                 )
+                pending_lemma_note = _annotate_lemma_repair(attempts[-1], pending_lemma_note)
                 if model_attempt_verification is None:
                     model_attempt_verification = verification
                 checkpoint_published = self._checkpoint_attempt(
@@ -602,6 +656,7 @@ class ProofPipeline:
                         repair_route_decision=current_repair_route,
                     )
                 )
+                pending_lemma_note = _annotate_lemma_repair(attempts[-1], pending_lemma_note)
                 checkpoint_published = self._checkpoint_attempt(
                     run_id=run_id,
                     proof_job_id=proof_job_id,
@@ -655,6 +710,28 @@ class ProofPipeline:
                 if timing is not None:
                     timing.set_lean(verification.success, verification.diagnostics)
             diagnostics = [*diagnostics, *verification.diagnostics]
+            if not verification.success and self.lemma_alias_repair:
+                lemma_run = self._lemma_repair_in_attempt(
+                    request=request,
+                    lean_code=generated.lean_code,
+                    verification=verification,
+                    verification_harness=verification_harness,
+                    verifier=verifier,
+                    problem_id=problem_id,
+                    attempt=attempt,
+                    diagnostics=diagnostics,
+                    on_status=on_status,
+                )
+                if lemma_run is not None:
+                    # The model's own result stays the first attempt's verdict; the patched source
+                    # is what this attempt now stands for, and a failure repairs from it.
+                    if model_attempt_verification is None:
+                        model_attempt_verification = verification
+                    for lemma_round in lemma_run.rounds:
+                        diagnostics.extend(lemma_round.verification.diagnostics)
+                    generated = replace(generated, lean_code=lemma_run.lean_code)
+                    verification = lemma_run.verification
+                    pending_lemma_note = repair_metadata(lemma_run)
             attempts.append(
                 _attempt_metadata(
                     attempt=attempt,
@@ -664,6 +741,7 @@ class ProofPipeline:
                     repair_route_decision=current_repair_route,
                 )
             )
+            pending_lemma_note = _annotate_lemma_repair(attempts[-1], pending_lemma_note)
             if model_attempt_verification is None:
                 model_attempt_verification = verification
             checkpoint_published = self._checkpoint_attempt(
@@ -813,6 +891,28 @@ class ProofPipeline:
             "max_repair_attempts": self.max_repair_attempts,
         }
 
+        if feedback is None and self.deterministic_templates:
+            template = template_proof_for_request(request)
+            if template is not None:
+                _emit(
+                    on_status,
+                    "proving",
+                    diagnostics,
+                    None,
+                    None,
+                    {
+                        **context,
+                        "dsp_stage": "prove",
+                        "deterministic_template": template.prover_id,
+                    },
+                )
+                return GeneratedProof(
+                    lean_code=template.lean_code,
+                    model=template.prover_id,
+                    raw_model_output=f"[template] {template.prover_id}",
+                    provider="pals-template",
+                )
+
         staged_generator = _staged_generator(self.generator)
         if staged_generator is not None:
             return _generate_staged_attempt(
@@ -827,6 +927,7 @@ class ProofPipeline:
                 sketch_failure_proceeds_to_prove=self.sketch_failure_proceeds_to_prove,
                 sketch_mechanical_repair=self.sketch_mechanical_repair,
                 sketch_parallel=self.sketch_parallel,
+                deterministic_templates=self.deterministic_templates,
             )
 
         _emit(
@@ -1085,6 +1186,160 @@ class ProofPipeline:
             on_status=on_status,
         )
         return RepairGeneration(generated=repaired, route_decision=route_decision)
+
+    def _lemma_alias_table(self) -> LemmaAliasTable:
+        return self.lemma_alias_table or default_lemma_alias_table()
+
+    def _lemma_repair_in_attempt(
+        self,
+        *,
+        request: ProofRequest,
+        lean_code: str,
+        verification: VerificationResult,
+        verification_harness: str | None,
+        verifier: Verifier,
+        problem_id: str,
+        attempt: int,
+        diagnostics: list[Diagnostic],
+        on_status: StatusCallback | None,
+    ) -> LemmaRepairRun | None:
+        """Patch known wrong lemma names inside the attempt that just failed to compile.
+
+        A patched source goes through the same preflight and the same verifier as a model-written
+        one. It stays within this attempt, so it neither costs a repair nor a new checkpoint.
+        """
+
+        def verify(patched: str) -> VerificationResult:
+            with latency_stage("lean_compile_local"):
+                return verifier.verify(patched)
+
+        def announce(patch: Any) -> None:
+            _emit(
+                on_status,
+                "compiling",
+                diagnostics,
+                None,
+                patch.lean_code,
+                {
+                    **_request_context(request, problem_id=problem_id),
+                    "attempt": attempt,
+                    "deterministic_lemma_repair": [
+                        {"reported": reported, "replacement": replacement}
+                        for reported, replacement in patch.replacements
+                    ],
+                },
+            )
+
+        return repair_unknown_lemmas(
+            lean_code,
+            verification,
+            verify=verify,
+            table=self._lemma_alias_table(),
+            accept=lambda patched: not validate_generated_lean(
+                request, patched, verification_harness=verification_harness
+            ),
+            same_statement=_statements_unchanged,
+            on_round=announce,
+        )
+
+    def _lemma_repair_after_api_failure(
+        self,
+        *,
+        request: ProofRequest,
+        seed: ApiRepairSeed,
+        verification_harness: str | None,
+        problem_id: str,
+        cumulative_diagnostics: list[Diagnostic],
+        attempt_evidence: dict[str, Any],
+        on_status: StatusCallback | None,
+    ) -> tuple[RepairGeneration, dict[str, Any]] | None:
+        """Replace the model repair after an API compile failure by a deterministic patch.
+
+        The API compiles, so the patched source is a new candidate: it takes the next attempt
+        number, which the API requires to equal repairs_used + 1, so the API's own budget count
+        includes it even though no model runs. One repair slot is always kept for the model.
+        """
+        if not self.lemma_alias_repair or seed.repairs_used + 1 >= self.max_repair_attempts:
+            return None
+        patch = patch_unknown_lemmas(
+            seed.generated.lean_code,
+            seed.verification.diagnostics,
+            self._lemma_alias_table(),
+            same_statement=_statements_unchanged,
+        )
+        if patch is None or validate_generated_lean(
+            request, patch.lean_code, verification_harness=verification_harness
+        ):
+            return None
+        generated = GeneratedProof(
+            lean_code=patch.lean_code,
+            model=_LEMMA_REPAIR_ID,
+            raw_model_output=f"[deterministic] {_LEMMA_REPAIR_ID}",
+            draft=seed.generated.draft,
+            sketch=seed.generated.sketch,
+            provider="pals-deterministic",
+        )
+        route = RepairRouteDecision(
+            route="prove",
+            rationale="Deterministic substitution of a known wrong Mathlib lemma name.",
+            raw_model_output="",
+            model=_LEMMA_REPAIR_ID,
+            provider="pals-deterministic",
+            selector_attempts=(
+                RepairRouteAttemptEvidence(
+                    attempt=1, outcome="selected", diagnostic_code=None, route="prove"
+                ),
+            ),
+        )
+        note = {
+            "replacements": [
+                {"reported": reported, "replacement": replacement}
+                for reported, replacement in patch.replacements
+            ],
+            "rounds": 1,
+            "verified": None,
+            "original_lean_code": seed.generated.lean_code,
+        }
+        context = {
+            **_request_context(request, problem_id=problem_id),
+            "deterministic_lemma_repair": note["replacements"],
+            "max_repair_attempts": self.max_repair_attempts,
+        }
+        _emit(
+            on_status,
+            "repairing",
+            cumulative_diagnostics,
+            None,
+            seed.generated.lean_code,
+            {
+                **context,
+                "failed_attempt": seed.attempt,
+                "repair_attempt": seed.repairs_used + 1,
+                "repair_route": route.route,
+                "repair_route_rationale": route.rationale,
+                "repair_route_model": route.model,
+                "repair_route_provider": route.provider,
+                "selector_attempts": [asdict(item) for item in route.selector_attempts],
+                "attempt_evidence": attempt_evidence,
+                "feedback_diagnostics": [
+                    diagnostic.to_api() for diagnostic in seed.verification.diagnostics
+                ],
+            },
+        )
+        _emit(
+            on_status,
+            "proving",
+            cumulative_diagnostics,
+            None,
+            None,
+            {
+                **context,
+                "attempt": seed.attempt + 1,
+                "repair_attempt": seed.repairs_used + 1,
+                "dsp_stage": "prove",
+            },
+        )
+        return RepairGeneration(generated=generated, route_decision=route), note
 
     def _checkpoint_attempt(
         self,
@@ -1455,6 +1710,7 @@ def _generate_staged_attempt(
     sketch_failure_proceeds_to_prove: bool = False,
     sketch_mechanical_repair: bool = False,
     sketch_parallel: int = 1,
+    deterministic_templates: bool = False,
 ) -> GeneratedProof:
     draft = feedback.previous_draft if feedback is not None else None
     sketch = feedback.previous_sketch if feedback is not None else None
@@ -1506,6 +1762,31 @@ def _generate_staged_attempt(
         )
         if not sketch.lean_code.strip():
             return _failed_staged_proof(draft=draft, sketch=sketch)
+        if feedback is None and deterministic_templates:
+            # The Sketch's Lean statement is language independent: when it is exactly the
+            # continuity of x², the verified template replaces the prove stage.
+            template = template_proof_for_sketch(request, sketch.lean_code)
+            if template is not None:
+                _emit(
+                    on_status,
+                    "proving",
+                    diagnostics,
+                    None,
+                    None,
+                    {
+                        **context,
+                        "dsp_stage": "prove",
+                        "deterministic_template": template.prover_id,
+                        "template_source": "sketch_statement",
+                    },
+                )
+                return GeneratedProof(
+                    lean_code=template.lean_code,
+                    model=template.prover_id,
+                    raw_model_output=f"[template] {template.prover_id}",
+                    draft=draft,
+                    provider="pals-template",
+                )
         if (
             sketch.has_gaps
             and sketch_verification is not None
@@ -1784,6 +2065,25 @@ def _select_repair_route(
     raise RepairRouteSelectionError(
         "Generator does not expose LLM DSP repair route selection."
     )
+
+
+def _annotate_lemma_repair(
+    attempt: dict[str, Any],
+    note: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    """Record a deterministic lemma repair on the attempt it produced; the note is spent."""
+    if note is not None:
+        attempt["deterministic_lemma_repair"] = note
+    return None
+
+
+def _statements_unchanged(before: str, after: str) -> bool:
+    """A lemma-name patch may not move any theorem statement."""
+    return _theorem_type_signatures(
+        _normalize_lean_text(_strip_lean_comments(before))
+    ) == _theorem_type_signatures(
+        _normalize_lean_text(_strip_lean_comments(after))
+    ) and statement_fingerprint(before) == statement_fingerprint(after)
 
 
 def _attempt_metadata(

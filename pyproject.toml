@@ -18,6 +18,7 @@ dependencies = [
 dev = [
   "mypy>=1.13,<2.0",
   "pytest>=8.3,<9.0",
+  "pyyaml>=6,<7",
   "ruff>=0.8,<1.0",
 ]
 
@@ -31,6 +32,9 @@ packages = ["pals_agent"]
 [tool.hatch.build.targets.wheel.force-include]
 "pals_agent/geometry_proofs/isosceles_midpoint.lean" = "pals_agent/geometry_proofs/isosceles_midpoint.lean"
 "pals_agent/content_dictionaries/typed-calculus-v5-registry.json" = "pals_agent/content_dictionaries/typed-calculus-v5-registry.json"
+"pals_agent/content_dictionaries/request-grammar-v1.json" = "pals_agent/content_dictionaries/request-grammar-v1.json"
+"pals_agent/content_dictionaries/presentation-instructions-v1.json" = "pals_agent/content_dictionaries/presentation-instructions-v1.json"
+"pals_agent/content_dictionaries/lean-lemma-aliases-v1.json" = "pals_agent/content_dictionaries/lean-lemma-aliases-v1.json"
 "pals_agent/content_dictionaries/typed-linear-algebra-v5-registry.json" = "pals_agent/content_dictionaries/typed-linear-algebra-v5-registry.json"
 "pals_agent/content_dictionaries/typed-linear-algebra-v6-registry.json" = "pals_agent/content_dictionaries/typed-linear-algebra-v6-registry.json"
 "pals_agent/content_dictionaries/typed-multivariable-v5-registry.json" = "pals_agent/content_dictionaries/typed-multivariable-v5-registry.json"

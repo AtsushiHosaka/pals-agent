@@ -1,0 +1,149 @@
+{
+ "schema_version": "pals.general-recipe-card.v1",
+ "id": "uniform-continuity.affine.real.explicit-epsilon-delta",
+ "revision": 1,
+ "family_id": "real-analysis",
+ "theorem_name": "affine_uniformly_continuous_explicit_epsilon_delta",
+ "source_path": "proofs/affine_uniformly_continuous_explicit_epsilon_delta.lean",
+ "target_source": "∀ (a b : ℝ), UniformContinuous (fun x : ℝ => a * x + b)",
+ "statement": "任意の実数 $a,b$ について、実数全体で定義された1次関数 $f(x)=ax+b$（傾き $a$、切片 $b$）が、$\\mathbb{R}$ 上で一様連続であることを $\\varepsilon$-$\\delta$ 論法で証明せよ。(Prove that for all real numbers a and b, the linear function f(x)=ax+b is uniformly continuous on the real line, using epsilon-delta. This covers 2x+1, 3x-5 and constant functions.)",
+ "domain": "実数上の関数の一様連続性：1次関数（傾き $a$、切片 $b$ の $ax+b$。$a,b$ は実数）の $\\varepsilon$-$\\delta$ 論法による一様連続性の証明",
+ "assumptions": [
+  "$a,b$ は実数（$0$ や負の数を含む）、$f:\\mathbb{R}\\to\\mathbb{R}$、$f(x)=ax+b$（$x$ は実数変数）。",
+  "一様連続性は、$\\delta$ が点によらずに選べる連続性（$\\varepsilon$-$\\delta$ による定義）を指す。"
+ ],
+ "quantifiers": [
+  "任意の実数 $a,b$ と任意の $\\varepsilon>0$ に対して、ある $\\delta>0$ が存在し、すべての実数 $x,y$ について $|x-y|<\\delta$ ならば $|(ax+b)-(ay+b)|<\\varepsilon$ となる（$\\delta$ は $a$ と $\\varepsilon$ だけに依存し、$x,y$ には依存しない）。"
+ ],
+ "conclusion": "任意の実数 $a,b$ について $f(x)=ax+b$ は $\\mathbb{R}$ 上で一様連続である。",
+ "proof_method_tag": "epsilon_delta",
+ "answer": "$a,b$ を任意の実数とします。$f(x)=ax+b$ が $\\mathbb{R}$ 上で一様連続であるとは、任意の $\\varepsilon>0$ に対して、ある $\\delta>0$ が存在し、$|x-y|<\\delta$ を満たすすべての実数 $x,y$ について $|(ax+b)-(ay+b)|<\\varepsilon$ となることです。通常の連続性と違い、$\\delta$ は $x,y$ の位置に依存してはいけません。そこで $\\varepsilon>0$ を任意に取り、$x,y$ を見る前に $\\delta$ を与えます。\n\n$\\delta=\\dfrac{\\varepsilon}{|a|+1}$ と定めます。$|a|+1\\ge 1>0$ なので $\\delta>0$ であり、$\\delta$ は $a$ と $\\varepsilon$ だけで決まります。分母を $|a|$ ではなく $|a|+1$ にするのは、$a=0$（定数関数）のときも分母が $0$ にならないようにするためです。切片 $b$ は $\\delta$ に現れません。\n\n実数 $x,y$ が $|x-y|<\\delta$ を満たすとします。切片 $b$ が打ち消し合うので、$(ax+b)-(ay+b)=a(x-y)$ であり、$|(ax+b)-(ay+b)|=|a|\\,|x-y|$ です。$|a|\\le|a|+1$ と $|x-y|\\ge 0$ から、$|a|\\,|x-y|\\le(|a|+1)\\,|x-y|$ が成り立ちます。また $|x-y|<\\dfrac{\\varepsilon}{|a|+1}$ の両辺に正の数 $|a|+1$ を掛けると、$(|a|+1)\\,|x-y|<\\varepsilon$ です。したがって $|(ax+b)-(ay+b)|<\\varepsilon$ が得られます。\n\n以上から、上の $\\delta$ は $x,y$ によらず、$|x-y|<\\delta$ ならば $|(ax+b)-(ay+b)|<\\varepsilon$ を満たします。したがって、任意の実数 $a,b$ について $ax+b$ は $\\mathbb{R}$ 上で一様連続です。\n",
+ "proof_outline": [
+  "Fix real numbers a and b and epsilon greater than zero.",
+  "Choose delta = epsilon / (|a| + 1), which does not depend on the points.",
+  "The constant b cancels: |(ax+b) - (ay+b)| = |a||x-y| is at most (|a|+1)|x-y|.",
+  "Conclude the difference is less than epsilon for all x and y with |x-y| < delta."
+ ],
+ "question_variants": {
+  "ja": [
+   "ax+bは一様連続であることを示してください。",
+   "任意の実数a,bについて1次関数 f(x)=ax+b が一様連続であることをε-δ論法で証明してください。",
+   "1次関数の一様連続性を証明してください。",
+   "2x+1が一様連続であることを示してください。",
+   "傾きと切片をもつ直線 y=ax+b の一様連続性を証明せよ。",
+   "3x-5の一様連続性を教えてください。"
+  ],
+  "en": [
+   "Prove that ax+b is uniformly continuous for all real numbers a and b.",
+   "Show that the linear function f(x)=ax+b is uniformly continuous on the real line using epsilon-delta.",
+   "Why is 2x+1 uniformly continuous?",
+   "Prove that a linear function with slope and intercept is uniformly continuous."
+  ]
+ },
+ "aliases": {
+  "ja": [
+   "ax+b",
+   "1次関数",
+   "一次関数",
+   "直線",
+   "傾きと切片",
+   "一様連続性",
+   "一様連続",
+   "一様連続な関数",
+   "ε-δ論法",
+   "イプシロンデルタ",
+   "2x+1",
+   "3x-5"
+  ],
+  "en": [
+   "ax+b",
+   "linear function",
+   "affine function",
+   "straight line",
+   "slope and intercept",
+   "uniform continuity of linear functions",
+   "uniformly continuous function",
+   "epsilon delta proof",
+   "real analysis"
+  ]
+ },
+ "hard_negatives": [
+  {
+   "id": "restricted_domain",
+   "dimension": "domain",
+   "statement": "区間 $[0,1]$ 上で $f(x)=ax+b$ が一様連続であることを証明せよ。",
+   "reason": "定義域が $[0,1]$ に制限された弱い主張で、ℝ全体の主張とは別である。"
+  },
+  {
+   "id": "pointwise",
+   "dimension": "quantifiers",
+   "statement": "関数 $f(x)=ax+b$ が $\\mathbb{R}$ のすべての点で連続であることを証明せよ。",
+   "reason": "結論が（各点の）連続性であり、$\\delta$ が点に依存してよい弱い主張である。別の Recipe が答える。"
+  },
+  {
+   "id": "lipschitz",
+   "dimension": "conclusion",
+   "statement": "任意の実数 $a,b$ について、関数 $f(x)=ax+b$ が $\\mathbb{R}$ 上でリプシッツ連続であることを証明せよ。",
+   "reason": "結論がリプシッツ連続性（定数 $L$ で $|f(x)-f(y)|\\le L|x-y|$）であり、$\\varepsilon$-$\\delta$ による一様連続性の証明そのものではない。"
+  },
+  {
+   "id": "differentiable",
+   "dimension": "conclusion",
+   "statement": "関数 $f(x)=ax+b$ が $\\mathbb{R}$ 上で微分可能であることを証明せよ。",
+   "reason": "結論が微分可能性であり、一様連続性の証明では答えにならない。"
+  },
+  {
+   "id": "homogeneous",
+   "dimension": "objects",
+   "statement": "任意の実数 $c$ について、$f(x)=cx$ が $\\mathbb{R}$ 上で一様連続であることを証明せよ。",
+   "reason": "切片のない特殊な関数であり、切片を含む一般形とは別の命題である。"
+  },
+  {
+   "id": "quadratic",
+   "dimension": "objects",
+   "statement": "関数 $f(x)=ax^2+bx$ が $\\mathbb{R}$ 上で一様連続であることを証明せよ。",
+   "reason": "$a\\ne0$ のとき偽である。2次の項を含む別の関数であり、保存回答の $\\delta$ は使えない。"
+  },
+  {
+   "id": "power",
+   "dimension": "objects",
+   "statement": "関数 $f(x)=x^n$ が $\\mathbb{R}$ 上で一様連続であることを証明せよ。",
+   "reason": "$n\\ge2$ では偽である。別の関数であり、保存回答の $f(x)=ax+b$ の証明そのものではない。"
+  },
+  {
+   "id": "complex",
+   "dimension": "domain",
+   "statement": "任意の複素数 $a,b$ について、複素数全体で定義された関数 $f(z)=az+b$ が一様連続であることを証明せよ。",
+   "reason": "定義域が $\\mathbb{C}$ であり、距離も複素数の絶対値になる。"
+  },
+  {
+   "id": "without_epsilon_delta",
+   "dimension": "method",
+   "statement": "任意の実数 $a,b$ について $ax+b$ が一様連続であることを、$\\varepsilon$-$\\delta$ 論法を使わずに証明せよ。",
+   "reason": "要求された証明方法が保存回答の方法（ε-δ論法）と異なる。"
+  },
+  {
+   "id": "composite",
+   "dimension": "objects",
+   "statement": "任意の実数 $a,b$ について、$f(x)=(ax+b)^2$ が $\\mathbb{R}$ 上で一様連続であることを証明せよ。",
+   "reason": "$a\\ne0$ のとき偽である。合成した別の関数であり、保存回答の証明そのものではない。"
+  }
+ ],
+ "provenance": {
+  "kind": "original_synthetic_problem_and_proof",
+  "license": "Apache-2.0",
+  "upstream_library": "Mathlib",
+  "upstream_license": "Apache-2.0",
+  "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+  "ported_from": "new general-form proof for a universally quantified family (seq27 general Recipe families)"
+ },
+ "lifecycle": {
+  "authored": true,
+  "independently_reviewed": false,
+  "admitted": false,
+  "retrievable": false,
+  "runtime_verified": false,
+  "deployed": false
+ },
+ "status": "authored_awaiting_execution"
+}

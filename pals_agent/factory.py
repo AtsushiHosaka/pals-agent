@@ -47,6 +47,26 @@ from pals_agent.settings import AgentSettings, validate_release_generation_envir
 from pals_agent.typed_runtime import TypedProofFlowRuntime
 
 
+def recipe_grammar_enabled() -> bool:
+    """The model-free grammar stage runs unless PALS_RECIPE_GRAMMAR is explicitly off. It also
+    needs PALS_RECIPE_INSTANTIATION, so it is inert on its own."""
+    return os.environ.get("PALS_RECIPE_GRAMMAR", "").strip().lower() not in {"off", "false", "0"}
+
+
+def recipe_instantiation_enabled() -> bool:
+    """Default OFF. Turn on only after the API has the verifier composition (deploy order:
+    API with PALS_RECIPE_INSTANTIATION=on and its verifier first, then the workers)."""
+    return os.environ.get("PALS_RECIPE_INSTANTIATION", "").strip().lower() in {"on", "true", "1"}
+
+
+def chat_template_fastpath_enabled() -> bool:
+    """Default ON: a plain x² continuity request skips the recipe review and the chat router.
+    PALS_CHAT_TEMPLATE_FASTPATH_ENABLED=off|false|0 turns it off."""
+    return os.environ.get("PALS_CHAT_TEMPLATE_FASTPATH_ENABLED", "").strip().lower() not in {
+        "off", "false", "0",
+    }
+
+
 def build_pipeline(settings: AgentSettings) -> ProofPipeline:
     from pals_agent.proof_reuse_catalog import ApiProofReuseCatalog, NaturalDspDraftRetriever
 
@@ -79,6 +99,9 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
             settings.observe_repeated_statement_mismatch_enabled
         ),
         repeated_mismatch_window=settings.repeated_mismatch_window,
+        deterministic_templates=settings.deterministic_templates_enabled,
+        template_skips_retrieval=settings.template_skips_retrieval_enabled,
+        lemma_alias_repair=settings.lemma_alias_repair_enabled,
         verification_mode="api_reconcile",
         natural_draft_retriever=natural,
         request_linked_typed_retriever=(
@@ -137,8 +160,13 @@ def build_proof_request_processor(
             and os.environ.get("PALS_TOKEN_ACCOUNTING_ENABLED") == "true"
         ),
         runtime=ChatRuntime(
+            template_fastpath=chat_template_fastpath_enabled(),
             client=client,
-            proof_runtime=ProofReuseRuntime(client=client, catalog=ApiProofReuseCatalog(settings)),
+            proof_runtime=ProofReuseRuntime(
+                client=client, catalog=ApiProofReuseCatalog(settings),
+                instantiation_enabled=recipe_instantiation_enabled(),
+                grammar_instantiation=recipe_grammar_enabled(),
+            ),
         ),
     )
 

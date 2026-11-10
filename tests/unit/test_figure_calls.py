@@ -82,3 +82,41 @@ def test_labels_bind_to_point_names_not_to_other_words():
     assert labels_occur_in(call, "theorem t (A B P Q O : P') : True")
     # Lean's `Add` and TeX's `\Omega` must not count as the points A and O.
     assert not labels_occur_in(call, r"Add Bool Prop Quot $\Omega$")
+
+
+def test_instruction_pins_the_graph_parameter_shape():
+    from pals_agent.figure_calls import FIGURE_INSTRUCTION
+
+    graph = {
+        "version": 1,
+        "template": "polynomial",
+        "parameters": {"coefficients": [2, -3, 0, 1], "domain": [-3, 3], "range": [-2, 8]},
+    }
+    validate_figure_call(graph)
+    # The documented good example is exactly what the validator accepts.
+    compact = FIGURE_INSTRUCTION.replace("\n", "")
+    assert json.dumps(graph, separators=(",", ":")) in compact
+    assert 'there is no "polynomial" key' in compact
+    # The wrong nesting that models produced is rejected, never repaired.
+    nested = {
+        "version": 1,
+        "template": "polynomial",
+        "parameters": {"polynomial": graph["parameters"]},
+    }
+    with pytest.raises(FigureCallError):
+        validate_figure_call(nested)
+    assert "occur in the Lean source" in compact
+
+
+def test_explanation_prompt_schema_lists_the_figure_key_and_polynomial_trigger():
+    from pals_agent.explanations import _explanation_prompt
+
+    prompt = _explanation_prompt(
+        theorem_statement="Let p(x)=x^3-3x+2. Show p(x) >= 0 for x >= -2.",
+        lean_code="theorem t (x : ℝ) (h : -2 ≤ x) : 0 ≤ x ^ 3 - 3 * x + 2 := by\n  nlinarith",
+        language="en",
+    )
+    schema = prompt.split("Return exactly one JSON object with this schema:")[1]
+    # A schema without the key led Luna to omit the figure on every polynomial statement.
+    assert '"figure":' in schema.split("Write all learner-facing prose")[0]
+    assert "explicit polynomial" in prompt

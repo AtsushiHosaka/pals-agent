@@ -1,0 +1,74 @@
+# Display-only figure calls for catalog answers, by Recipe ID. build.py binds each call to the exact
+# answer bytes of its card. A template fits a card only when its slots name the card's own points.
+schema_version: pals.catalog-figure-source.v1
+figures:
+  textbook.geometry_circle.inscribed_angle_same_side:
+    {version: 1, template: inscribed-angle, parameters: {labels: {chord_start: A, chord_end: B, on_arc_1: X, on_arc_2: Y, center: O}, marks: [{icon: equal_angle, at: [[A, X, B], [A, Y, B]], claim: conclusion}]}}
+  textbook.geometry_circle.inscribed_angle_same_side_converse:
+    {version: 1, template: inscribed-angle, parameters: {labels: {chord_start: A, chord_end: B, on_arc_1: X, on_arc_2: Y}, marks: [{icon: equal_angle, at: [[A, X, B], [A, Y, B]], claim: given}]}}
+  textbook.geometry_circle.central_angle_twice_inscribed_same_side:
+    {version: 1, template: inscribed-angle, parameters: {labels: {chord_start: A, chord_end: B, on_arc_1: X, center: O}}}
+  textbook.geometry_circle.tangent_chord_angle:
+    {version: 1, template: tangent-chord, parameters: {labels: {touch: A, chord_end: B, on_arc: C, tangent_point: T}, marks: [{icon: equal_angle, at: [[T, A, B], [A, C, B]], claim: conclusion}]}}
+  textbook.geometry_circle.tangent_chord_angle_converse:
+    {version: 1, template: tangent-chord, parameters: {labels: {touch: A, chord_end: B, on_arc: C, tangent_point: T}, marks: [{icon: equal_angle, at: [[T, A, B], [A, C, B]], claim: given}]}}
+  textbook.geometry_circle.tangent_secant_power:
+    {version: 1, template: power-of-point, parameters: {kind: tangent_secant, labels: {p: Q, a: A, b: B, c: T}}}
+  textbook.geometry_circle.tangent_secant_converse:
+    {version: 1, template: power-of-point, parameters: {kind: tangent_secant, labels: {p: Q, a: A, b: B, c: T}}}
+  textbook.geometry_circle.intersecting_chords_converse:
+    {version: 1, template: power-of-point, parameters: {kind: chords, labels: {p: H, a: A, b: B, c: C, d: D}}}
+  textbook.geometry_circle.secants_converse:
+    {version: 1, template: power-of-point, parameters: {kind: secants, labels: {p: Q, a: A, b: B, c: C, d: D}}}
+  textbook.geometry_circle.intersecting_chords_similar_ratio:
+    {version: 1, template: power-of-point, parameters: {kind: chords, labels: {p: H, a: A, b: B, c: C, d: D}, segments: [[A, C], [D, B]]}}
+  textbook.geometry_homotopy.power_of_a_point_lines:
+    {version: 1, template: power-of-point, parameters: {kind: chords, labels: {p: p, a: a, b: b, c: c, d: d}}}
+  textbook.geometry_circle.cyclic_quadrilateral_opposite_angles_sum_pi:
+    {version: 1, template: cyclic-quadrilateral, parameters: {labels: {a: A, b: B, c: C, d: D}, segments: [[A, C]]}}
+  textbook.geometry_circle.cyclic_quadrilateral_opposite_angles_converse:
+    {version: 1, template: cyclic-quadrilateral, parameters: {labels: {a: A, b: B, c: C, d: D}, segments: [[A, C]]}}
+  textbook.geometry_homotopy.ptolemy_cyclic_quadrilateral:
+    {version: 1, template: cyclic-quadrilateral, parameters: {labels: {a: a, b: b, c: c, d: d}, segments: [[a, c], [b, d]]}}
+  textbook.geometry_circle.tangent_lengths_equal:
+    {version: 1, template: tangent-lengths, parameters: {labels: {p: Q, touch_1: A, touch_2: B}, marks: [{icon: equal_length, at: [[Q, A], [Q, B]], claim: conclusion}]}}
+  textbook.geometry_circle.tangents_center_line_bisects_angles:
+    {version: 1, template: tangent-lengths, parameters: {labels: {p: Q, touch_1: A, touch_2: B, center: O}, segments: [[Q, O]], marks: [{icon: equal_angle, at: [[A, Q, O], [B, Q, O]], claim: conclusion}, {icon: equal_angle, at: [[A, O, Q], [B, O, Q]], claim: conclusion}]}}
+  textbook.geometry_centers.ceva_theorem:
+    {version: 1, template: ceva, parameters: {labels: {a: A, b: B, c: C, d: D, e: E, f: F, p: p}}}
+  textbook.geometry_centers.ceva_converse:
+    {version: 1, template: ceva, parameters: {labels: {a: A, b: B, c: C, d: D, e: E, f: F, p: p}}}
+  textbook.geometry_centers.menelaus_theorem:
+    {version: 1, template: menelaus, parameters: {labels: {a: A, b: B, c: C, d: D, e: E, f: F}}}
+  textbook.geometry_centers.menelaus_converse:
+    {version: 1, template: menelaus, parameters: {labels: {a: A, b: B, c: C, d: D, e: E, f: F}}}
+  textbook.geometry_centers.circumcenter_equidistant_on_perp_bisectors:
+    {version: 1, template: triangle-center, parameters: {kind: circumcenter, labels: {a: A, b: B, c: C, center: O}}}
+  textbook.geometry_centers.incenter_touchpoint_and_angle_bisector:
+    {version: 1, template: triangle-center, parameters: {kind: incenter, labels: {a: A, b: B, c: C, center: I}}}
+  textbook.geometry_centers.orthocenter_on_altitudes:
+    {version: 1, template: triangle-center, parameters: {kind: orthocenter, labels: {a: A, b: B, c: C, center: H}}}
+  textbook.geometry_centers.centroid_divides_median_two_to_one:
+    {version: 1, template: triangle-center, parameters: {kind: centroid, labels: {a: A, b: B, c: C, center: G}}}
+  textbook.geometry_triangle.triangle_congruent_sss:
+    {version: 1, template: congruent-triangles, parameters: {criterion: sss, labels: {a: A, b: B, c: C, d: "A'", e: "B'", f: "C'"}, marks: [{icon: equal_length, at: [[A, B], ["A'", "B'"]], claim: given}, {icon: equal_length, at: [[B, C], ["B'", "C'"]], claim: given}, {icon: equal_length, at: [[C, A], ["C'", "A'"]], claim: given}]}}
+  textbook.geometry_triangle.triangle_congruent_sas:
+    {version: 1, template: congruent-triangles, parameters: {criterion: sas, labels: {a: A, b: B, c: C, d: "A'", e: "B'", f: "C'"}, marks: [{icon: equal_length, at: [[A, B], ["A'", "B'"]], claim: given}, {icon: equal_length, at: [[B, C], ["B'", "C'"]], claim: given}, {icon: equal_angle, at: [[A, B, C], ["A'", "B'", "C'"]], claim: given}]}}
+  textbook.geometry_triangle.triangle_congruent_asa:
+    {version: 1, template: congruent-triangles, parameters: {criterion: asa, labels: {a: A, b: B, c: C, d: "A'", e: "B'", f: "C'"}, marks: [{icon: equal_length, at: [[B, C], ["B'", "C'"]], claim: given}, {icon: equal_angle, at: [[A, B, C], ["A'", "B'", "C'"]], claim: given}, {icon: equal_angle, at: [[B, C, A], ["B'", "C'", "A'"]], claim: given}]}}
+  textbook.geometry_triangle.triangle_similar_aa_ratio:
+    {version: 1, template: similar-triangles, parameters: {criterion: aa, labels: {a: a, b: b, c: c, d: "a'", e: "b'", f: "c'"}, marks: [{icon: equal_angle, at: [[a, b, c], ["a'", "b'", "c'"]], claim: given}, {icon: equal_angle, at: [[b, c, a], ["b'", "c'", "a'"]], claim: given}]}}
+  textbook.geometry_triangle.triangle_similar_sss_ratio:
+    {version: 1, template: similar-triangles, parameters: {criterion: sss, labels: {a: a, b: b, c: c, d: "a'", e: "b'", f: "c'"}, marks: [{icon: equal_angle, at: [[a, b, c], ["a'", "b'", "c'"]], claim: conclusion}, {icon: equal_angle, at: [[b, c, a], ["b'", "c'", "a'"]], claim: conclusion}, {icon: equal_angle, at: [[c, a, b], ["c'", "a'", "b'"]], claim: conclusion}]}}
+  textbook.geometry_triangle.triangle_similar_sas_ratio:
+    {version: 1, template: similar-triangles, parameters: {criterion: sas, labels: {a: A, b: B, c: C, d: "A'", e: "B'", f: "C'"}, marks: [{icon: equal_angle, at: [[A, B, C], ["A'", "B'", "C'"]], claim: given}]}}
+  textbook.geometry_triangle.isosceles_iff_median_perpendicular:
+    {version: 1, template: triangle, parameters: {shape: isosceles, labels: {a: A, b: B, c: C}, extra_points: [{label: M, "on": [B, C], t: 0.5}], segments: [[A, M]], marks: [{icon: equal_length, at: [[B, M], [M, C]], claim: given}]}}
+  textbook.geometry_triangle.median_theorem_apollonius:
+    {version: 1, template: triangle, parameters: {shape: scalene, labels: {a: A, b: B, c: C}, extra_points: [{label: M, "on": [B, C], t: 0.5}], segments: [[A, M]], marks: [{icon: equal_length, at: [[B, M], [M, C]], claim: given}]}}
+  textbook.geometry_triangle.angle_bisector_theorem_internal:
+    {version: 1, template: triangle, parameters: {shape: scalene, labels: {a: A, b: B, c: C}, extra_points: [{label: D, "on": [B, C], t: 0.45}], segments: [[A, D]], marks: [{icon: equal_angle, at: [[B, A, D], [D, A, C]], claim: given}]}}
+  textbook.geometry_homotopy.pythagoras_angle_iff:
+    {version: 1, template: triangle, parameters: {shape: right, labels: {a: a, b: b, c: c}}}
+  textbook.geometry_homotopy.law_of_cosines_angle:
+    {version: 1, template: triangle, parameters: {shape: scalene, labels: {a: a, b: b, c: c}}}

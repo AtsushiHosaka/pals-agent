@@ -11,7 +11,7 @@ import math
 import re
 from typing import Any
 
-_LABEL = re.compile(r"[A-Z][0-9']?\Z", re.ASCII)
+_LABEL = re.compile(r"[A-Za-z][0-9']?\Z", re.ASCII)
 _STEP = re.compile(r"[a-z][a-z0-9_-]{0,31}\Z", re.ASCII)
 _MAX_MARKS = 12
 _MAX_TERMS = 8
@@ -234,14 +234,16 @@ def validate_figure_bindings(value: Any, call: dict[str, Any]) -> None:
 
 
 FIGURE_INSTRUCTION = """Add one figure whenever the answer concerns plane geometry that a template
-below covers, or the graph of a polynomial; otherwise use null. A figure only illustrates and
-proves nothing. Call a template and do not describe the figure in the text. Never give coordinates,
-code, colors or captions.
+below covers, or an explicit polynomial of degree at most 7 in one real variable whose values,
+sign, roots or extrema the statement is about (its graph is then the figure); use null only when
+none of these applies, never because the figure seems optional.
+A figure only illustrates and proves nothing. Call a template and do not describe the figure in
+the text. Never give coordinates, code, colors or captions.
 Example: {"version":1,"template":"inscribed-angle","parameters":{"labels":{"chord_start":"A",
 "chord_end":"B","on_arc_1":"P","on_arc_2":"Q"},"marks":[{"icon":"equal_angle","at":[["A","P","B"],
 ["A","Q","B"]],"claim":"conclusion","step":"angles"}]},"bindings":[{"step_id":"angles","paragraph":1}]}
 Geometry parameters always include "labels" mapping every required slot to a point name of the
-answer, matching [A-Z][0-9']?. Add "marks" for what the mathematics states: equal_length and
+answer, matching [A-Za-z][0-9']?. Add "marks" for what the mathematics states: equal_length and
 parallel take vertex pairs; equal_angle and right_angle take triples with the vertex in the middle;
 "at" lists groups even for one, as in [["A","M","B"]]; claim is given or conclusion.
 "segments" optionally adds [[label,label]]. A mark's optional step
@@ -256,9 +258,22 @@ inscribed-angle chord_start chord_end on_arc_1, optional on_arc_2 center; tangen
 chord_end on_arc tangent_point; power-of-point requires "kind": chords|secants|tangent_secant, p a b
 c d (tangent_secant: p a b c, c is the tangent point); cyclic-quadrilateral a b c d; tangent-lengths
 p touch_1 touch_2, optional center.
-Graph: polynomial P {"coefficients":[c0,c1,...],"domain":[lo,hi],"range":[lo,hi]};
+Graph templates are "polynomial" and "polynomial-derivative". The template name is the top-level
+"template" value; there is no "polynomial" key anywhere inside "parameters". The keys of
+"parameters" are exactly "coefficients" (numbers c0,c1,..., lowest degree first, at most 8),
+"domain":[lo,hi] and "range":[lo,hi], all three directly in "parameters" (no nesting, no "labels"
+or "marks"). Only numbers, never expressions. For x^3-3x+2 use
+{"version":1,"template":"polynomial","parameters":{"coefficients":[2,-3,0,1],"domain":[-3,3],
+"range":[-2,8]}}. Wrong: "parameters":{"polynomial":{"coefficients":[2,-3,0,1],...}} and
+"parameters":{"polynomial":"x^3-3x+2"}.
 polynomial-derivative also takes "anchor":x and "offsets":[h1,...] (same sign, nonzero, largest
-first; steps are continuity, secant, limit)."""
+first; steps are continuity, secant, limit), again directly in "parameters"; keep the anchor and
+anchor+h visible inside domain and range.
+For geometry, "labels" values must be point names that occur in the Lean source (or, in a chat
+answer, in the text); the figure is dropped when any label, including each extra point, does not
+occur there. Copy each name with the spelling and case used there (a, b, c if the source names
+its points or vectors in lowercase), never new letters; if the source has no usable point names,
+use null."""
 
 
 def _wrap_single_mark_groups(call: dict[str, Any]) -> None:
