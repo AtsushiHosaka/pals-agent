@@ -211,3 +211,35 @@ def test_recording_generator_lays_stages_end_to_end(tmp_path):
 
 def test_unknown_model_cost_is_none_not_zero():
     assert estimate_usd("some-new-model", 10, 10) is None
+
+
+def test_recording_generator_records_staged_calls_with_tokens(tmp_path):
+    scope = Scope(run_id="r", sink=JsonlSink(tmp_path / "r.jsonl", artifacts_dir=tmp_path / "a"))
+    scope.reset("p1", "base", 1)
+
+    @dataclass
+    class Part:
+        elapsed_ms: int
+        model: str = "gpt-6.1-terra"
+        reasoning_effort: str = "medium"
+
+    class Inner:
+        def generate_draft(self, request, feedback=None):
+            scope.on_usage({"input_tokens": 7, "cached_input_tokens": 0, "output_tokens": 3})
+            return Part(100)
+
+        def generate_sketch(self, request, draft, feedback=None):
+            scope.on_usage({"input_tokens": 20, "cached_input_tokens": 5, "output_tokens": 9})
+            return Part(200)
+
+        def generate_proof(self, request, draft, sketch, feedback=None):
+            return Part(300)
+
+    g = RecordingGenerator(Inner(), scope)
+    g.generate_draft(object())
+    g.generate_sketch(object(), object())
+    g.generate_proof(object(), object(), object())
+    rows = read_rows(tmp_path / "r.jsonl")
+    assert [r["stage"] for r in rows] == ["draft", "sketch", "prove"]
+    assert [r["input_tokens"] for r in rows] == [7, 20, 0]
+    assert rows[1]["cached_input_tokens"] == 5

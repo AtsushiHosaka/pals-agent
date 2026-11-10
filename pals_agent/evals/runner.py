@@ -188,10 +188,13 @@ class RecordingGenerator:
     def __getattr__(self, name: str) -> Any:
         return getattr(self.inner, name)
 
-    def _emit(self, stage: str, part: Any, start_ms: float, t_start: float) -> None:
+    def _emit(
+        self, stage: str, part: Any, start_ms: float, t_start: float, since: int | None = None
+    ) -> None:
         if part is None:
             return
         ms = int(getattr(part, "elapsed_ms", 0) or 0)
+        tokens = self.scope.usage_totals(since) if since is not None else {}
         self.scope.attempt(
             stage,
             started_at=datetime.fromtimestamp(t_start + start_ms / 1000, UTC).isoformat(
@@ -204,6 +207,26 @@ class RecordingGenerator:
             success=True,
             model=getattr(part, "model", None),
             effort=getattr(part, "reasoning_effort", None),
+            **tokens,
+        )
+
+    # ProofPipeline drives a staged generator through these three methods instead of generate()
+    # (pipeline._staged_generator), so without them Tier 2 records no Draft/Sketch/Prove rows.
+    def _stage(self, stage: str, call: Callable[[], Any]) -> Any:
+        t_start, since = time.time(), len(self.scope.usage)
+        part = call()
+        self._emit(stage, part, 0.0, t_start, since)
+        return part
+
+    def generate_draft(self, request: Any, feedback: Any = None) -> Any:
+        return self._stage("draft", lambda: self.inner.generate_draft(request, feedback))
+
+    def generate_sketch(self, request: Any, draft: Any, feedback: Any = None) -> Any:
+        return self._stage("sketch", lambda: self.inner.generate_sketch(request, draft, feedback))
+
+    def generate_proof(self, request: Any, draft: Any, sketch: Any, feedback: Any = None) -> Any:
+        return self._stage(
+            "prove", lambda: self.inner.generate_proof(request, draft, sketch, feedback)
         )
 
     def generate(self, request: Any) -> Any:
