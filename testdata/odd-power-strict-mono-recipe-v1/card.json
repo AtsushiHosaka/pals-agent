@@ -1,0 +1,147 @@
+{
+ "schema_version": "pals.general-recipe-card.v1",
+ "id": "monotonicity.power.odd.sign-cases",
+ "revision": 1,
+ "family_id": "real-analysis",
+ "theorem_name": "odd_power_strictly_increasing_sign_cases",
+ "source_path": "proofs/odd_power_strictly_increasing_sign_cases.lean",
+ "target_source": "∀ (n : ℕ), StrictMono (fun x : ℝ => x ^ (2 * n + 1))",
+ "statement": "任意の自然数 $n$（$0$ を含む）について、実数全体で定義された関数 $f(x)=x^{2n+1}$（$x$ の奇数乗）が狭義単調増加であること、すなわち実数 $x<y$ ならば $x^{2n+1}<y^{2n+1}$ であることを証明せよ。(Prove that for every natural number n, including 0, the odd power function f(x)=x^(2n+1) is strictly increasing on the real line: x<y implies x^(2n+1)<y^(2n+1). This covers x, x cubed and x to the fifth.)",
+ "domain": "実数上の関数の単調性：奇数乗の冪関数（$x^{2n+1}$。$n$ は自然数、$x$ の1乗、3乗、5乗など）の狭義単調増加性の証明",
+ "assumptions": [
+  "$n$ は自然数（$0$ を含む）、$f:\\mathbb{R}\\to\\mathbb{R}$、$f(x)=x^{2n+1}$（$x$ は実数変数）。指数 $2n+1$ は正の奇数である。",
+  "狭義単調増加とは、任意の実数 $x<y$ について $f(x)<f(y)$ が成り立つことを指す。"
+ ],
+ "quantifiers": [
+  "任意の自然数 $n$ と任意の実数 $x,y$ について、$x<y$ ならば $x^{2n+1}<y^{2n+1}$ である。"
+ ],
+ "conclusion": "任意の自然数 $n$ について $f(x)=x^{2n+1}$ は $\\mathbb{R}$ 上で狭義単調増加である。",
+ "proof_method_tag": "sign_cases",
+ "answer": "$n$ を任意の自然数とし、$m=2n+1$（正の奇数）とおきます。$f(x)=x^m$ が狭義単調増加であるとは、実数 $x<y$ ならば $x^m<y^m$ となることです。$x<y$ を満たす実数 $x,y$ を任意に取り、$x,y$ の符号で3つの場合に分けて示します。\n\n場合1：$0\\le x$。このとき $0\\le x<y$ なので $y>0$ です。$y^m-x^m=(y-x)\\displaystyle\\sum_{i=0}^{m-1}y^{m-1-i}x^{i}$ と因数分解できます。$y-x>0$ です。右の和は非負の項の和で、$i=0$ の項 $y^{m-1}$ は $y>0$ より正なので、和全体も正です。よって $y^m-x^m>0$、すなわち $x^m<y^m$ です。\n\n場合2：$x<0$ かつ $y\\le 0$。$-y$ と $-x$ について $0\\le -y<-x$ なので、場合1 より $(-y)^m<(-x)^m$ です。$m$ は奇数なので、すべての実数 $t$ について $(-t)^m=-t^m$ が成り立ちます。よって $-y^m<-x^m$ となり、両辺の符号を変えて $x^m<y^m$ です。\n\n場合3：$x<0$ かつ $y>0$。$-x>0$ なので $(-x)^m>0$ です。$m$ が奇数であることから $x^m=-(-x)^m<0$ です。一方、$y>0$ より $y^m>0$ です。したがって $x^m<0<y^m$ です。\n\n$x\\ge 0$ か、$x<0$ かつ $y\\le0$ か、$x<0$ かつ $y>0$ のいずれかが必ず成り立つので、すべての場合が尽くされました。以上から、任意の自然数 $n$ について $x<y$ ならば $x^{2n+1}<y^{2n+1}$ であり、$x^{2n+1}$ は狭義単調増加です。なお、指数が奇数であることは場合2と場合3で使っています。偶数乗では成り立ちません（$m=2$ のとき、$-2<-1$ ですが $(-2)^2=4>1=(-1)^2$ です）。\n",
+ "proof_outline": [
+  "Fix a natural number n, put m = 2n+1 and take real numbers x < y.",
+  "If 0 <= x, factor y^m - x^m = (y-x)(y^(m-1) + ... + x^(m-1)) and note both factors are positive.",
+  "If x < 0 and y <= 0, apply the first case to -y < -x and use that m is odd.",
+  "If x < 0 < y, then x^m < 0 < y^m because m is odd."
+ ],
+ "question_variants": {
+  "ja": [
+   "xの奇数乗は狭義単調増加であることを示してください。",
+   "任意の自然数nについてx^(2n+1)が狭義単調増加であることを証明してください。",
+   "x^(2n+1)の単調性を証明してください。",
+   "x³は単調増加であることを示してください。",
+   "xの三乗が狭義単調増加である理由を教えてください。",
+   "x^5は狭義単調増加であることを証明せよ。"
+  ],
+  "en": [
+   "Prove that x^(2n+1) is strictly increasing for every natural number n.",
+   "Show that every odd power of x is strictly increasing on the real line.",
+   "Why is x cubed strictly increasing?",
+   "Prove that x^5 is strictly monotone."
+  ]
+ },
+ "aliases": {
+  "ja": [
+   "xの奇数乗",
+   "奇数乗",
+   "x^(2n+1)",
+   "狭義単調増加",
+   "単調増加",
+   "単調性",
+   "xの3乗",
+   "xの三乗",
+   "x³",
+   "xの5乗"
+  ],
+  "en": [
+   "odd power",
+   "x^(2n+1)",
+   "strictly increasing",
+   "strictly monotone",
+   "monotonicity of odd powers",
+   "x cubed",
+   "x to the fifth",
+   "odd exponent",
+   "real analysis"
+  ]
+ },
+ "hard_negatives": [
+  {
+   "id": "all_powers",
+   "dimension": "quantifiers",
+   "statement": "任意の自然数 $n$ について、$f(x)=x^n$ が $\\mathbb{R}$ 上で狭義単調増加であることを証明せよ。",
+   "reason": "偽である。$n$ が偶数のとき $f(-2)>f(-1)$ で単調増加でなく、$n=0$ では定数関数である。奇数乗に限った主張とは別である。"
+  },
+  {
+   "id": "even_power",
+   "dimension": "objects",
+   "statement": "任意の自然数 $n$ について、$f(x)=x^{2n}$ が $\\mathbb{R}$ 上で狭義単調増加であることを証明せよ。",
+   "reason": "偽である。偶数乗は $x<0$ で減少する。奇数乗の主張とは別である。"
+  },
+  {
+   "id": "nonstrict",
+   "dimension": "conclusion",
+   "statement": "任意の自然数 $n$ について、$f(x)=x^{2n+1}$ が $\\mathbb{R}$ 上で単調増加（広義）であることを証明せよ。",
+   "reason": "結論が広義単調増加という弱い主張である。保存証明は狭義の不等号を示す。"
+  },
+  {
+   "id": "nonnegative_half_line",
+   "dimension": "domain",
+   "statement": "任意の正の整数 $m$ について、$f(x)=x^m$ が区間 $[0,\\infty)$ 上で狭義単調増加であることを証明せよ。",
+   "reason": "定義域が $[0,\\infty)$ に制限された別の主張で、偶数乗も含む。ℝ全体の奇数乗の主張とは別である。"
+  },
+  {
+   "id": "injective",
+   "dimension": "conclusion",
+   "statement": "任意の自然数 $n$ について、$f(x)=x^{2n+1}$ が $\\mathbb{R}$ 上で単射であることを証明せよ。",
+   "reason": "結論が単射性という弱い主張である。狭義単調増加の証明そのものではない。"
+  },
+  {
+   "id": "bijective",
+   "dimension": "conclusion",
+   "statement": "任意の自然数 $n$ について、$f(x)=x^{2n+1}$ が $\\mathbb{R}$ から $\\mathbb{R}$ への全単射であることを証明せよ。",
+   "reason": "全射性を含む強い主張であり、保存証明は全射性を示さない。"
+  },
+  {
+   "id": "strictly_decreasing",
+   "dimension": "conclusion",
+   "statement": "任意の自然数 $n$ について、$f(x)=x^{2n+1}$ が $\\mathbb{R}$ 上で狭義単調減少であることを証明せよ。",
+   "reason": "偽である。結論の向きが逆である。"
+  },
+  {
+   "id": "complex",
+   "dimension": "domain",
+   "statement": "複素数全体で定義された関数 $f(z)=z^3$ が単調増加であることを証明せよ。",
+   "reason": "複素数には大小の順序がなく、単調増加の意味が定まらない。"
+  },
+  {
+   "id": "by_derivative",
+   "dimension": "method",
+   "statement": "任意の自然数 $n$ について $x^{2n+1}$ が狭義単調増加であることを、導関数 $(2n+1)x^{2n}\\ge0$ を使って証明せよ。",
+   "reason": "要求された証明方法が保存回答の方法（符号による場合分け）と異なる。"
+  },
+  {
+   "id": "sum_with_linear",
+   "dimension": "objects",
+   "statement": "任意の自然数 $n$ について、$f(x)=x^{2n+1}+x$ が $\\mathbb{R}$ 上で狭義単調増加であることを証明せよ。",
+   "reason": "別の関数であり、保存回答の $f(x)=x^{2n+1}$ の証明そのものではない。"
+  }
+ ],
+ "provenance": {
+  "kind": "original_synthetic_problem_and_proof",
+  "license": "Apache-2.0",
+  "upstream_library": "Mathlib",
+  "upstream_license": "Apache-2.0",
+  "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+  "ported_from": "new general-form proof for a universally quantified family (seq27 general Recipe families)"
+ },
+ "lifecycle": {
+  "authored": true,
+  "independently_reviewed": false,
+  "admitted": false,
+  "retrievable": false,
+  "runtime_verified": false,
+  "deployed": false
+ },
+ "status": "authored_awaiting_execution"
+}

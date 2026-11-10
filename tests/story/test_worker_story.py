@@ -886,7 +886,8 @@ def test_worker_waits_for_delayed_candidate_and_finishes_on_one_sqs_delivery(
 
     assert worker.run_once() is True
 
-    assert sleeps == [1.0, 1.0]
+    # The first 30 s of waiting polls every 0.25 s (_CANDIDATE_RECONCILIATION_POLL_SCHEDULE).
+    assert sleeps == [0.25, 0.25]
     assert api.events.count("proof_generation_claim") == 1
     assert api.events.count("verification_candidate") == 1
     assert api.events.count("semantic_review") == 1
@@ -1306,7 +1307,7 @@ def test_worker_logs_a_closed_failure_reason_without_exception_text(
 
     api = FakeApi()
     api.state = "verified"
-    api.lean_code = "example : True := by\n  trivial"
+    api.lean_code = "theorem sq : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
     worker = _worker(api=api, explainer=InvalidExplainer())
 
     with caplog.at_level("ERROR"):
@@ -1319,6 +1320,36 @@ def test_worker_logs_a_closed_failure_reason_without_exception_text(
     ) in caplog.text
     assert "language=ja x_squared_gate=True lean_lines=2" in caplog.text
     assert "secret model text" not in caplog.text
+
+
+
+
+def test_failure_log_gate_follows_the_verified_lean_statement_not_the_request_wording(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    class InvalidExplainer:
+        def explain(self, **_: object) -> ProofExplanation:
+            raise ExplanationGenerationError(
+                "secret model text",
+                attempt_outputs=("secret model text",),
+                attempt_failures=("reference_excerpt", "reference_excerpt", "text_length"),
+            )
+
+    api = FakeApi()
+    api.state = "verified"
+    api.lean_code = "example : True := by\n  trivial"
+    worker = _worker(api=api, explainer=InvalidExplainer())
+
+    with caplog.at_level("ERROR"):
+        _process_proof(worker, "job-1")
+
+    assert api.explanation_updates[-1]["diagnostics"][0].code == "pals.explanation_failed"
+    assert (
+        "explanation_generation_failed resource=explanation id=job-1 "
+        "reason=validation:reference_excerpt,reference_excerpt,text_length elapsed_ms="
+    ) in caplog.text
+    # The request text mentions x² continuity, but the verified statement is another theorem.
+    assert "language=ja x_squared_gate=False lean_lines=2" in caplog.text
 
 
 def test_review_failure_reason_names_only_categories() -> None:
@@ -1474,7 +1505,8 @@ def test_ambiguous_import_does_not_recover_a_different_or_unknown_binding(change
 def test_late_candidate_completion_extends_visibility_before_semantic_model_call() -> None:
     clock = [0.0]
     visibility: list[tuple[float, int]] = []
-    api = DelayedCandidateApi(compiling_reads=329)
+    # Polling is 0.25 s for 30 s, 0.5 s until 90 s, then 1 s: 120 + 120 + 239 reads reach 329 s.
+    api = DelayedCandidateApi(compiling_reads=479)
 
     class ObservedReviewer(FakeSemanticReviewer):
         def review_proof(self, **kwargs: Any) -> ProofSemanticReview:

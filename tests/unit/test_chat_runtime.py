@@ -8,6 +8,7 @@ import base64
 import copy
 import hashlib
 import json
+from threading import Lock
 
 import pytest
 
@@ -58,12 +59,33 @@ class RecordedResponses:
         self.outputs = iter(outputs)
         self.calls = []
         self.sessions = iter(sessions) if sessions else None
+        self._lock = Lock()
+        self._pair = None
 
     def request(self, **kwargs):
         payload = json.loads(kwargs["body"])
-        self.calls.append(payload)
-        value = next(self.outputs)
-        session = next(self.sessions) if self.sessions else f"resp_test_{len(self.calls)}"
+        properties = payload.get("text", {}).get("format", {}).get("schema", {}).get(
+            "properties", {}
+        )
+        pair_role = (
+            "review" if {"recipe_id", "approved"} <= properties.keys() else
+            "scope" if {"recipe_id", "objects", "quantifiers", "method"} <= properties.keys()
+            else None
+        )
+        with self._lock:
+            self.calls.append(payload)
+            if pair_role is None:
+                value = next(self.outputs)
+            else:
+                # The independent Recipe scope and review calls run in parallel threads. Their
+                # scripted outputs (scope first, review second) are assigned by role, never by
+                # thread arrival order.
+                if self._pair is None:
+                    self._pair = {"scope": next(self.outputs), "review": next(self.outputs)}
+                value = self._pair.pop(pair_role)
+                if not self._pair:
+                    self._pair = None
+            session = next(self.sessions) if self.sessions else f"resp_test_{len(self.calls)}"
         body = {
             "id": session,
             "object": "response",
@@ -259,7 +281,11 @@ def test_lean_catalog_receipt_and_independent_review_bind_original_statement():
     result = runtime.answer(BOUND_REQUEST, recipe_search=lambda *args: [RECIPE],
                             claim_id=CLAIM_ID)
     assert result.outcome == "answered"
-    reviewed = json.loads(provider.calls[-1]["input"].split("DATA:\n", 1)[1]
+    review_call = next(
+        call for call in provider.calls
+        if {"recipe_id", "approved"} <= call["text"]["format"]["schema"]["properties"].keys()
+    )
+    reviewed = json.loads(review_call["input"].split("DATA:\n", 1)[1]
                           .split("\n\nImmutable originating chat input", 1)[0])
     assert reviewed["request"]["original_statement"] == BOUND_REQUEST["statement"]
     original = {key: BOUND_REQUEST[key] for key in (

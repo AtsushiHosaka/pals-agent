@@ -1,0 +1,1105 @@
+{
+ "figures": [
+  {
+   "answer_sha256": "82cc56785b42a6ba0879878e0dc693259125e92dac6082e6d020f50dfe9d0dc2",
+   "recipe_id": "textbook.geometry_centers.centroid_divides_median_two_to_one",
+   "visualization": {
+    "parameters": {
+     "kind": "centroid",
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "center": "G"
+     }
+    },
+    "template": "triangle-center",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "3e2e2bee83d4e3343c966e8f4809e216cd61f169c94e8caa1717a67ee55b6a9e",
+   "recipe_id": "textbook.geometry_centers.ceva_converse",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "d": "D",
+      "e": "E",
+      "f": "F",
+      "p": "p"
+     }
+    },
+    "template": "ceva",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "fef7664353c02afb69c14bba35ca1f16c42292d86ae36569cfe8aa7cd9caef4f",
+   "recipe_id": "textbook.geometry_centers.ceva_theorem",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "d": "D",
+      "e": "E",
+      "f": "F",
+      "p": "p"
+     }
+    },
+    "template": "ceva",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "6498d69ef9b9b098a16c5c6086960dcd21871096b4d4da5bec55fc48f7d5bad9",
+   "recipe_id": "textbook.geometry_centers.circumcenter_equidistant_on_perp_bisectors",
+   "visualization": {
+    "parameters": {
+     "kind": "circumcenter",
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "center": "O"
+     }
+    },
+    "template": "triangle-center",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "2b3f9f9763fd17f3859a68107dc8f735a688b96d148187c4ff2cc6fea2f791cd",
+   "recipe_id": "textbook.geometry_centers.incenter_touchpoint_and_angle_bisector",
+   "visualization": {
+    "parameters": {
+     "kind": "incenter",
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "center": "I"
+     }
+    },
+    "template": "triangle-center",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "eac9d9e41c7c7874dd6d111e3cb2fe84983c94d72a5282fad4eb14e7a8973f5c",
+   "recipe_id": "textbook.geometry_centers.menelaus_converse",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "d": "D",
+      "e": "E",
+      "f": "F"
+     }
+    },
+    "template": "menelaus",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "c975dcb7e044004fef011ab1f977807bc1e802561ca123b43269e30199125af9",
+   "recipe_id": "textbook.geometry_centers.menelaus_theorem",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "d": "D",
+      "e": "E",
+      "f": "F"
+     }
+    },
+    "template": "menelaus",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "d180d474d55af51a724420d631c4a6155ccad2996bfb29f54218a324f5bc7950",
+   "recipe_id": "textbook.geometry_centers.orthocenter_on_altitudes",
+   "visualization": {
+    "parameters": {
+     "kind": "orthocenter",
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "center": "H"
+     }
+    },
+    "template": "triangle-center",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "53726e9bbd57cade8f3a78590a172a06d66dbd87acfefeff08fa50e11c3b606e",
+   "recipe_id": "textbook.geometry_circle.central_angle_twice_inscribed_same_side",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "center": "O",
+      "chord_end": "B",
+      "chord_start": "A",
+      "on_arc_1": "X"
+     }
+    },
+    "template": "inscribed-angle",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "ac85a379242123b76e3828d0b13aaf1a292e3bcdc464031d95da64a6d4557d4c",
+   "recipe_id": "textbook.geometry_circle.cyclic_quadrilateral_opposite_angles_converse",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "d": "D"
+     },
+     "segments": [
+      [
+       "A",
+       "C"
+      ]
+     ]
+    },
+    "template": "cyclic-quadrilateral",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "64a730edb5211ca6eef70235019ad6447a2ac857b1cf098e6f1da2125a406062",
+   "recipe_id": "textbook.geometry_circle.cyclic_quadrilateral_opposite_angles_sum_pi",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "d": "D"
+     },
+     "segments": [
+      [
+       "A",
+       "C"
+      ]
+     ]
+    },
+    "template": "cyclic-quadrilateral",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "cc3b867474e3655229477afce284679177b6a2b7e6440f729dd6015adf738d81",
+   "recipe_id": "textbook.geometry_circle.inscribed_angle_same_side",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "center": "O",
+      "chord_end": "B",
+      "chord_start": "A",
+      "on_arc_1": "X",
+      "on_arc_2": "Y"
+     },
+     "marks": [
+      {
+       "at": [
+        [
+         "A",
+         "X",
+         "B"
+        ],
+        [
+         "A",
+         "Y",
+         "B"
+        ]
+       ],
+       "claim": "conclusion",
+       "icon": "equal_angle"
+      }
+     ]
+    },
+    "template": "inscribed-angle",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "502fcb2b56225b39ac703bccd78b4f99d3fdfa4f00b2bd74e481243fb6164f8d",
+   "recipe_id": "textbook.geometry_circle.inscribed_angle_same_side_converse",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "chord_end": "B",
+      "chord_start": "A",
+      "on_arc_1": "X",
+      "on_arc_2": "Y"
+     },
+     "marks": [
+      {
+       "at": [
+        [
+         "A",
+         "X",
+         "B"
+        ],
+        [
+         "A",
+         "Y",
+         "B"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_angle"
+      }
+     ]
+    },
+    "template": "inscribed-angle",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "79d8e7da2c8ea2fa1979a4d71a4aa9fc56fe0477d23aad14d4f46e243a92ab0b",
+   "recipe_id": "textbook.geometry_circle.intersecting_chords_converse",
+   "visualization": {
+    "parameters": {
+     "kind": "chords",
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "d": "D",
+      "p": "H"
+     }
+    },
+    "template": "power-of-point",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "a46ac14128ec6b62b6fe12575e339fa3a3cfd4e9cf44da9e21ce09b2080fed4f",
+   "recipe_id": "textbook.geometry_circle.intersecting_chords_similar_ratio",
+   "visualization": {
+    "parameters": {
+     "kind": "chords",
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "d": "D",
+      "p": "H"
+     },
+     "segments": [
+      [
+       "A",
+       "C"
+      ],
+      [
+       "D",
+       "B"
+      ]
+     ]
+    },
+    "template": "power-of-point",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "460faeb4c3cc1f7b994b85cfb3adcff1b55cff6c250619f7f2eda2c01556e63c",
+   "recipe_id": "textbook.geometry_circle.secants_converse",
+   "visualization": {
+    "parameters": {
+     "kind": "secants",
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "d": "D",
+      "p": "Q"
+     }
+    },
+    "template": "power-of-point",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "85d8d7e73b69db00a7ef6d1b4381e7a3d4e55efc441646e299c32de300c9f9ae",
+   "recipe_id": "textbook.geometry_circle.tangent_chord_angle",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "chord_end": "B",
+      "on_arc": "C",
+      "tangent_point": "T",
+      "touch": "A"
+     },
+     "marks": [
+      {
+       "at": [
+        [
+         "T",
+         "A",
+         "B"
+        ],
+        [
+         "A",
+         "C",
+         "B"
+        ]
+       ],
+       "claim": "conclusion",
+       "icon": "equal_angle"
+      }
+     ]
+    },
+    "template": "tangent-chord",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "8efb5155adf40a30af3c4fa8f246574f24fa3bfccb57d676d4f1ceed05fecdb4",
+   "recipe_id": "textbook.geometry_circle.tangent_chord_angle_converse",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "chord_end": "B",
+      "on_arc": "C",
+      "tangent_point": "T",
+      "touch": "A"
+     },
+     "marks": [
+      {
+       "at": [
+        [
+         "T",
+         "A",
+         "B"
+        ],
+        [
+         "A",
+         "C",
+         "B"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_angle"
+      }
+     ]
+    },
+    "template": "tangent-chord",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "7f1c219165ad44296bb0b520a1de0d1fcd22a81541483fe1d2bd60e1a9b56423",
+   "recipe_id": "textbook.geometry_circle.tangent_lengths_equal",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "p": "Q",
+      "touch_1": "A",
+      "touch_2": "B"
+     },
+     "marks": [
+      {
+       "at": [
+        [
+         "Q",
+         "A"
+        ],
+        [
+         "Q",
+         "B"
+        ]
+       ],
+       "claim": "conclusion",
+       "icon": "equal_length"
+      }
+     ]
+    },
+    "template": "tangent-lengths",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "eb316e4c21042c90a0ad25e318d576cb025a9186fc65512d6d65e7cd6c11376f",
+   "recipe_id": "textbook.geometry_circle.tangent_secant_converse",
+   "visualization": {
+    "parameters": {
+     "kind": "tangent_secant",
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "T",
+      "p": "Q"
+     }
+    },
+    "template": "power-of-point",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "bde292bcc1a6293f8cc540c155522edb4a9a7d6c2599319c356fba4ec353d80a",
+   "recipe_id": "textbook.geometry_circle.tangent_secant_power",
+   "visualization": {
+    "parameters": {
+     "kind": "tangent_secant",
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "T",
+      "p": "Q"
+     }
+    },
+    "template": "power-of-point",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "d20b842ca9fd4b7cbe5dcaf55d5b4e5af7124e5ad2d882bbaea31ee7bd02fae3",
+   "recipe_id": "textbook.geometry_circle.tangents_center_line_bisects_angles",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "center": "O",
+      "p": "Q",
+      "touch_1": "A",
+      "touch_2": "B"
+     },
+     "marks": [
+      {
+       "at": [
+        [
+         "A",
+         "Q",
+         "O"
+        ],
+        [
+         "B",
+         "Q",
+         "O"
+        ]
+       ],
+       "claim": "conclusion",
+       "icon": "equal_angle"
+      },
+      {
+       "at": [
+        [
+         "A",
+         "O",
+         "Q"
+        ],
+        [
+         "B",
+         "O",
+         "Q"
+        ]
+       ],
+       "claim": "conclusion",
+       "icon": "equal_angle"
+      }
+     ],
+     "segments": [
+      [
+       "Q",
+       "O"
+      ]
+     ]
+    },
+    "template": "tangent-lengths",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "b19a6f91fd4446c47b1e2341c522db6c79a9e3c3db01967e298d81e805062269",
+   "recipe_id": "textbook.geometry_homotopy.law_of_cosines_angle",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "a": "a",
+      "b": "b",
+      "c": "c"
+     },
+     "shape": "scalene"
+    },
+    "template": "triangle",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "35f86d29d5e373a9319046ac37e90cfcac7d34f628988995806788eb841b740d",
+   "recipe_id": "textbook.geometry_homotopy.power_of_a_point_lines",
+   "visualization": {
+    "parameters": {
+     "kind": "chords",
+     "labels": {
+      "a": "a",
+      "b": "b",
+      "c": "c",
+      "d": "d",
+      "p": "p"
+     }
+    },
+    "template": "power-of-point",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "3f481fad2991a9ce020929f67a4487953e397780c2ae7d72fc0b66bceb76c8a3",
+   "recipe_id": "textbook.geometry_homotopy.ptolemy_cyclic_quadrilateral",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "a": "a",
+      "b": "b",
+      "c": "c",
+      "d": "d"
+     },
+     "segments": [
+      [
+       "a",
+       "c"
+      ],
+      [
+       "b",
+       "d"
+      ]
+     ]
+    },
+    "template": "cyclic-quadrilateral",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "b4388337e5b597a832ba1ca37f344bab87dda0a977a998e900014082e01fa90b",
+   "recipe_id": "textbook.geometry_homotopy.pythagoras_angle_iff",
+   "visualization": {
+    "parameters": {
+     "labels": {
+      "a": "a",
+      "b": "b",
+      "c": "c"
+     },
+     "shape": "right"
+    },
+    "template": "triangle",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "d3fdc2fce738dcd0d4d316250851b8491e7c3ab370181caa07b97b2186ca937a",
+   "recipe_id": "textbook.geometry_triangle.angle_bisector_theorem_internal",
+   "visualization": {
+    "parameters": {
+     "extra_points": [
+      {
+       "label": "D",
+       "on": [
+        "B",
+        "C"
+       ],
+       "t": 0.45
+      }
+     ],
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C"
+     },
+     "marks": [
+      {
+       "at": [
+        [
+         "B",
+         "A",
+         "D"
+        ],
+        [
+         "D",
+         "A",
+         "C"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_angle"
+      }
+     ],
+     "segments": [
+      [
+       "A",
+       "D"
+      ]
+     ],
+     "shape": "scalene"
+    },
+    "template": "triangle",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "0f17499a8efecc79a0a12f724720fab04862440165935871bd23fc39ed757709",
+   "recipe_id": "textbook.geometry_triangle.isosceles_iff_median_perpendicular",
+   "visualization": {
+    "parameters": {
+     "extra_points": [
+      {
+       "label": "M",
+       "on": [
+        "B",
+        "C"
+       ],
+       "t": 0.5
+      }
+     ],
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C"
+     },
+     "marks": [
+      {
+       "at": [
+        [
+         "B",
+         "M"
+        ],
+        [
+         "M",
+         "C"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_length"
+      }
+     ],
+     "segments": [
+      [
+       "A",
+       "M"
+      ]
+     ],
+     "shape": "isosceles"
+    },
+    "template": "triangle",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "64e2ba8103891a9ed6fdf39efc7ddfe13e1701ff329f9898c7cef42f6b190fcc",
+   "recipe_id": "textbook.geometry_triangle.median_theorem_apollonius",
+   "visualization": {
+    "parameters": {
+     "extra_points": [
+      {
+       "label": "M",
+       "on": [
+        "B",
+        "C"
+       ],
+       "t": 0.5
+      }
+     ],
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C"
+     },
+     "marks": [
+      {
+       "at": [
+        [
+         "B",
+         "M"
+        ],
+        [
+         "M",
+         "C"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_length"
+      }
+     ],
+     "segments": [
+      [
+       "A",
+       "M"
+      ]
+     ],
+     "shape": "scalene"
+    },
+    "template": "triangle",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "9d5b3a1d53e03ad6e592a6f0531f519448e962995b4ced86f332207f3a513f4b",
+   "recipe_id": "textbook.geometry_triangle.triangle_congruent_asa",
+   "visualization": {
+    "parameters": {
+     "criterion": "asa",
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "d": "A'",
+      "e": "B'",
+      "f": "C'"
+     },
+     "marks": [
+      {
+       "at": [
+        [
+         "B",
+         "C"
+        ],
+        [
+         "B'",
+         "C'"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_length"
+      },
+      {
+       "at": [
+        [
+         "A",
+         "B",
+         "C"
+        ],
+        [
+         "A'",
+         "B'",
+         "C'"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_angle"
+      },
+      {
+       "at": [
+        [
+         "B",
+         "C",
+         "A"
+        ],
+        [
+         "B'",
+         "C'",
+         "A'"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_angle"
+      }
+     ]
+    },
+    "template": "congruent-triangles",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "1ac4ab5b09dedf8f9c64cc4cdd53ca621d6b669ae2c8c023e76c2ea0a6165398",
+   "recipe_id": "textbook.geometry_triangle.triangle_congruent_sas",
+   "visualization": {
+    "parameters": {
+     "criterion": "sas",
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "d": "A'",
+      "e": "B'",
+      "f": "C'"
+     },
+     "marks": [
+      {
+       "at": [
+        [
+         "A",
+         "B"
+        ],
+        [
+         "A'",
+         "B'"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_length"
+      },
+      {
+       "at": [
+        [
+         "B",
+         "C"
+        ],
+        [
+         "B'",
+         "C'"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_length"
+      },
+      {
+       "at": [
+        [
+         "A",
+         "B",
+         "C"
+        ],
+        [
+         "A'",
+         "B'",
+         "C'"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_angle"
+      }
+     ]
+    },
+    "template": "congruent-triangles",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "cd0d97862a353a29cf716a733554fdecacc9fae32d3aaec2384672d00eebbca5",
+   "recipe_id": "textbook.geometry_triangle.triangle_congruent_sss",
+   "visualization": {
+    "parameters": {
+     "criterion": "sss",
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "d": "A'",
+      "e": "B'",
+      "f": "C'"
+     },
+     "marks": [
+      {
+       "at": [
+        [
+         "A",
+         "B"
+        ],
+        [
+         "A'",
+         "B'"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_length"
+      },
+      {
+       "at": [
+        [
+         "B",
+         "C"
+        ],
+        [
+         "B'",
+         "C'"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_length"
+      },
+      {
+       "at": [
+        [
+         "C",
+         "A"
+        ],
+        [
+         "C'",
+         "A'"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_length"
+      }
+     ]
+    },
+    "template": "congruent-triangles",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "293a16d3bfee2774490f97ce59f156b9d5cbccfe4f61cf6a43b38f2c7241f015",
+   "recipe_id": "textbook.geometry_triangle.triangle_similar_aa_ratio",
+   "visualization": {
+    "parameters": {
+     "criterion": "aa",
+     "labels": {
+      "a": "a",
+      "b": "b",
+      "c": "c",
+      "d": "a'",
+      "e": "b'",
+      "f": "c'"
+     },
+     "marks": [
+      {
+       "at": [
+        [
+         "a",
+         "b",
+         "c"
+        ],
+        [
+         "a'",
+         "b'",
+         "c'"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_angle"
+      },
+      {
+       "at": [
+        [
+         "b",
+         "c",
+         "a"
+        ],
+        [
+         "b'",
+         "c'",
+         "a'"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_angle"
+      }
+     ]
+    },
+    "template": "similar-triangles",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "5b91def61f6506b1c9b7715dc6ae8e92d1bf4d158758ed3bc5ce07477c8e978b",
+   "recipe_id": "textbook.geometry_triangle.triangle_similar_sas_ratio",
+   "visualization": {
+    "parameters": {
+     "criterion": "sas",
+     "labels": {
+      "a": "A",
+      "b": "B",
+      "c": "C",
+      "d": "A'",
+      "e": "B'",
+      "f": "C'"
+     },
+     "marks": [
+      {
+       "at": [
+        [
+         "A",
+         "B",
+         "C"
+        ],
+        [
+         "A'",
+         "B'",
+         "C'"
+        ]
+       ],
+       "claim": "given",
+       "icon": "equal_angle"
+      }
+     ]
+    },
+    "template": "similar-triangles",
+    "version": 1
+   }
+  },
+  {
+   "answer_sha256": "eaa38b5bf69329480e91b519f0f04dd9ced21d9ae947feaaef4cbd700d6c908f",
+   "recipe_id": "textbook.geometry_triangle.triangle_similar_sss_ratio",
+   "visualization": {
+    "parameters": {
+     "criterion": "sss",
+     "labels": {
+      "a": "a",
+      "b": "b",
+      "c": "c",
+      "d": "a'",
+      "e": "b'",
+      "f": "c'"
+     },
+     "marks": [
+      {
+       "at": [
+        [
+         "a",
+         "b",
+         "c"
+        ],
+        [
+         "a'",
+         "b'",
+         "c'"
+        ]
+       ],
+       "claim": "conclusion",
+       "icon": "equal_angle"
+      },
+      {
+       "at": [
+        [
+         "b",
+         "c",
+         "a"
+        ],
+        [
+         "b'",
+         "c'",
+         "a'"
+        ]
+       ],
+       "claim": "conclusion",
+       "icon": "equal_angle"
+      },
+      {
+       "at": [
+        [
+         "c",
+         "a",
+         "b"
+        ],
+        [
+         "c'",
+         "a'",
+         "b'"
+        ]
+       ],
+       "claim": "conclusion",
+       "icon": "equal_angle"
+      }
+     ]
+    },
+    "template": "similar-triangles",
+    "version": 1
+   }
+  }
+ ],
+ "schema_version": "pals.recipe-figures.v1"
+}

@@ -7,7 +7,6 @@ signed seed and cannot be used as an API publication claim.
 from __future__ import annotations
 
 import hashlib
-import json
 import shutil
 import subprocess
 import tempfile
@@ -18,7 +17,6 @@ import rfc8785
 
 from pals_agent.continuity_collection import concrete_cards
 from pals_agent.proof_flow_seed import ContinuityCatalogError, load_continuity_catalog
-
 
 _RECEIPT_SCHEMA = "pals.continuity-lean-receipts.local.v1"
 _EXPECTED_CARD_COUNT = 110

@@ -1453,3 +1453,86 @@ def test_unavailable_settlement_response_loss_acks_durable_failure_without_secon
     assert worker.process_proof_job("job-semantic") is True
     assert reviewer.calls == 1
     assert api.evidence == []
+
+
+def test_after_lean_reconciliation_the_delivery_reuses_the_job_it_just_read(monkeypatch) -> None:
+    """The wait's last read and the delivery's chat binding are not fetched a second time.
+
+    The gates behind them are untouched: the candidate binding is still checked against the API
+    and the independent review still decides before anything is settled.
+    """
+    from contextlib import contextmanager
+
+    scopes: list[str] = []
+
+    @contextmanager
+    def counting_scope(context, payload=None):
+        scopes.append("enter")
+        yield
+
+    monkeypatch.setattr("pals_agent.worker.linked_chat_scope", counting_scope)
+
+    class Api(SemanticReviewApi):
+        def __init__(self) -> None:
+            super().__init__()
+            self.job_reads = 0
+            self.chat_input_reads = 0
+            self.binding_reads = 0
+            self.retries: list[str] = []
+
+        def _job(self, proof_job_id: str) -> dict[str, Any]:
+            job = SemanticReviewApi.get_proof_job(self, proof_job_id)
+            job["request_context"] = {"formal_statement": "True", "chat_route": {"r": 1}}
+            return job
+
+        def get_proof_job(self, proof_job_id: str) -> dict[str, Any]:
+            self.job_reads += 1
+            job = self._job(proof_job_id)
+            if self.job_reads == 1:
+                # First delivery view: the candidate is still being compiled by the API.
+                job["state"] = "compiling"
+                job["verification_candidate_state"] = "compiling"
+            return job
+
+        def get_proof_job_chat_input(self, proof_job_id: str) -> dict[str, Any]:
+            self.chat_input_reads += 1
+            return {}
+
+        def retry_verification_candidate_reconciliation(self, *, proof_job_id, candidate_id):
+            self.retries.append(candidate_id)
+            return {"reconciliation": "accepted"}
+
+        def get_verification_candidate_binding(self, **kwargs: Any) -> dict[str, Any]:
+            self.binding_reads += 1
+            job = self._job(kwargs["proof_job_id"])
+            return {
+                "schema_version": "pals.verification-candidate-binding.v1", **kwargs,
+                "mutation_claim_id": job["generation_session_id"],
+                "lean_sha256": hashlib.sha256(job["lean_code"].encode()).hexdigest(),
+                "result_artifact_uri": job["result_artifact_uri"],
+                "source_binding_sha256": None, "candidate_status": "semantic_review",
+            }
+
+    api = Api()
+    reviewer = RecordingSemanticReviewer(reject=True)
+    worker = SqsProofWorker(
+        settings=cast(AgentSettings, SimpleNamespace(explanation_model_timeout_seconds=17)),
+        api_client=cast(Any, api), pipeline=None, explainer=ExplainerThatMustNotRun(),
+        proof_reviewer=cast(Any, reviewer), sleep=lambda _seconds: None,
+    )
+
+    acknowledged = worker.process_proof_job(
+        "job-semantic",
+        claim_id="11111111-1111-4111-8111-111111111111",
+        extend_visibility=lambda _seconds: None,
+    )
+
+    assert acknowledged is True
+    # One read for the delivery and one by the wait; the resumed call adds none.
+    assert api.job_reads == 2
+    assert api.chat_input_reads == 1 and scopes == ["enter"]
+    # The gates still run: the binding is checked, then the review decides, then it is settled.
+    assert api.binding_reads == 1
+    assert len(reviewer.calls) == 1
+    assert api.evidence[0]["decision"] == "rejected"
+    assert api.retries == ["22222222-2222-4222-8222-222222222222"]

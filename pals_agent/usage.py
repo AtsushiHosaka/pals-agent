@@ -66,6 +66,34 @@ def usage_scope(reporter: Callable[[dict[str, Any]], None]) -> Iterator[None]:
         _reporter.reset(token)
 
 
+def forward_usage(records: list[dict[str, Any]]) -> None:
+    """Hand records that were held back to the reporter that is active now, if any.
+
+    Speculative work collects its records instead of reporting them; only work that is adopted
+    forwards them. Rejected work therefore leaves no usage behind.
+    """
+    reporter = _reporter.get()
+    if reporter is None:
+        return
+    for record in records:
+        try:
+            reporter(dict(record))
+        except Exception as exc:
+            logger.warning("Provider usage recording failed (%s)", type(exc).__name__)
+
+
+@contextmanager
+def hold_usage() -> Iterator[list[dict[str, Any]]]:
+    """Collect this scope's usage without reporting it; pair with :func:`forward_usage`."""
+    records: list[dict[str, Any]] = []
+
+    def collect(record: dict[str, Any]) -> None:
+        records.append(dict(record))
+
+    with usage_scope(collect):
+        yield records
+
+
 @contextmanager
 def capture_usage() -> Iterator[list[dict[str, Any]]]:
     """Capture this one call while retaining the claim's ordinary durable reporter."""

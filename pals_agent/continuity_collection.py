@@ -21,7 +21,6 @@ from pals_agent.openmath import (
     continuity_v1_novelty_key,
 )
 
-
 FormulaKind = Literal["integer", "variable", "add", "sub", "mul", "neg", "pow", "div"]
 
 
@@ -29,8 +28,8 @@ FormulaKind = Literal["integer", "variable", "add", "sub", "mul", "neg", "pow", 
 class Formula:
     kind: FormulaKind
     value: int | str | None = None
-    left: "Formula | None" = None
-    right: "Formula | None" = None
+    left: Formula | None = None
+    right: Formula | None = None
 
     def __post_init__(self) -> None:
         if self.kind in {"integer", "variable"}:

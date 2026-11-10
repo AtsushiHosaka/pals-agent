@@ -69,6 +69,11 @@ class AgentSettings:
     stop_on_repeated_statement_mismatch_enabled: bool = False
     observe_repeated_statement_mismatch_enabled: bool = False
     repeated_mismatch_window: int = 2
+    deterministic_templates_enabled: bool = True
+    template_skips_retrieval_enabled: bool = True
+    speculative_explanation_enabled: bool = False
+    template_fixed_explanation_enabled: bool = True
+    lemma_alias_repair_enabled: bool = True
     worker_idle_sleep_seconds: float = 2.0
     explanation_model_timeout_seconds: int = 90
     semantic_evaluator_provider: Literal["openai", "ollama"] | None = None
@@ -231,6 +236,21 @@ class AgentSettings:
             ),
             repeated_mismatch_window=_bounded_ascii_int_env(
                 "PALS_REPEATED_MISMATCH_WINDOW", 2, minimum=2, maximum=3
+            ),
+            deterministic_templates_enabled=_strict_bool_env_default(
+                "PALS_DETERMINISTIC_TEMPLATES_ENABLED", True
+            ),
+            template_skips_retrieval_enabled=_strict_bool_env_default(
+                "PALS_TEMPLATE_SKIPS_RETRIEVAL_ENABLED", True
+            ),
+            speculative_explanation_enabled=_strict_bool_env_default(
+                "PALS_SPECULATIVE_EXPLANATION_ENABLED", False
+            ),
+            template_fixed_explanation_enabled=_strict_bool_env_default(
+                "PALS_TEMPLATE_FIXED_EXPLANATION_ENABLED", True
+            ),
+            lemma_alias_repair_enabled=_strict_bool_env_default(
+                "PALS_LEMMA_ALIAS_REPAIR_ENABLED", True
             ),
             max_repair_attempts=_bounded_ascii_int_env(
                 "PALS_MAX_REPAIR_ATTEMPTS",
@@ -465,6 +485,15 @@ def _validate_semantic_evaluator_configuration(
 
 def _strict_bool_env(name: str) -> bool:
     value = os.environ.get(name, "false")
+    if value not in {"true", "false"}:
+        raise ValueError(f"{name} must be true or false")
+    return value == "true"
+
+
+def _strict_bool_env_default(name: str, default: bool) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
     if value not in {"true", "false"}:
         raise ValueError(f"{name} must be true or false")
     return value == "true"

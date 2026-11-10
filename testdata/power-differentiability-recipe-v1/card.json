@@ -1,0 +1,150 @@
+{
+ "schema_version": "pals.general-recipe-card.v1",
+ "id": "differentiability.power.natural.induction-product-rule",
+ "revision": 1,
+ "family_id": "real-analysis",
+ "theorem_name": "power_differentiable_induction_product_rule",
+ "source_path": "proofs/power_differentiable_induction_product_rule.lean",
+ "target_source": "∀ (n : ℕ), Differentiable ℝ (fun x : ℝ => x ^ n)",
+ "statement": "任意の自然数 $n$（$0$ を含む）について、実数全体で定義された関数 $f(x)=x^n$（$x$ の $n$ 乗）が、$\\mathbb{R}$ のすべての点で微分可能であること（微分可能な関数であること）を証明せよ。(Prove that for every natural number n, including 0, the power function f(x)=x^n is differentiable at every real point. This covers x squared, x cubed and every fixed power.)",
+ "domain": "実数上の関数の微分可能性：冪関数（xのn乗、xのべき乗、$x^n$。$n$ は自然数）が至る所で微分可能であることの、帰納法と積の微分法則による証明",
+ "assumptions": [
+  "$n$ は自然数（$0$ を含む）、$f:\\mathbb{R}\\to\\mathbb{R}$、$f(x)=x^n$（$x$ は実数変数）。",
+  "微分可能性は、実数上の各点 $a$ で極限 $\\lim_{x\\to a}\\frac{f(x)-f(a)}{x-a}$ が存在することを指す。"
+ ],
+ "quantifiers": [
+  "任意の自然数 $n$ と任意の実数 $a$ について、$f(x)=x^n$ は $a$ で微分可能である（微分係数が存在する）。"
+ ],
+ "conclusion": "任意の自然数 $n$ について $f(x)=x^n$ は $\\mathbb{R}$ のすべての点で微分可能である。すなわち $f$ は $\\mathbb{R}$ 上の微分可能な関数である。",
+ "proof_method_tag": "induction_product_rule",
+ "answer": "$n$ を任意の自然数とします。$f(x)=x^n$ がすべての点で微分可能であることを、$n$ に関する帰納法で示します。ここで微分可能とは、すべての実数 $a$ で極限 $\\lim_{x\\to a}\\frac{f(x)-f(a)}{x-a}$ が存在することです。次の3つの標準的な事実を使います。(i) 定数関数は微分可能で、導関数は $0$ です。(ii) 恒等関数 $x\\mapsto x$ は微分可能で、導関数は $1$ です。(iii) 微分可能な2つの関数 $g,h$ の積 $gh$ は微分可能です（積の微分法則 $(gh)'=g'h+gh'$）。\n\n$n=0$ のとき、$x^0=1$ は定数関数なので、(i) より微分可能です。\n\nある自然数 $k$ について $x^k$ が微分可能であると仮定します。すべての実数 $x$ で $x^{k+1}=x^k\\cdot x$ が成り立ちます。右辺は、仮定により微分可能な関数 $x^k$ と、(ii) により微分可能な関数 $x$ の積なので、(iii) より微分可能です。したがって $x^{k+1}$ も微分可能です。\n\n帰納法により、すべての自然数 $n$ について $x^n$ は $\\mathbb{R}$ のすべての点で微分可能です。たとえば $x^2=x\\cdot x$ は (ii) と (iii) から微分可能で、$x^3=x^2\\cdot x$ も同様に微分可能です。なお $n\\ge 1$ のとき導関数は $nx^{n-1}$ ですが、この証明が示したのは微分可能であることだけです。\n",
+ "proof_outline": [
+  "Fix a natural number n and induct on n.",
+  "For n = 0 the function x^0 = 1 is constant, hence differentiable.",
+  "For the step, write x^(k+1) = x^k * x, a product of two differentiable functions.",
+  "The product of differentiable functions is differentiable, so x^n is differentiable for every n."
+ ],
+ "question_variants": {
+  "ja": [
+   "xのn乗は微分可能であることを示してください。",
+   "任意の自然数nについてx^nが微分可能であることを証明してください。",
+   "x^nの微分可能性を証明してください。",
+   "べき関数 f(x)=x^n は微分可能であることを証明せよ。",
+   "xの二乗が微分可能である理由を教えてください。",
+   "x^3は微分可能であることを示してください。"
+  ],
+  "en": [
+   "Prove that x^n is differentiable for every natural number n.",
+   "Show that the power function f(x)=x^n is differentiable on the real line.",
+   "Why is x squared differentiable?",
+   "Prove that x^3 is differentiable."
+  ]
+ },
+ "aliases": {
+  "ja": [
+   "xのn乗",
+   "べき乗",
+   "冪関数",
+   "x^n",
+   "微分可能性",
+   "微分可能",
+   "微分可能な関数",
+   "積の微分法則",
+   "帰納法",
+   "xの2乗",
+   "xの二乗",
+   "x²"
+  ],
+  "en": [
+   "x to the n",
+   "power function",
+   "x^n",
+   "natural power",
+   "x squared",
+   "x cubed",
+   "differentiability of power functions",
+   "product rule",
+   "differentiable function",
+   "real analysis"
+  ]
+ },
+ "hard_negatives": [
+  {
+   "id": "restricted_domain",
+   "dimension": "domain",
+   "statement": "区間 $[0,1]$ 上で $f(x)=x^n$ が微分可能であることを証明せよ。",
+   "reason": "定義域が $[0,1]$ に制限された別の主張で、端点の扱いが異なる。ℝ全体の主張とは別である。"
+  },
+  {
+   "id": "continuous",
+   "dimension": "conclusion",
+   "statement": "関数 $f(x)=x^n$ が $\\mathbb{R}$ 上で連続であることを証明せよ。",
+   "reason": "結論が連続性であり、微分可能性の証明では答えにならない。"
+  },
+  {
+   "id": "derivative_formula",
+   "dimension": "conclusion",
+   "statement": "関数 $f(x)=x^n$ の導関数が $nx^{n-1}$ であることを証明せよ。",
+   "reason": "導関数の値を求める主張であり、保存証明は微分可能であることだけを示す。"
+  },
+  {
+   "id": "twice_differentiable",
+   "dimension": "conclusion",
+   "statement": "関数 $f(x)=x^n$ が $\\mathbb{R}$ 上で2回微分可能であることを証明せよ。",
+   "reason": "2階の微分可能性は別の主張であり、保存証明は1階の微分可能性だけを示す。"
+  },
+  {
+   "id": "rational_power",
+   "dimension": "objects",
+   "statement": "任意の有理数 $r$ について、$f(x)=x^r$ が実数全体で微分可能であることを証明せよ。",
+   "reason": "有理数冪は負の指数や $x<0$ で定義されず、$x=0$ でも微分可能とは限らない。別の命題である。"
+  },
+  {
+   "id": "real_exponent",
+   "dimension": "objects",
+   "statement": "任意の実数 $r$ について、$f(x)=x^r$ が実数全体で微分可能であることを証明せよ。",
+   "reason": "実数冪は負の x や負の指数で定義・微分可能性が成り立たない。自然数冪とは別の命題である。"
+  },
+  {
+   "id": "complex_square",
+   "dimension": "domain",
+   "statement": "複素数全体で定義された関数 $f(z)=z^2$ が正則であることを証明せよ。",
+   "reason": "定義域が $\\mathbb{C}$ であり、微分の意味も複素微分になる。"
+  },
+  {
+   "id": "at_a_point",
+   "dimension": "quantifiers",
+   "statement": "任意の自然数 $n$ について、$f(x)=x^n$ が $x=0$ で微分可能であることを証明せよ。",
+   "reason": "1点での微分可能性だけを問う弱い主張である。"
+  },
+  {
+   "id": "by_definition",
+   "dimension": "method",
+   "statement": "任意の自然数 $n$ について $x^n$ が微分可能であることを、差分商の極限の定義から直接証明せよ。",
+   "reason": "要求された証明方法が保存回答の方法（帰納法と積の微分法則）と異なる。"
+  },
+  {
+   "id": "sum_with_constant",
+   "dimension": "objects",
+   "statement": "任意の自然数 $n$ について、$f(x)=x^n+1$ が実数全体で微分可能であることを証明せよ。",
+   "reason": "別の関数であり、保存回答の $f(x)=x^n$ の証明そのものではない。"
+  }
+ ],
+ "provenance": {
+  "kind": "original_synthetic_problem_and_proof",
+  "license": "Apache-2.0",
+  "upstream_library": "Mathlib",
+  "upstream_license": "Apache-2.0",
+  "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+  "ported_from": "new general-form proof for a universally quantified family (seq27 general Recipe families)"
+ },
+ "lifecycle": {
+  "authored": true,
+  "independently_reviewed": false,
+  "admitted": false,
+  "retrievable": false,
+  "runtime_verified": false,
+  "deployed": false
+ },
+ "status": "authored_awaiting_execution"
+}

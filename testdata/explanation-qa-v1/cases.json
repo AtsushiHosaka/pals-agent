@@ -1,0 +1,2044 @@
+{
+  "schema": "pals.explanation-qa-regression.v1",
+  "revision": "v1.8: valid-23/valid-24 (other sufficient constants: δ=min(1, ε/(2(|a|+1))), and the general-power δ at n=2, C=2|a|+3), wrong-31 (control: constant |a|+1 does not reach ε). v1.7: cases the structural layer must stop before any model (rejected_by=structure): wrong-26 (moved: a Lean-verification claim names Lean), wrong-27 (lemma name), wrong-28 (Mathlib), wrong-29 (tactic command line), wrong-30 (English overview in a Japanese explanation). v1.6: valid-22 (delta=sqrt(a^2+eps)-|a|, a valid proof without a minimum with 1); wrong-25/26 hide a false claim (x^2 not differentiable; steps verified separately by Lean) inside an otherwise correct proof. v1.5: owner decision: positivity of delta that is evident from its definition needs no reason, so the old wrong-12 (no positivity reason, delta=min(1, eps/(2|a|+1))) is now valid-21; wrong-23 and wrong-24 are deltas whose positivity is not evident and fails (delta<=0 for some a or eps). v1.4: merged Codex notation/alias regressions: 5 more valid cases (aligned chain, sized delimiters, named bound alias, general identity first, connected equalities) and 5 more wrong cases (alias rebound, alias constant too small, neighborhood of another point, estimate for a different point, repeated factor). v1.3: 5 more valid cases whose elements hold by one-phrase standard facts, 7 more wrong cases (one per checklist element: only one point, no positivity reason, extra assumption instead of a minimum, factorization as a sum, bare |x+a| bound, chain ending at delta, no conclusion); expected_failed_checks names the checklist ids a correct reviewer fails. Truth was fixed mathematically before any model run. v1.2: wrong and summary_first cases carry defect_quote, the passage a reviewer can quote to reject them. v1.1: valid cases now justify every step (positivity of delta from two positive numbers, triangle inequality for |x|, delta <= eps/(2|a|+1), x introduced) and are split in two sections; v1.0 asserted these steps without reason. Wrong cases keep exactly one intended defect each.",
+  "description": "x² の連続性の説明を独立QAに通す小さな回帰セット。valid_notation は承認、wrong と summary_first は拒否が期待値。数学的内容は人手で確認済みだが、実QAの判定は未検証。",
+  "theorem_statement": "x² が連続であることを説明してください。",
+  "lean_code": "import Mathlib\n\ntheorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity",
+  "cases": [
+    {
+      "id": "valid-01-base",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "基本形",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-02-dfrac-vert-equality-end",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "\\dfrac, \\vert, 連鎖が = ε で終わる",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\dfrac{\\varepsilon}{2\\vert a\\vert +1}\\right)$ とおきます。$1$ と $\\dfrac{\\varepsilon}{2\\vert a\\vert +1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$\\vert x-a\\vert <\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $\\vert x\\vert \\le\\vert a\\vert +\\vert x-a\\vert <\\vert a\\vert +1$ なので、$\\vert x+a\\vert \\le\\vert x\\vert +\\vert a\\vert <2\\vert a\\vert +1$ です。$\\delta\\le\\dfrac{\\varepsilon}{2\\vert a\\vert +1}$ なので、$\\vert x^2-a^2\\vert =\\vert x-a\\vert \\vert x+a\\vert \\le\\vert x-a\\vert (2\\vert a\\vert +1)<\\delta(2\\vert a\\vert +1)\\le\\dfrac{\\varepsilon}{2\\vert a\\vert +1}(2\\vert a\\vert +1)=\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-03-operatorname-leqslant",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "\\operatorname{min}, \\leqslant, 集合括弧",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\operatorname{min}\\{1,\\frac{\\varepsilon}{2|a|+1}\\}$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\leqslant|a|+|x-a|<|a|+1$ なので、$|x+a|\\leqslant|x|+|a|<2|a|+1$ です。$\\delta\\leqslant\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\leqslant|x-a|(2|a|+1)<\\delta(2|a|+1)\\leqslant\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-04-mathrm-lvert",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "\\mathrm{min}, \\lvert\\rvert, 集合括弧",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\mathrm{min}\\{1,\\frac{\\varepsilon}{2\\lvert a\\rvert +1}\\}$ とおきます。$1$ と $\\frac{\\varepsilon}{2\\lvert a\\rvert +1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$\\lvert x-a\\rvert <\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $\\lvert x\\rvert \\le\\lvert a\\rvert +\\lvert x-a\\rvert <\\lvert a\\rvert +1$ なので、$\\lvert x+a\\rvert \\le\\lvert x\\rvert +\\lvert a\\rvert <2\\lvert a\\rvert +1$ です。$\\delta\\le\\frac{\\varepsilon}{2\\lvert a\\rvert +1}$ なので、$\\lvert x^2-a^2\\rvert =\\lvert x-a\\rvert \\lvert x+a\\rvert \\le\\lvert x-a\\rvert (2\\lvert a\\rvert +1)<\\delta(2\\lvert a\\rvert +1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-05-point-first-opening",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "点を先に述べる冒頭",
+      "overview": "実数 $a$ と $\\varepsilon>0$ を任意に取ります。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-06-factorization-in-abs",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "|(x-a)(x+a)| を経由",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|(x-a)(x+a)|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-07-different-delta",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "別の十分な δ = min(1, ε/(2(|a|+1)))",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2(|a|+1)}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2(|a|+1)}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2(|a|+1)}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le2(|a|+1)\\delta\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-08-renamed-variables",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "変数名 b, y",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $b$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|b|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|b|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|y-b|<\\delta$ を満たす実数 $y$ をとります。$\\delta\\le1$ と三角不等式より $|y|\\le|b|+|y-b|<|b|+1$ なので、$|y+b|\\le|y|+|b|<2|b|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|b|+1}$ なので、$|y^2-b^2|=|y-b||y+b|\\le|y-b|(2|b|+1)<\\delta(2|b|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$b$ は任意なので、平方関数 $y\\mapsto y^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-09-words-positive-and-gt",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "\\gt, \\leq と『δ は正の数』",
+      "overview": "$\\varepsilon\\gt0$ と実数 $a$ を任意に取ります。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正の数なので、$\\delta$ は正の数です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\leq|a|+|x-a|<|a|+1$ なので、$|x+a|\\leq|x|+|a|<2|a|+1$ です。$\\delta\\leq\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\leq|x-a|(2|a|+1)<\\delta(2|a|+1)\\leq\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-10-english",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "en",
+      "note": "英語",
+      "overview": "Let $\\varepsilon>0$ be arbitrary and fix a real number $a$.",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "choice",
+          "summary": "Put $\\delta=\\min\\!\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$. Both $1$ and $\\frac{\\varepsilon}{2|a|+1}$ are positive, so $\\delta>0$.",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "estimate",
+          "summary": "Let $x$ be a real number with $|x-a|<\\delta$. Since $\\delta\\le1$, the triangle inequality gives $|x|\\le|a|+|x-a|<|a|+1$, hence $|x+a|\\le|x|+|a|<2|a|+1$. As $\\delta\\le\\frac{\\varepsilon}{2|a|+1}$, we get $|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$.",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "Since $a$ was arbitrary, $x^2$ is continuous on $\\mathbb{R}$."
+    },
+    {
+      "id": "valid-11-terse-positivity-and-min-fact",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "標準事実は一言: 正数の min は正、min の各引数以下、三角不等式で |x+a| の上界",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ",
+          "summary": "$\\delta=\\min\\{1,\\varepsilon/(2|a|+1)\\}$ とおく。二つの正数の最小値なので $\\delta>0$ である。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ とする。$\\delta\\le1$ だから $|x+a|=|2a+(x-a)|\\le2|a|+|x-a|<2|a|+1$。よって $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-12-single-compact-section",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "一つの節に全てを圧縮。各要素は一言で成立",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "証明",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)>0$ とおく（1 と $\\frac{\\varepsilon}{2|a|+1}$ は正）。$|x-a|<\\delta\\le1$ のとき、$|x|\\le|a|+|x-a|<|a|+1$ より $|x+a|\\le|x|+|a|<2|a|+1$。ゆえに $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-13-three-short-sections",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "節を分けた形",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ も $\\frac{\\varepsilon}{2|a|+1}$ も正なので $\\delta>0$ です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "|x+a|",
+          "summary": "$|x-a|<\\delta$ を満たす $x$ をとると、$\\delta\\le1$ と三角不等式から $|x|<|a|+1$、したがって $|x+a|<2|a|+1$ です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-3",
+          "title": "評価",
+          "summary": "$|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$ です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-14-delta-with-2a-plus-2",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "別の十分な δ = min(1, ε/(2|a|+2))（2|a|+2 ≥ 2|a|+1）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+2}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+2}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+2}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\delta(2|a|+2)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-15-epsilon-after-point-and-pointwise-conclusion",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "ε が点の後。結論は『各点で連続 → 連続関数』",
+      "overview": "実数 $a$ を固定し、任意の $\\varepsilon>0$ を取ります。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "各点 $a$ で連続なので、$x^2$ は連続関数です。"
+    },
+    {
+      "id": "valid-16-aligned-chain",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "aligned 環境で連鎖を複数行に（Codex 表記回帰から移した形）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|<|a|+1$ なので $|x+a|<2|a|+1$ です。したがって $$\\begin{aligned}|x^2-a^2|&=|x-a||x+a|\\\\&\\le|x-a|(2|a|+1)\\\\&<\\delta(2|a|+1)\\le\\varepsilon\\end{aligned}$$ が成り立ちます。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-17-sized-delimiters",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "\\bigl/\\bigr と \\Bigl/\\Bigr の絶対値括弧",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2\\bigl|a\\bigr|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2\\bigl|a\\bigr|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$\\Bigl|x-a\\Bigr|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $\\Bigl|x\\Bigr|\\le\\Bigl|a\\Bigr|+\\Bigl|x-a\\Bigr|<\\Bigl|a\\Bigr|+1$ なので、$\\Bigl|x+a\\Bigr|\\le\\Bigl|x\\Bigr|+\\Bigl|a\\Bigr|<2\\Bigl|a\\Bigr|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2\\Bigl|a\\Bigr|+1}$ なので、$\\Bigl|x^2-a^2\\Bigr|=\\Bigl|x-a\\Bigr|\\Bigl|x+a\\Bigr|\\le\\Bigl|x-a\\Bigr|(2\\Bigl|a\\Bigr|+1)<\\delta(2\\Bigl|a\\Bigr|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-18-named-bound-alias",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "定数 C=2|a|+1 の別名。最後は (ε/C)C=ε の約分（Codex の別名回帰から移した形）",
+      "overview": "任意の実数 $a$ と $\\varepsilon>0$ を取り、$C=2|a|+1$ と定めます。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ",
+          "summary": "$C>0$ なので、$\\delta=\\min\\{1,\\varepsilon/C\\}$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ なら $|x-a|<1$ かつ $|x-a|<\\varepsilon/C$ です。三角不等式から $|x+a|\\le|x-a|+2|a|<1+2|a|=C$。ゆえに $|x^2-a^2|=|x-a||x+a|\\le|x-a|C<(\\varepsilon/C)C=\\varepsilon$ です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-19-general-identity-first",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "先行する一般恒等式（変数 u,v）があっても、証明の変数は a,x",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "一般に実数 $u,v$ について $|u^2-v^2|=|u-v||u+v|$ が成り立ちます。$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|<|a|+1$ なので $|x+a|<2|a|+1$ です。よって $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$ です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-20-connected-equalities",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "積を書き換える等式を挟んだ連鎖（|x+a|=|2a+(x-a)|）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x+a|<2|a|+1$ です。よって $|x^2-a^2|=|x-a||x+a|=|x-a||2a+(x-a)|\\le|x-a|(2|a|+|x-a|)<\\delta(2|a|+1)\\le\\varepsilon$ です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-21-positivity-evident-from-the-definition",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "旧 wrong-12（オーナー判断で有効に変更）: δ=min(1, ε/(2|a|+1)) の正値性は定義から明らか。説明に求めるのは数学的に筋が通っていることまで（Lean 検証済み）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-22-delta-with-a-square-root",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "min(1,·) を使わない別の妥当な証明。δ=√(a²+ε)-|a|、δ(δ+2|a|)=ε（積 (√-|a|)(√+|a|)=ε）。数学的に正しい",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ",
+          "summary": "$\\delta=\\sqrt{a^2+\\varepsilon}-|a|$ とおきます。$\\sqrt{a^2+\\varepsilon}>|a|$ なので $\\delta>0$ で、$\\delta(\\delta+2|a|)=(\\sqrt{a^2+\\varepsilon}-|a|)(\\sqrt{a^2+\\varepsilon}+|a|)=\\varepsilon$ です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$|x+a|=|2a+(x-a)|\\le2|a|+|x-a|$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(|x-a|+2|a|)<\\delta(\\delta+2|a|)=\\varepsilon$ です（$t\\mapsto t(t+2|a|)$ は $t\\ge0$ で増加）。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "wrong-01-epsilon-plus-one",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "評価が ε+1 で終わる",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon+1$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "\\le\\varepsilon+1",
+      "expected_failed_checks": [
+        "final_inequality"
+      ]
+    },
+    {
+      "id": "wrong-02-no-minimum-with-one",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "min(1,·) がなく |x| の評価が正当化されない",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\frac{\\varepsilon}{2|a|+1}$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。このとき $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "このとき $|x|\\le|a|+|x-a|<|a|+1$",
+      "expected_failed_checks": [
+        "delta_bounded_by_one"
+      ]
+    },
+    {
+      "id": "wrong-03-delta-ignores-point",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "δ が a を無視",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min(1,\\varepsilon)$ とおきます。$1$ と $\\varepsilon$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "\\delta=\\min(1,\\varepsilon)",
+      "expected_failed_checks": [
+        "delta_depends_on_point_and_epsilon"
+      ]
+    },
+    {
+      "id": "wrong-04-coefficient-too-small",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "係数不足 ε/(|a|+1)",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "\\delta=\\min\\left(1,\\frac{\\varepsilon}{|a|+1}\\right)",
+      "expected_failed_checks": [
+        "final_inequality"
+      ]
+    },
+    {
+      "id": "wrong-05-delta-doubled",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "δ を 2 倍",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=2\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "\\delta=2\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)",
+      "expected_failed_checks": [
+        "delta_bounded_by_one"
+      ]
+    },
+    {
+      "id": "wrong-06-delta-plus-one",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "δ に 1 を加える",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)+1$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)+1",
+      "expected_failed_checks": [
+        "delta_bounded_by_one"
+      ]
+    },
+    {
+      "id": "wrong-07-not-epsilon-delta",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "ε–δ でなく積の連続性だけ",
+      "overview": "実数 $a$ を任意に取ります。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "積",
+          "summary": "$x\\mapsto x$ は連続で、連続関数の積は連続です。よって $x\\mapsto x\\cdot x$ は点 $a$ で連続です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "よって $x^2$ は連続です。",
+      "defect_quote": "連続関数の積は連続です",
+      "expected_failed_checks": [
+        "epsilon_arbitrary"
+      ]
+    },
+    {
+      "id": "wrong-08-other-function",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "別の関数 x^3",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "評価",
+          "summary": "$\\delta=\\min(1,\\varepsilon/(3|a|+3))$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ のとき $|x^3-a^3|=|x-a||x^2+xa+a^2|<\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "よって $x^3$ は連続です。",
+      "defect_quote": "|x^3-a^3|",
+      "expected_failed_checks": [
+        "factorization"
+      ]
+    },
+    {
+      "id": "wrong-09-no-epsilon",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "ε が導入されず固定の 1 だけを評価",
+      "overview": "実数 $a$ を任意に取ります。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "評価",
+          "summary": "$\\delta=\\min(1,1/(2|a|+1))$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ とすると $|x+a|<2|a|+1$ なので $|x^2-a^2|<1$ です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "\\delta=\\min(1,1/(2|a|+1))",
+      "expected_failed_checks": [
+        "epsilon_arbitrary"
+      ]
+    },
+    {
+      "id": "wrong-10-uniform-delta",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "a によらない δ（誤り）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "評価",
+          "summary": "$\\delta=\\varepsilon/3$ とおくと、これは $a$ によらない正の数です。$|x-a|<\\delta$ のとき $|x^2-a^2|=|x-a||x+a|<\\varepsilon$ が任意の $a$ で成り立ちます。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "\\delta=\\varepsilon/3",
+      "expected_failed_checks": [
+        "delta_depends_on_point_and_epsilon"
+      ]
+    },
+    {
+      "id": "wrong-11-only-one-point",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "点 a が任意でなく a=1 だけ（その点での連続性は正しく示されるが、全体の連続は示されない）",
+      "overview": "$\\varepsilon>0$ を任意に取り、点 $1$ を考えます。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "評価",
+          "summary": "$\\delta=\\min(1,\\varepsilon/3)>0$ とおく（1 と $\\varepsilon/3$ は正）。$|x-1|<\\delta$ のとき $|x|<2$ なので $|x+1|<3$。よって $|x^2-1|=|x-1||x+1|<3\\delta\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "よって $x^2$ は連続です。",
+      "expected_failed_checks": [
+        "point_fixed"
+      ]
+    },
+    {
+      "id": "wrong-23-delta-positivity-not-evident",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "δ=min{1, ε/(2|a|+1), ε-|a|} は |a|≥ε のとき δ≤0（例 ε=1, a=2 で δ=-1）。正値性が明らかでなく、根拠もない。他の式は δ≤各引数から成立",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left\\{1,\\frac{\\varepsilon}{2|a|+1},\\varepsilon-|a|\\right\\}$ とおきます。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "expected_failed_checks": [
+        "delta_positive_justified"
+      ]
+    },
+    {
+      "id": "wrong-24-delta-positivity-fails-for-large-epsilon",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "δ=min{1-ε, ε/(2|a|+1)} は ε≥1 のとき δ≤0。ε は任意なので定義が成立しない。根拠もない",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left\\{1-\\varepsilon,\\frac{\\varepsilon}{2|a|+1}\\right\\}$ とおきます。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "expected_failed_checks": [
+        "delta_positive_justified"
+      ]
+    },
+    {
+      "id": "wrong-13-extra-assumption-instead-of-min",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "|x-a|<1 を追加で仮定するが、δ-近傍に属する x がそれを満たすとは限らない（δ≤1 が示されない）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\frac{\\varepsilon}{2|a|+1}$ とおきます。$\\frac{\\varepsilon}{2|a|+1}$ は正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。さらに $|x-a|<1$ とします。 $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "expected_failed_checks": [
+        "delta_bounded_by_one"
+      ]
+    },
+    {
+      "id": "wrong-14-factorization-as-sum",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "|x²-a²| を積でなく和に分解（偽）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a|+|x+a|<\\delta+(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "expected_failed_checks": [
+        "factorization"
+      ]
+    },
+    {
+      "id": "wrong-15-sum-bound-asserted",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "|x+a| の上界が根拠なしに断定される（三角不等式も δ≤1 も使われない）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。このとき $|x+a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "expected_failed_checks": [
+        "sum_bound"
+      ]
+    },
+    {
+      "id": "wrong-16-chain-ends-at-delta",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "不等式の連鎖が δ(2|a|+1) で終わり ε に到達しない",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "expected_failed_checks": [
+        "final_inequality"
+      ]
+    },
+    {
+      "id": "wrong-17-no-conclusion",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "連続性の結論がない（他は正しい）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "以上です。",
+      "expected_failed_checks": [
+        "conclusion"
+      ]
+    },
+    {
+      "id": "wrong-18-alias-rebound",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "別名 C が 1 に再定義された後で C=2|a|+1 として使われる（δ が a を無視し、|x+a|<C も偽）",
+      "overview": "任意の実数 $a$ と $\\varepsilon>0$ を取り、$C=2|a|+1$ と定めます。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ",
+          "summary": "その後 $C$ を $1$ に置き換えます。$C>0$ なので、$\\delta=\\min\\{1,\\varepsilon/C\\}$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ なら $|x-a|<1$ かつ $|x-a|<\\varepsilon/C$ です。三角不等式から $|x+a|\\le|x-a|+2|a|<1+2|a|=C$。ゆえに $|x^2-a^2|=|x-a||x+a|\\le|x-a|C<(\\varepsilon/C)C=\\varepsilon$ です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "expected_failed_checks": [
+        "delta_depends_on_point_and_epsilon",
+        "sum_bound",
+        "final_inequality"
+      ]
+    },
+    {
+      "id": "wrong-19-alias-constant-too-small",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "C=|a|+1 は |x+a| の上界にならない（a≠0 で 1+2|a| > |a|+1）",
+      "overview": "任意の実数 $a$ と $\\varepsilon>0$ を取り、$C=|a|+1$ と定めます。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ",
+          "summary": "$C>0$ なので、$\\delta=\\min\\{1,\\varepsilon/C\\}$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ なら $|x-a|<1$ かつ $|x-a|<\\varepsilon/C$ です。三角不等式から $|x+a|\\le|x-a|+2|a|<1+2|a|$ なので $|x+a|<C$ です。ゆえに $|x^2-a^2|=|x-a||x+a|\\le|x-a|C<(\\varepsilon/C)C=\\varepsilon$ です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "expected_failed_checks": [
+        "sum_bound"
+      ]
+    },
+    {
+      "id": "wrong-20-neighborhood-of-another-point",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "固定した a でなく別の点 b の近傍を仮定している（束縛変数の取り違え）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-b|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "expected_failed_checks": [
+        "point_fixed"
+      ]
+    },
+    {
+      "id": "wrong-21-estimate-for-a-different-point",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "δ は点 b で定義されたのに、評価は別の点 a と変数 x に対するもの（capture）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $b$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|b|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|b|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "一方、別の点 $a$ と変数 $x$ について、$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$b$ は任意なので、平方関数は実数全体で連続です。",
+      "expected_failed_checks": [
+        "point_fixed",
+        "final_inequality",
+        "delta_depends_on_point_and_epsilon"
+      ]
+    },
+    {
+      "id": "wrong-22-factorization-repeats-a-factor",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "因数分解が |x+a||x+a| になっている（|x-a| が消える）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x+a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "expected_failed_checks": [
+        "factorization"
+      ]
+    },
+    {
+      "id": "wrong-25-false-claim-about-differentiability",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "ε–δ の議論は正しいが、節の途中に偽の主張（x² は微分不能）が混ざる",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。なお、$x^2$ は微分可能ではありません。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "expected_failed_checks": [
+        "other_defect"
+      ]
+    },
+    {
+      "id": "wrong-26-false-claim-of-separate-lean-verification",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "ε–δ の議論は正しいが、導出の各ステップを Lean が個別に検証したと偽る（検証されたのは定理全体）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。これらの不等式の変形は、それぞれ Lean が個別に検証済みです。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "rejected_by": "structure",
+      "expected_structural_label": "lean_term"
+    },
+    {
+      "id": "wrong-27-lemma-name-in-prose",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "正しい議論だが、散文にライブラリ補題名 abs_add_le が現れる（構造層が決定的に拒否）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式 abs_add_le より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "rejected_by": "structure",
+      "expected_structural_label": "lean_term"
+    },
+    {
+      "id": "wrong-28-library-name-in-prose",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "正しい議論だが、散文に Mathlib が現れる（構造層が決定的に拒否）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。この不等式は Mathlib の補題によっても得られます。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "rejected_by": "structure",
+      "expected_structural_label": "lean_term"
+    },
+    {
+      "id": "wrong-29-tactic-command-in-prose",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "正しい議論だが、戦術コマンド intro x が行頭に現れる（構造層が決定的に拒否）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。\nintro x\n$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "rejected_by": "structure",
+      "expected_structural_label": "lean_term"
+    },
+    {
+      "id": "wrong-30-english-overview-in-a-japanese-explanation",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "ja の説明なのに overview が英語（残りは日本語の長文）。文書全体の比率では通るが、欄ごとの検査で拒否される",
+      "overview": "Fix an arbitrary positive number epsilon and an arbitrary real number a, and consider the square function.",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "rejected_by": "structure",
+      "expected_structural_label": "output_language"
+    },
+    {
+      "id": "summaryfirst-01-proof-plan-opening",
+      "group": "summary_first",
+      "expected": "reject",
+      "language": "ja",
+      "note": "冒頭が証明方針の先出し",
+      "overview": "差 $x^2-a^2$ を因数分解し、$|x+a|$ を評価して $\\delta$ を選ぶ、という方針で示します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "という方針で示します",
+      "expected_failed_checks": [
+        "presentation"
+      ]
+    },
+    {
+      "id": "summaryfirst-02-conclusion-preview-opening",
+      "group": "summary_first",
+      "expected": "reject",
+      "language": "ja",
+      "note": "冒頭が結論の先出し",
+      "overview": "結論から言うと、$x^2$ は実数全体で連続です。これを $\\varepsilon$-$\\delta$ 論法で確かめます。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "結論から言うと",
+      "expected_failed_checks": [
+        "presentation"
+      ]
+    },
+    {
+      "id": "summaryfirst-03-numbered-steps",
+      "group": "summary_first",
+      "expected": "reject",
+      "language": "ja",
+      "note": "番号付き手順",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "手順",
+          "summary": "1. $\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ と選ぶ。 2. $|x-a|<\\delta$ なら $|x+a|<2|a|+1$。 3. $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "1. $\\delta=\\min",
+      "expected_failed_checks": [
+        "presentation"
+      ]
+    },
+    {
+      "id": "valid-23-larger-constant-two-a-plus-two",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "別の十分な δ: δ=min(1, ε/(2(|a|+1)))。|x+a|<2|a|+1≤2(|a|+1) を使う。2|a|+1 以外の定数でも有効な証明は承認する",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2(|a|+1)}\\right)$ とおきます。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1\\le2(|a|+1)$ です。$\\delta\\le\\frac{\\varepsilon}{2(|a|+1)}$ なので、$|x^2-a^2|=|x-a||x+a|<|x-a|\\cdot2(|a|+1)<\\delta\\cdot2(|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-24-general-power-delta-at-n-equals-2",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "一般形 x^n の証明の δ を n=2 にした形: C=n(|a|+1)^(n-1)+1 は n=2 で 2|a|+3。|x²-a²|≤|x-a|·2(|a|+1)≤C|x-a|<ε",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$C=2(|a|+1)+1=2|a|+3$ とおき、$\\delta=\\min\\left(1,\\frac{\\varepsilon}{C}\\right)$ とします。$C>0$ なので $\\delta>0$ です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1\\le2(|a|+1)$ です。したがって $|x^2-a^2|=|x-a||x+a|\\le2(|a|+1)|x-a|\\le C|x-a|$ であり、$|x-a|<\\delta\\le\\frac{\\varepsilon}{C}$ から $C|x-a|<\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "wrong-31-constant-too-small-for-the-claimed-bound",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "対照: δ=min(1, ε/(|a|+1)) では |x-a||x+a|<ε が導けない（係数不足）。同じ形の有効な valid-23 と対",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{|a|+1}\\right)$ とおきます。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|<|a|+1$ なので、$|x+a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "expected_failed_checks": [
+        "final_inequality"
+      ],
+      "defect_quote": "\\delta\\le\\frac{\\varepsilon}{|a|+1}"
+    }
+  ]
+}

@@ -1,0 +1,828 @@
+{
+  "schema_version": "pals.request-grammar.v1",
+  "notes": "Closed vocabulary for turning a learner request into one Lean proposition without a model. A request is accepted only if every character is consumed by an entry below; anything else is a miss and the request keeps its existing route. To widen the grammar, add rows here (a function, a property, a domain, a filler word); no code change is needed for a new function or property that fits the templates. Forms are Python regular expressions applied to the normalized text (superscript digits are written as ^k, NFKC applied, lower-cased). The named group v is the variable letter; k and other slot groups are the parameters of the function. search_terms are the deterministic Recipe-search query words of a function or property. A property may name preferred_method: among Recipes that bind, those with that proof_method_tag are tried first. Output-language instructions (filler_patterns) draw on a closed set of words so that free text cannot ride along. Domain 'patterns' and 'filler_patterns' are regular expressions on the normalized text; 'forms' are literals (normalized when the table is built). A function binder may name the function symbol (group fn): standalone occurrences of that letter are then consumed too. Widening notes: slot kind 'decimal' is 0|[1-9]\\d{0,8} with an optional .\\d{1,6} fraction; a form may override the function's lean_body; a form with name_only is a bare function name (e.g. 'the fourth power function'): it is consumed only beside a formula of the same function whose body agrees, and it is a request on its own only when 'alone' is not false. Two different functions may overlap only by containment (the longer match wins); any other overlap is ambiguous and a miss. Variables are the real-variable letters s t u v w x y; e (Euler), n k m (integers), z (complex) and capital letters never match. Properties are listed with uniformly_continuous before continuous, so 'uniformly continuous' is never read as 'continuous'; plain 単調増加 / monotone increasing / increasing / one-to-one / 1対1 are not rows because they are ambiguous. Not in the table on purpose (add a row to widen): a minus sign in a x - b, a coefficient with a power c x^k, unapplied or name-only functions other than the squaring function. hypothetical: a property followed by 'とする'/'でも' (after_property) or a formula right after '設/令/let' (before_formula) is an assumption, not a request, and is a miss. In domain patterns {v} stands for the request's own variable letter, so 'for all t' with a formula in x is a miss. The bare words 定义/定義 are not fillers (a question about the definition of continuity is not a request to prove it); only 'the term, then 定义' (由 f(x)=x^3 定义) is consumed, by a filler pattern that starts at the consumed term (the NUL character stands for it).",
+  "variable": {
+    "pattern": "[stuvwxy]"
+  },
+  "numerals": {
+    "kanji": {
+      "零": 0,
+      "〇": 0,
+      "一": 1,
+      "二": 2,
+      "三": 3,
+      "四": 4,
+      "五": 5,
+      "六": 6,
+      "七": 7,
+      "八": 8,
+      "九": 9,
+      "十": 10
+    }
+  },
+  "functions": [
+    {
+      "id": "power",
+      "lean_body": "{v} ^ {k}",
+      "slots": {
+        "k": "natural"
+      },
+      "forms": [
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*\\^\\s*\\{?\\s*(?P<k>[0-9]{1,9})(?:\\s*\\})?(?![0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*の\\s*(?P<k>[0-9]{1,9})\\s*乗"
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*の\\s*(?P<k>[零〇一二三四五六七八九十])\\s*乗",
+          "numerals": "kanji"
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s+squared",
+          "fixed": {
+            "k": 2
+          }
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s+cubed",
+          "fixed": {
+            "k": 3
+          }
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s+to\\s+the\\s+(?:power\\s+(?:of\\s+)?)?(?P<k>[0-9]{1,9})(?![0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*の\\s*平方(?!根)",
+          "fixed": {
+            "k": 2
+          }
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*的\\s*平方(?!根)",
+          "fixed": {
+            "k": 2
+          }
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*的\\s*(?P<k>[零〇一二三四五六七八九十])\\s*次方",
+          "numerals": "kanji"
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*的\\s*(?P<k>[0-9]{1,9})\\s*次方"
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*(?:\\^\\s*)?(?:squared|square)(?![a-z])",
+          "fixed": {
+            "k": 2
+          }
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*(?:\\^\\s*)?(?:cubed|cube)(?![a-z])",
+          "fixed": {
+            "k": 3
+          }
+        },
+        {
+          "re": "(?:平方関数|二乗関数|2乗関数|平方函数|二次方函数|squaring\\s+function)",
+          "fixed": {
+            "k": 2
+          },
+          "variable": "x",
+          "name_only": true
+        },
+        {
+          "re": "(?:square\\s+function|the\\s+square\\s+map|quadratic\\s+function|二次関数|二次函数)",
+          "fixed": {
+            "k": 2
+          },
+          "variable": "x",
+          "name_only": true,
+          "alone": false
+        },
+        {
+          "re": "(?<![a-z])second\\s+power(?:\\s+function)?",
+          "fixed": {
+            "k": 2
+          },
+          "variable": "x",
+          "name_only": true,
+          "alone": false
+        },
+        {
+          "re": "(?<![a-z])third\\s+power(?:\\s+function)?",
+          "fixed": {
+            "k": 3
+          },
+          "variable": "x",
+          "name_only": true,
+          "alone": false
+        },
+        {
+          "re": "(?<![a-z])fourth\\s+power(?:\\s+function)?",
+          "fixed": {
+            "k": 4
+          },
+          "variable": "x",
+          "name_only": true,
+          "alone": false
+        },
+        {
+          "re": "(?<![a-z])fifth\\s+power(?:\\s+function)?",
+          "fixed": {
+            "k": 5
+          },
+          "variable": "x",
+          "name_only": true,
+          "alone": false
+        },
+        {
+          "re": "(?<![a-z])sixth\\s+power(?:\\s+function)?",
+          "fixed": {
+            "k": 6
+          },
+          "variable": "x",
+          "name_only": true,
+          "alone": false
+        },
+        {
+          "re": "(?<![a-z])seventh\\s+power(?:\\s+function)?",
+          "fixed": {
+            "k": 7
+          },
+          "variable": "x",
+          "name_only": true,
+          "alone": false
+        },
+        {
+          "re": "(?<![a-z])eighth\\s+power(?:\\s+function)?",
+          "fixed": {
+            "k": 8
+          },
+          "variable": "x",
+          "name_only": true,
+          "alone": false
+        },
+        {
+          "re": "(?<![a-z])ninth\\s+power(?:\\s+function)?",
+          "fixed": {
+            "k": 9
+          },
+          "variable": "x",
+          "name_only": true,
+          "alone": false
+        },
+        {
+          "re": "(?<![a-z])tenth\\s+power(?:\\s+function)?",
+          "fixed": {
+            "k": 10
+          },
+          "variable": "x",
+          "name_only": true,
+          "alone": false
+        },
+        {
+          "re": "cube\\s+function|cubic\\s+function|三次関数|三次函数",
+          "fixed": {
+            "k": 3
+          },
+          "variable": "x",
+          "name_only": true,
+          "alone": false
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*\\*\\*\\s*(?P<k>[0-9]{1,9})(?![0-9.])"
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s+raised\\s+to\\s+(?:the\\s+)?(?:power\\s+(?:of\\s+)?)?(?P<k>[0-9]{1,9})(?:st|nd|rd|th)?(?:\\s+power)?(?![a-z0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<k>[0-9]{1,9})(?:st|nd|rd|th)\\s+power\\s+of\\s+(?P<v>[a-z])(?![a-z0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*(?:の|的)\\s*立方(?![根体])",
+          "fixed": {
+            "k": 3
+          }
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*(?:の|的)\\s*(?P<k>[0-9]{1,9})\\s*次(?:方|乗)"
+        }
+      ],
+      "search_terms": "power function exponent natural number x^n real"
+    },
+    {
+      "id": "exp",
+      "lean_body": "Real.exp {v}",
+      "slots": {},
+      "forms": [
+        {
+          "re": "(?<![a-z0-9_])e\\s*\\^\\s*(?P<v>[a-df-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_])e\\s*\\^\\s*\\{\\s*(?P<v>[a-z])\\s*\\}(?!\\s*\\^)"
+        },
+        {
+          "re": "(?<![a-z0-9_])e\\s*\\^\\s*\\(\\s*(?P<v>[a-z])\\s*\\)(?!\\s*\\^)"
+        },
+        {
+          "re": "(?<![a-z0-9_])exp\\s*\\(\\s*(?P<v>[a-z])\\s*\\)(?!\\s*\\^)"
+        },
+        {
+          "re": "(?<![a-z0-9_])exp\\s*\\{\\s*(?P<v>[a-z])\\s*\\}(?!\\s*\\^)"
+        },
+        {
+          "re": "(?<![a-z0-9_])exp\\s+(?P<v>[b-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_])exp(?P<v>x)(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?:自然)?指数[関函]数|exponential\\s+function|natural\\s+exponential(?:\\s+function)?",
+          "name_only": true,
+          "alone": false,
+          "variable": "x"
+        }
+      ],
+      "search_terms": "exponential function exp e^x real"
+    },
+    {
+      "id": "sin",
+      "lean_body": "Real.sin {v}",
+      "slots": {},
+      "forms": [
+        {
+          "re": "(?<![a-z0-9_])(?:sin|sine)\\s*\\(\\s*(?P<v>[a-z])\\s*\\)(?!\\s*\\^)"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?:sin|sine)\\s*\\{\\s*(?P<v>[a-z])\\s*\\}(?!\\s*\\^)"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?:sin|sine)\\s+(?P<v>[b-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?:sin|sine)(?P<v>x)(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_])sine\\s+of\\s+(?P<v>[b-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?P<v>[a-z])\\s*(?:の|的)\\s*(?:正弦|サイン)"
+        },
+        {
+          "re": "(?:正弦|サイン)[関函]数|sine?\\s+function",
+          "name_only": true,
+          "alone": false,
+          "variable": "x"
+        }
+      ],
+      "search_terms": "sine function sin trigonometric real"
+    },
+    {
+      "id": "cos",
+      "lean_body": "Real.cos {v}",
+      "slots": {},
+      "forms": [
+        {
+          "re": "(?<![a-z0-9_])(?:cos|cosine)\\s*\\(\\s*(?P<v>[a-z])\\s*\\)(?!\\s*\\^)"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?:cos|cosine)\\s*\\{\\s*(?P<v>[a-z])\\s*\\}(?!\\s*\\^)"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?:cos|cosine)\\s+(?P<v>[b-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?:cos|cosine)(?P<v>x)(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_])cosine\\s+of\\s+(?P<v>[b-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?P<v>[a-z])\\s*(?:の|的)\\s*(?:余弦|コサイン)"
+        },
+        {
+          "re": "(?:余弦|コサイン)[関函]数|cosine?\\s+function",
+          "name_only": true,
+          "alone": false,
+          "variable": "x"
+        }
+      ],
+      "search_terms": "cosine function cos trigonometric real"
+    },
+    {
+      "id": "abs",
+      "lean_body": "|{v}|",
+      "slots": {},
+      "forms": [
+        {
+          "re": "(?<![a-z0-9_|∣])[|∣]\\s*(?P<v>[a-z])\\s*[|∣](?!\\s*\\^|[|∣])"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?:abs)\\s*\\(\\s*(?P<v>[a-z])\\s*\\)(?!\\s*\\^)"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?:abs)\\s*\\{\\s*(?P<v>[a-z])\\s*\\}(?!\\s*\\^)"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?:abs)\\s+(?P<v>[b-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?:abs)(?P<v>x)(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_])absolute\\s+value\\s+of\\s+(?P<v>[b-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?P<v>[a-z])\\s*(?:の|的)\\s*(?:絶対値|绝对值|絕對值)"
+        },
+        {
+          "re": "(?:絶対値|绝对值|絕對值)[関函]数|(?:the\\s+)?absolute\\s+value\\s+function|abs\\s+function",
+          "name_only": true,
+          "alone": false,
+          "variable": "x"
+        }
+      ],
+      "search_terms": "absolute value function abs real"
+    },
+    {
+      "id": "sqrt",
+      "lean_body": "Real.sqrt {v}",
+      "slots": {},
+      "forms": [
+        {
+          "re": "(?<![a-z0-9_])√\\s*(?P<v>[a-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_])√\\s*\\(\\s*(?P<v>[a-z])\\s*\\)(?!\\s*\\^)"
+        },
+        {
+          "re": "(?<![a-z0-9_])√\\s*\\{\\s*(?P<v>[a-z])\\s*\\}(?!\\s*\\^)"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?:sqrt)\\s*\\(\\s*(?P<v>[a-z])\\s*\\)(?!\\s*\\^)"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?:sqrt)\\s*\\{\\s*(?P<v>[a-z])\\s*\\}(?!\\s*\\^)"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?:sqrt)\\s+(?P<v>[b-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?:sqrt)(?P<v>x)(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_])square\\s+root\\s+of\\s+(?P<v>[b-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_])(?P<v>[a-z])\\s*(?:の|的)\\s*平方根"
+        },
+        {
+          "re": "ルート\\s*(?P<v>[a-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "ルート\\s*\\(\\s*(?P<v>[a-z])\\s*\\)(?!\\s*\\^)"
+        },
+        {
+          "re": "根[号號]\\s*(?P<v>[a-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "平方根[関函]数|square\\s+root\\s+function|sqrt\\s+function|ルート[関函]数",
+          "name_only": true,
+          "alone": false,
+          "variable": "x"
+        }
+      ],
+      "search_terms": "square root function sqrt real"
+    },
+    {
+      "id": "scaled",
+      "lean_body": "{c} * {v}",
+      "slots": {
+        "c": "decimal"
+      },
+      "forms": [
+        {
+          "re": "(?<![a-z0-9_.^/])(?P<c>(?!0(?:\\.0+)?(?![0-9.]))(?:0|[1-9][0-9]{0,8})(?:\\.[0-9]{1,6})?)(?:\\s*[*×·⋅]\\s*|\\s+times\\s+|)(?P<v>[t-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9_.^/])(?P<v>[t-z])\\s*(?:の|的)\\s*(?P<c>(?!0(?:\\.0+)?(?![0-9.]))(?:0|[1-9][0-9]{0,8})(?:\\.[0-9]{1,6})?)\\s*倍(?![0-9])"
+        }
+      ],
+      "search_terms": "linear function scalar multiple c*x real"
+    },
+    {
+      "id": "affine",
+      "lean_body": "{a} * {v} {op} {b}",
+      "slots": {
+        "a": "decimal",
+        "b": "decimal"
+      },
+      "forms": [
+        {
+          "re": "(?<![a-z0-9_.^/])(?P<a>(?!0(?:\\.0+)?(?![0-9.]))(?:0|[1-9][0-9]{0,8})(?:\\.[0-9]{1,6})?)(?:\\s*[*×·⋅]\\s*|\\s+times\\s+|)(?P<v>[t-z])\\s*\\+\\s*(?P<b>(?:0|[1-9][0-9]{0,8})(?:\\.[0-9]{1,6})?)(?![a-z0-9_^]|\\.[0-9]|\\s*\\^)",
+          "fixed": {
+            "op": "+"
+          }
+        },
+        {
+          "re": "(?<![a-z0-9_.^/])(?P<v>[t-z])\\s*\\+\\s*(?P<b>(?:0|[1-9][0-9]{0,8})(?:\\.[0-9]{1,6})?)(?![a-z0-9_^]|\\.[0-9]|\\s*\\^)",
+          "fixed": {
+            "op": "+",
+            "a": "1"
+          },
+          "lean_body": "{v} {op} {b}"
+        },
+        {
+          "re": "(?<![a-z0-9_.^/])(?P<b>(?:0|[1-9][0-9]{0,8})(?:\\.[0-9]{1,6})?)\\s*\\+\\s*(?P<a>(?!0(?:\\.0+)?(?![0-9.]))(?:0|[1-9][0-9]{0,8})(?:\\.[0-9]{1,6})?)(?:\\s*[*×·⋅]\\s*|\\s+times\\s+|)(?P<v>[t-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])",
+          "fixed": {
+            "op": "+"
+          },
+          "lean_body": "{b} {op} {a} * {v}"
+        },
+        {
+          "re": "(?<![a-z0-9_.^/])(?P<b>(?:0|[1-9][0-9]{0,8})(?:\\.[0-9]{1,6})?)\\s*\\+\\s*(?P<v>[t-z])(?![a-z0-9_^]|\\s*\\^|\\.[0-9])",
+          "fixed": {
+            "op": "+",
+            "a": "1"
+          },
+          "lean_body": "{b} {op} {v}"
+        }
+      ],
+      "search_terms": "affine linear function a*x+b real"
+    }
+  ],
+  "properties": [
+    {
+      "id": "uniformly_continuous",
+      "lean": "UniformContinuous (fun {v} : ℝ => {body})",
+      "forms": [
+        "uniformly continuous function",
+        "uniformly continuous",
+        "uniform continuity",
+        "一様連続である",
+        "一様連続関数",
+        "一様連続性",
+        "一様連続",
+        "一様連續",
+        "一样连续",
+        "一致连续性",
+        "一致连续",
+        "一致連續",
+        "均匀连续",
+        "均勻連續",
+        "均匀连续性"
+      ],
+      "search_terms": "uniformly continuous uniform continuity",
+      "preferred_method": "epsilon_delta"
+    },
+    {
+      "id": "continuous",
+      "lean": "Continuous (fun {v} : ℝ => {body})",
+      "forms": [
+        "continuous function",
+        "continuous",
+        "continuity",
+        "連続である",
+        "連續函數",
+        "连续函数",
+        "連続関数",
+        "連續的",
+        "連續性",
+        "连续性",
+        "连续的",
+        "連続性",
+        "连续",
+        "連続",
+        "連續"
+      ],
+      "search_terms": "continuous continuity",
+      "preferred_method": "epsilon_delta"
+    },
+    {
+      "id": "differentiable",
+      "lean": "Differentiable ℝ (fun {v} : ℝ => {body})",
+      "forms": [
+        "differentiable function",
+        "differentiable",
+        "differentiability",
+        "微分可能である",
+        "微分可能性",
+        "微分可能",
+        "可微分",
+        "可微性",
+        "可微",
+        "可导性",
+        "可导",
+        "可導性",
+        "可導"
+      ],
+      "search_terms": "differentiable differentiability derivative exists"
+    },
+    {
+      "id": "strictly_increasing",
+      "lean": "StrictMono (fun {v} : ℝ => {body})",
+      "forms": [
+        "strictly monotone increasing",
+        "strictly monotonically increasing",
+        "strictly monotonic increasing",
+        "strictly increasing",
+        "狭義単調増加",
+        "狭義の単調増加",
+        "狭義増加",
+        "真に単調増加",
+        "厳密に単調増加",
+        "严格单调递增",
+        "严格单调增加",
+        "严格递增",
+        "嚴格單調遞增",
+        "嚴格單調增加",
+        "嚴格遞增"
+      ],
+      "search_terms": "strictly increasing strictly monotone"
+    },
+    {
+      "id": "monotone",
+      "lean": "Monotone (fun {v} : ℝ => {body})",
+      "forms": [
+        "monotone nondecreasing",
+        "monotone non-decreasing",
+        "monotonically nondecreasing",
+        "monotonically non-decreasing",
+        "weakly monotone increasing",
+        "weakly monotonically increasing",
+        "weakly increasing",
+        "non-decreasing",
+        "nondecreasing",
+        "広義単調増加",
+        "広義の単調増加",
+        "広義増加",
+        "単調非減少",
+        "非減少",
+        "广义单调递增",
+        "广义递增",
+        "廣義單調遞增",
+        "单调不减",
+        "單調不減",
+        "单调非减",
+        "非递减",
+        "非遞減"
+      ],
+      "search_terms": "monotone nondecreasing weakly increasing"
+    },
+    {
+      "id": "injective",
+      "lean": "Function.Injective (fun {v} : ℝ => {body})",
+      "forms": [
+        "injective function",
+        "injective",
+        "injection",
+        "単射である",
+        "単射",
+        "单射",
+        "單射"
+      ],
+      "search_terms": "injective injection one-to-one function"
+    }
+  ],
+  "function_binders": [
+    "(?P<fn>[a-z])\\s*\\(\\s*(?P<v>[a-z])\\s*\\)\\s*=",
+    "(?<![a-z0-9_])y\\s*=",
+    "(?P<fn>[a-z])\\s*:\\s*r\\s*(?:→|->)\\s*r",
+    "(?P<fn>[a-z])\\s*:\\s*(?:ℝ|r)\\s*(?:→|->)\\s*(?:ℝ|r)",
+    "(?P<v>[a-z])\\s*(?:↦|⟼|\\\\mapsto)",
+    "fun\\s+(?P<v>[a-z])\\s*(?::\\s*r\\s*)?(?:=>|↦)",
+    "(?:as\\s+a\\s+function\\s+of|function\\s+of|of|in)\\s+(?P<v>[a-z])(?![a-z0-9])"
+  ],
+  "domains": [
+    {
+      "id": "real_line",
+      "forms": [
+        "実数全体で",
+        "実数全体",
+        "実数上で",
+        "実数上",
+        "全実数で",
+        "ℝ上で",
+        "ℝ上",
+        "r上で",
+        "r上",
+        "on the real line",
+        "on the reals",
+        "on ℝ",
+        "everywhere",
+        "on r",
+        "in r",
+        "over r",
+        "全ての実数で",
+        "すべての実数で",
+        "在实数上",
+        "在实数范围内",
+        "在r上",
+        "在实数集上",
+        "實數上",
+        "在實數上",
+        "everywhere on r",
+        "処処",
+        "处处",
+        "處處"
+      ],
+      "patterns": [
+        "定義域全体(?:で|において)(?=.*定義域は\\s*(?:r|実数))",
+        "(?:for\\s+(?:all\\s+|every\\s+|each\\s+|any\\s+)?)?{v}\\s*∈\\s*(?:r|\\(\\s*[-−]\\s*(?:∞|inf(?:inity)?)\\s*,\\s*\\+?\\s*(?:∞|inf(?:inity)?)\\s*\\))",
+        "(?:on|over|in)?\\s*\\(\\s*[-−]\\s*(?:∞|inf(?:inity)?)\\s*,\\s*\\+?\\s*(?:∞|inf(?:inity)?)\\s*\\)",
+        "from\\s+r\\s+to\\s+r",
+        "(?:where\\s+|with\\s+|and\\s+)?(?:the\\s+)?domain\\s+(?:is|being)\\s+(?:the\\s+)?(?:real\\s+(?:line|numbers)|reals|r)(?:\\s+with\\s+the\\s+(?:standard|usual)\\s+topology)?",
+        "ただし\\s*定義域は\\s*(?:r|実数全体|実数)\\s*と(?:する|します)",
+        "r\\s*の\\s*どの\\s*点\\s*(?:で|において)も?",
+        "(?:在\\s*)?(?:(?:实数集?|實數集?)\\s*r?|r)\\s*(?:上\\s*)?(?:的\\s*)?(?:每一?个?|所有|任意一?个?)\\s*(?:点|點)\\s*(?:处|處|上)?\\s*(?:都)?",
+        "(?:在\\s*)?整(?:个|個|条|條)\\s*(?:实数轴|實數軸|实数线|實數線)\\s*上",
+        "在(?:实数|實數)(?:范围|範圍)(?:内|內)",
+        "r\\s*全体(?:で|において)?",
+        "(?:at|in|on)\\s+(?:every|each|all)\\s+(?:points?|real\\s+numbers?|reals?)(?:\\s+{v}(?![a-z0-9]))?(?:\\s+of\\s+(?:the\\s+)?(?:r|real\\s+(?:line|numbers))|\\s+in\\s+r)?",
+        "for\\s+(?:every|all|each)\\s+(?:real\\s+(?:numbers?\\s+)?)?(?:{v}(?![a-z0-9]))?(?:\\s+in\\s+r)?",
+        "on\\s+(?:the\\s+)?(?:whole\\s+)?(?:real\\s+(?:line|numbers?)|reals)",
+        "(?:r|実数)\\s*の\\s*(?:すべて|全て|全)の\\s*点\\s*(?:で|において)",
+        "(?:すべて|全て|全)の\\s*(?:実数|点)\\s*(?:x\\s*)?(?:で|において)",
+        "(?:在)?(?:所有|每一?个?)(?:实数|點|点)(?:处|處|上)",
+        "(?:r|実数|实数|實數)\\s*上\\s*(?:で|において|的)?"
+      ]
+    }
+  ],
+  "fillers": [
+    "証明する",
+    "証明します",
+    "証明したい",
+    "示す",
+    "示します",
+    "示したい",
+    "について",
+    "に関して",
+    "することを",
+    "ことを",
+    "ことは",
+    "こと",
+    "ことが",
+    "説明してください",
+    "説明して",
+    "説明せよ",
+    "説明",
+    "証明してください",
+    "証明して",
+    "証明せよ",
+    "証明",
+    "示してください",
+    "示して",
+    "示せ",
+    "教えてください",
+    "教えて",
+    "ください",
+    "お願いします",
+    "お願い",
+    "なぜ",
+    "どうして",
+    "理由",
+    "ですか",
+    "です",
+    "ますか",
+    "でしょうか",
+    "か",
+    "を",
+    "は",
+    "が",
+    "の",
+    "で",
+    "に",
+    "も",
+    "や",
+    "関数",
+    "って",
+    "とは",
+    "なの",
+    "か？",
+    "explain",
+    "please",
+    "prove",
+    "show",
+    "why",
+    "is",
+    "are",
+    "the",
+    "that",
+    "function",
+    "of",
+    "tell me",
+    "can you",
+    "である",
+    "ある",
+    "the function",
+    "defined by",
+    "defined as",
+    "given by",
+    "real-valued",
+    "real valued",
+    "a real function",
+    "実数上の",
+    "実数の",
+    "実数関数",
+    "と定める",
+    "と定義する",
+    "と定義します",
+    "と定義",
+    "とする",
+    "と置く",
+    "とおく",
+    "と書く",
+    "を定める",
+    "定義される",
+    "で定義された",
+    "によって定義される",
+    "とします",
+    "とし",
+    "について",
+    "においては",
+    "において",
+    "函数",
+    "函數",
+    "证明",
+    "證明",
+    "说明",
+    "說明",
+    "解释",
+    "解釋",
+    "为什么",
+    "為什麼",
+    "请",
+    "請",
+    "是",
+    "的",
+    "在",
+    "上",
+    "对于",
+    "對於",
+    "这个",
+    "這個",
+    "定义为",
+    "定義為",
+    "其中",
+    "设",
+    "設",
+    "令",
+    "吗",
+    "嗎",
+    "呢",
+    "吧",
+    "么",
+    "麼",
+    "吗？",
+    "是否",
+    "是不是",
+    "実数",
+    "与えられる",
+    "で与えられる",
+    "demonstrate",
+    "let",
+    "map",
+    "mapping",
+    "answer",
+    "書いて",
+    "書いてください",
+    "書け",
+    "要求",
+    "由",
+    "並",
+    "并",
+    "都",
+    "々",
+    "この",
+    "その"
+  ],
+  "filler_patterns": [
+    "(?:please\\s+)?(?:write|answer|respond|reply|explain|state|give)\\s+(?:(?:the|a|an|entire|whole|full|complete|proposition|statement|theorem|proof|explanation|answer|and|both|all|everything|your|response|reply|it|them)\\s+)*in\\s+(?:english|japanese|chinese|simplified\\s+chinese|traditional\\s+chinese)(?![a-z])",
+    "(?:命題|証明|説明|回答|解答|全体|全て|すべて|全文|と|も|は|を|の)*(?:英語|日本語|中国語|簡体字中国語|繁体字中国語|中国語簡体字|中国語繁体字)\\s*で\\s*(?:書いて|書け|書いてください|答えて|出力して|記述して|ください|お願いします|お願い)*",
+    "(?:请|請)?(?:用|以)(?:英语|英文|英語|日语|日語|日文|中文|简体中文|繁体中文|繁體中文)(?:写出|寫出|写|寫|回答|说明|說明|作答|书写)(?:全部|所有|整个|整個)?(?:命题|命題|证明|證明)*(?:和|与|與)*(?:证明|證明|说明|說明)*",
+    "(?<![a-z0-9])(?:is|are|be)\\s+an?(?![a-z0-9])",
+    "prove\\s+it",
+    "(?:,\\s*)?with\\s+explanations?",
+    "(?:请|請)?(?:并|並)?(?:写|寫)得一些",
+    "(?:,|，)\\s*right\\s*(?:\\?|？)?\\s*$",
+    "(?<![a-z0-9])an?(?![a-z0-9])(?=[\\s,]*(?:real[ -]valued\\s+)?(?:function|map|mapping|\\Z))",
+    "(?:and\\s+|then\\s+|but\\s+)?(?:please\\s+)?keep\\s+(?:it|the\\s+(?:proof|answer|explanation))\\s+(?:short|brief|concise|simple)",
+    "(?:please\\s+)?do\\s+not\\s+use\\s+latex",
+    "(?:and\\s+)?(?:format|present|write|give)\\s+(?:the\\s+)?(?:answer|proof|result)\\s+as\\s+an?\\s+(?:numbered|bulleted|bullet)\\s+list",
+    "(?:and\\s+)?(?:give|write)\\s+(?:the\\s+)?(?:answer|proof)\\s+in\\s+(?:one|two|three|four|five|[0-9]+)\\s+sentences?",
+    "output\\s+language\\s*:\\s*(?:english|japanese|chinese)",
+    "(?:with\\s+)?explanations?\\s+for\\s+beginners?",
+    "latex\\s*を\\s*使わずに",
+    "箇条書き\\s*(?:で|に)?",
+    "(?:高校生|中学生|小学生|初心者|大学生)\\s*(?:にも|でも|向け(?:に)?)\\s*(?:分かる|わかる)?\\s*(?:ように)?",
+    "(?:证明|證明)?(?:请|請)?(?:并|並)?(?:写|寫)得(?:简洁|簡潔)一些",
+    "\u0000\\s*定[义義](?![域为為])",
+    "\\A\\s*(?:please\\s+)?state(?:\\s+and\\s+prove)?(?![a-z0-9])"
+  ],
+  "hypothetical": {
+    "after_property": "(?:である|であり)?\\s*(?:こと[をはが]?\\s*(?:証明|示|説明)(?:する|します|し|す)?\\s*)?(?:と\\s*(?:する|します|し|して|仮定|おく|置く|考え)|でも|ても|としても)",
+    "before_formula": "(?:設|设|令|let|suppose|assume|仮定|假设|假設)\\s*\\Z"
+  }
+}

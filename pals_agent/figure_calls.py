@@ -11,7 +11,7 @@ import math
 import re
 from typing import Any
 
-_LABEL = re.compile(r"[A-Z][0-9']?\Z", re.ASCII)
+_LABEL = re.compile(r"[A-Za-z][0-9']?\Z", re.ASCII)
 _STEP = re.compile(r"[a-z][a-z0-9_-]{0,31}\Z", re.ASCII)
 _MAX_MARKS = 12
 _MAX_TERMS = 8
@@ -241,7 +241,7 @@ Example: {"version":1,"template":"inscribed-angle","parameters":{"labels":{"chor
 "chord_end":"B","on_arc_1":"P","on_arc_2":"Q"},"marks":[{"icon":"equal_angle","at":[["A","P","B"],
 ["A","Q","B"]],"claim":"conclusion","step":"angles"}]},"bindings":[{"step_id":"angles","paragraph":1}]}
 Geometry parameters always include "labels" mapping every required slot to a point name of the
-answer, matching [A-Z][0-9']?. Add "marks" for what the mathematics states: equal_length and
+answer, matching [A-Za-z][0-9']?. Add "marks" for what the mathematics states: equal_length and
 parallel take vertex pairs; equal_angle and right_angle take triples with the vertex in the middle;
 "at" lists groups even for one, as in [["A","M","B"]]; claim is given or conclusion.
 "segments" optionally adds [[label,label]]. A mark's optional step

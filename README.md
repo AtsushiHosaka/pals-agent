@@ -126,7 +126,7 @@ PALS_OPENAI_BASE_URL=https://api.openai.com/v1
 PALS_OPENAI_MAX_OUTPUT_TOKENS=16384
 
 # Bounded Lean diagnostic repair loop
-PALS_MAX_REPAIR_ATTEMPTS=3
+PALS_MAX_REPAIR_ATTEMPTS=6
 
 # API-only Proof Flow Index retrieval
 PALS_API_BASE_URL=http://localhost:8000
@@ -137,7 +137,7 @@ PALS_DRAFT_EMBEDDING_DIM=384
 
 Each failed repairable candidate is checkpointed before another LLM-selected
 `draft`, `sketch`, or `prove` route. Route selection makes at most three real
-calls and never invents a fallback route. The default budget permits three
+calls and never invents a fallback route. The default budget permits six
 repair generations after the initial candidate.
 
 ## Verified Worker Updates
