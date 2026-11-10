@@ -2160,6 +2160,104 @@ def _names_another_property(theorem_statement: str) -> bool:
     return _OTHER_PROPERTY_PATTERN.search(re.sub(r"\s+", "", theorem_statement).lower()) is not None
 
 
+# Kept for explanation_v2 (flag off by default). The production line gates x² epsilon-delta in the
+# output reviewer instead, so the parse path no longer calls this.
+def _has_x_squared_epsilon_delta(text: str) -> bool:
+    compact = (
+        re.sub(r"\s+", "", text)
+        .replace("\\varepsilon", "ε")
+        .replace("\\epsilon", "ε")
+        .replace("\\delta", "δ")
+        .replace("\\lvert", "|")
+        .replace("\\rvert", "|")
+        .replace("\\cdot", "*")
+        .replace("\\times", "*")
+        .replace("≤", "<=")
+        .replace("\\{", "(")
+        .replace("\\}", ")")
+        .replace("\\min", "min")
+        .replace("²", "^2")
+    )
+    compact = re.sub(r"\\(?:left|right|quad|qquad|[,;:!])", "", compact)
+    compact = re.sub(r"\\leq?(?![A-Za-z])", "<=", compact)
+    compact = re.sub(r"\\lt(?![A-Za-z])", "<", compact)
+    compact = re.sub(r"\\frac\{ε\}\{([^{}]*)\}", r"ε/(\1)", compact)
+    compact = compact.replace("{", "").replace("}", "")
+    construction = re.search(r"δ(?::=|=)(?P<choice>[^$。、；;]{1,200})", compact)
+    has_delta_construction = construction is not None and "ε" in construction.group("choice")
+    has_sufficient_delta_choice = (
+        construction is not None
+        and _is_sufficient_x_squared_delta_choice(construction.group("choice"))
+    )
+    has_positive_delta = (
+        "δ>0" in compact
+        or "0<δ" in compact
+        or (construction is not None and re.search(r">0", construction.group("choice")) is not None)
+    )
+    factorization = re.search(
+        (
+            r"\|x\^2-a\^2\|="
+            r"(?:\|x-a\|\*?\|x\+a\||\|x\+a\|\*?\|x-a\|)"
+        ),
+        compact,
+    )
+    neighborhood_position = compact.find("|x-a|<δ")
+    applies_delta_neighborhood = (
+        factorization is not None and 0 <= neighborhood_position < factorization.start()
+    )
+    applies_epsilon_bound = (
+        factorization is not None
+        and re.search(
+            r"[^$。、；;]{0,240}<=?ε",
+            compact[factorization.end() :],
+        )
+        is not None
+    )
+    return (
+        has_delta_construction
+        and has_sufficient_delta_choice
+        and has_positive_delta
+        and applies_delta_neighborhood
+        and applies_epsilon_bound
+        and re.search(
+            r"(?:連続|continuous|continuity)",
+            compact[factorization.end() if factorization is not None else 0 :],
+            re.IGNORECASE,
+        )
+        is not None
+    )
+
+
+def _is_sufficient_x_squared_delta_choice(choice: str) -> bool:
+    denominator = (
+        r"(?:"
+        r"(?P<a_coefficient_first>\d+)\*?\|a\|\+(?P<constant_last>\d+)"
+        r"|"
+        r"(?P<constant_first>\d+)\+(?P<a_coefficient_last>\d+)\*?\|a\|"
+        r"|"
+        r"(?P<outer_factor>\d+)\*?\(\|a\|\+(?P<inner_constant>\d+)\)"
+        r")"
+    )
+    direct = re.fullmatch(
+        rf"min\(1,ε/\({denominator}\)\)(?:>0)?",
+        choice,
+    )
+    fraction = re.fullmatch(
+        rf"min\(1,\\fracε{denominator}\)(?:>0)?",
+        choice,
+    )
+    matched = direct if direct is not None else fraction
+    if matched is None:
+        return False
+    outer_factor = matched.group("outer_factor")
+    if outer_factor is not None:
+        factor = int(outer_factor)
+        return factor >= 2 and factor * int(matched.group("inner_constant")) >= 1
+    a_coefficient = matched.group("a_coefficient_first") or matched.group("a_coefficient_last")
+    constant = matched.group("constant_last") or matched.group("constant_first")
+    return int(a_coefficient) >= 2 and int(constant) >= 1
+
+
 def _is_x_squared_continuity(theorem_statement: str) -> bool:
     """Conservative wording check: the request asks only for the continuity of x².
 

@@ -127,13 +127,14 @@ def test_flag_off_selects_nothing_and_touches_no_client(monkeypatch: pytest.Monk
 
 
 def test_v1_prompt_is_byte_identical_to_origin_main() -> None:
-    # explanations.py is untouched by this change (git diff origin/main is empty for it); the
-    # digest pins the v1 prompt so any later edit to it is a visible, deliberate change.
+    # The digest pins the v1 prompt so any later edit to it is a visible, deliberate change. It was
+    # re-pinned when the production line was merged into main: the v1 prompt is now main's prompt
+    # combined with the production line's (figure field, linear ending, output-language rules).
     prompt = _explanation_prompt(theorem_statement=STATEMENT_PROVE, lean_code=LEAN, language="en")
     assert hashlib.sha256(prompt.encode()).hexdigest() == V1_PROMPT_SHA256
 
 
-V1_PROMPT_SHA256 = "47acb3d5e1900e88a4a9b9ca618afe2e2693c0907549c1849ac1de0bf05c9354"
+V1_PROMPT_SHA256 = "d3f8b2bb4b8647184ff9817f7fb6f201b5cb612acfc7297beb524056f28d5168"
 
 
 def test_worker_flag_off_uses_v1_writer_and_reviewer_even_with_a_draft(
