@@ -40,6 +40,8 @@ FLAG_NAMES = {
     "preview": "PALS_T2_PARALLEL_REVIEW_ENABLED",
     "nodraft": "PALS_T2_NO_DRAFT_ENABLED",
     "names": "PALS_T2_NAME_SAFETY_ENABLED",
+    # stepwise Draft-Sketch-Prove lane (pals_agent/dsp_stepwise.py)
+    "stepwise": "PALS_DSP_STEPWISE_ENABLED",
 }
 ARM_FLAGS: dict[str, set[str]] = {
     "base": set(),
@@ -54,6 +56,8 @@ ARM_FLAGS: dict[str, set[str]] = {
     "nodraft": {"nodraft"},
     "nd_k2": {"nodraft", "race"},
     "nd_k2_names": {"nodraft", "race", "names"},
+    # stepwise DSP: skeleton, per-step proofs in parallel, one assembled file
+    "stepwise": {"stepwise"},
     # nd_k2 plus the explanation and the semantic review started when a candidate enters Lean
     "nd_k2_par": {"nodraft", "race", "pexpl", "preview"},
     # nd_k2 with the fixed-statement template and the layout splice (see ARM_PIPELINE)
@@ -291,6 +295,14 @@ def answer_stage(result: Any, problem: dict, explainer: Any, reviewer: Any) -> d
     return out
 
 
+def load_manifest(path: Path, extra: list[Path] | None = None) -> dict:
+    """The manifest, with the problems of any ``--extra-manifest`` appended (same schema)."""
+    manifest = json.loads(path.read_text())
+    for more in extra or []:
+        manifest["problems"] = [*manifest["problems"], *json.loads(more.read_text())["problems"]]
+    return manifest
+
+
 def select(manifest: dict, ids: str | None, n: int | None) -> list[dict]:
     tuning = [p for p in manifest["problems"] if p["split"] == "tuning"]
     if ids:
@@ -322,7 +334,7 @@ def cmd_cache(args: argparse.Namespace, meter: Meter) -> None:
     pipeline = ProofPipeline(
         generator=generator, verifier=verifier, artifact_store=FileArtifactStore(args.out / "art")
     )
-    problems = select(json.loads(args.manifest.read_text()), args.ids, args.n)
+    problems = select(load_manifest(args.manifest, args.extra_manifest), args.ids, args.n)
     out = (args.out / "cache.jsonl").open("a")
     seq = 0
     for p in problems:
@@ -399,7 +411,7 @@ def cmd_tier1(args: argparse.Namespace, meter: Meter) -> None:
     from pals_agent.usage import usage_scope
 
     generator, verifier = build(args)
-    manifest = json.loads(args.manifest.read_text())
+    manifest = load_manifest(args.manifest, args.extra_manifest)
     problems = select(manifest, args.ids, args.n)
     by_id = {p["id"]: p for p in problems}
     sink = JsonlSink(args.out / "records.jsonl", artifacts_dir=args.out / "artifacts")
@@ -492,7 +504,7 @@ def cmd_fields(args: argparse.Namespace, meter: Meter) -> None:
         generator=generator, verifier=verifier, artifact_store=FileArtifactStore(args.out / "art")
     )
     set_arm("fields")
-    for p in select(json.loads(args.manifest.read_text()), args.ids, args.n):
+    for p in select(load_manifest(args.manifest, args.extra_manifest), args.ids, args.n):
         if meter.exhausted():
             break
         request = pipeline.prepare_statement(
@@ -514,7 +526,7 @@ def cmd_fields(args: argparse.Namespace, meter: Meter) -> None:
 
 
 def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
-    from pals_agent import t2_lane
+    from pals_agent import dsp_stepwise, t2_lane
     from pals_agent.artifacts import FileArtifactStore
     from pals_agent.evals.records import JsonlSink
     from pals_agent.evals.runner import (
@@ -529,7 +541,7 @@ def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
 
     generator, verifier = build(args)
     explainer, reviewer = build_answer_stage(args) if args.answer else (None, None)
-    problems = select(json.loads(args.manifest.read_text()), args.ids, args.n)
+    problems = select(load_manifest(args.manifest, args.extra_manifest), args.ids, args.n)
     by_id = {p["id"]: p for p in problems}
     sink = JsonlSink(args.out / "records.jsonl", artifacts_dir=args.out / "artifacts")
     scope = Scope(run_id=args.out.name, sink=sink)
@@ -572,7 +584,11 @@ def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
             if args.answer
             else None
         )
-        with t2_lane.discarded_usage_scope(lambda row: (scope.on_usage(row), meter.add(row))):
+        lane_runs: list[Any] = []
+        with (
+            dsp_stepwise.record_scope(lane_runs),
+            t2_lane.discarded_usage_scope(lambda row: (scope.on_usage(row), meter.add(row))),
+        ):
             r = run_pipeline_once(
                 by_id[pid],
                 pipelines[arm],
@@ -589,6 +605,15 @@ def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
                 },
                 post_run=post,
             )
+        for lane_run in lane_runs:
+            with (args.out / "stepwise.jsonl").open("a") as fh:
+                fh.write(
+                    json.dumps(
+                        {"problem_id": pid, "arm": arm, "repeat": rep, **lane_run.detail()},
+                        ensure_ascii=False,
+                    )
+                    + "\n"
+                )
         print(
             f"{pid} {arm} r{rep} ok={r['success']} first={r['first_attempt_ok']} "
             f"repairs={r['repairs_used']} wall={r['wall_s']} answer={r.get('answer_s')} "
@@ -605,6 +630,9 @@ def main() -> None:
     ap.add_argument("mode", choices=["cache", "tier1", "tier2", "fields"])
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
+    ap.add_argument(
+        "--extra-manifest", type=Path, action="append", help="more problems (same schema)"
+    )
     ap.add_argument("--ids")
     ap.add_argument("--n", type=int)
     ap.add_argument("--arms", required=True)
