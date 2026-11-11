@@ -18,6 +18,7 @@ path), never an answer.  Default off; nothing imports this module on the request
 
 from __future__ import annotations
 
+import dataclasses
 import secrets
 import threading
 import time
@@ -84,7 +85,9 @@ class FastLane:
     ) -> None:
         if verifier.resident is not resident:
             raise ValueError("the verifier must use the same resident worker")
-        self.resident, self.verifier = resident, verifier
+        self.resident = resident
+        # the final check gets the lane's own budget, not the verifier's (default 300 s)
+        self.verifier = dataclasses.replace(verifier, timeout_seconds=verify_budget_s)
         self.portfolio = tuple(portfolio)
         self.race_budget_s = race_budget_s
         self.verify_budget_s = verify_budget_s
@@ -99,6 +102,9 @@ class FastLane:
         winners = self._race(proposition, result, started)
         result.seconds["race"] = round(time.monotonic() - started, 3)
         for tactic in winners:
+            if time.monotonic() - started > self.race_budget_s + self.verify_budget_s:
+                result.reason = "verify_budget_exhausted"
+                break
             verify_started = time.monotonic()
             source = candidate_source(proposition, tactic)
             verified = self.verifier.verify(source)
@@ -136,7 +142,7 @@ class FastLane:
                     return tactic, "interrupted"
                 if outcome.timed_out:
                     return tactic, "timeout"
-                if outcome.aborted or outcome.unsupported:
+                if outcome.aborted or outcome.unsupported or outcome.output_limited:
                     return tactic, "interrupted"
                 ok = speculative_accept(outcome.returncode, outcome.stdout)
                 return tactic, "accepted" if ok else "rejected"
