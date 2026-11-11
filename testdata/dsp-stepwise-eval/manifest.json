@@ -1,0 +1,29 @@
+{
+ "schema_version": 1,
+ "version": "dsp-stepwise-eval-1",
+ "problems": [
+  {
+   "expected_answer": null,
+   "field": "probability",
+   "fixed_lean_statement": "theorem mean_median_le_sd {Ω : Type*} [MeasurableSpace Ω] (P : MeasureTheory.Measure Ω)\n    [MeasureTheory.IsProbabilityMeasure P] (X : Ω → ℝ) (hXm : Measurable X)\n    (hX : MeasureTheory.MemLp X 2 P) (m : ℝ)\n    (hm1 : 1 / 2 ≤ P.real {ω | X ω ≤ m}) (hm2 : 1 / 2 ≤ P.real {ω | m ≤ X ω}) : |∫ ω, X ω ∂P - m| ≤ Real.sqrt (ProbabilityTheory.variance X P)",
+   "has_catalog_witness": false,
+   "history": [
+    "reported"
+   ],
+   "id": "dsp_mean_median_le_sd",
+   "language": "en",
+   "shared": null,
+   "source": "owner-reported-2026-11-11",
+   "split": "tuning",
+   "statement": "Let X be a real random variable on a probability space with finite variance (X ∈ L²), mean μ = E[X] and standard deviation σ, and let m be a median of X, i.e. P(X ≤ m) ≥ 1/2 and P(X ≥ m) ≥ 1/2. Prove that |μ − m| ≤ σ.",
+   "statement_sha256": "63410b08fabef84e77a22fecf5817194f159805d08d6ad8fedc74a25bb3f8afe",
+   "tags": [
+    "probability",
+    "inequality",
+    "multi-step"
+   ],
+   "tier": "hard",
+   "tier_basis": "reported"
+  }
+ ]
+}

@@ -9,7 +9,7 @@ from contextvars import copy_context
 from dataclasses import asdict, dataclass, replace
 from typing import Any, Final, Literal, Protocol, cast
 
-from pals_agent import quality_events, step_timing, t2_lane
+from pals_agent import dsp_stepwise, quality_events, step_timing, t2_lane
 from pals_agent.artifacts import (
     ATTEMPT_CHECKPOINT_SCHEMA_VERSION,
     ArtifactPersistenceError,
@@ -1980,6 +1980,13 @@ def _generate_staged_attempt(
 ) -> GeneratedProof:
     draft = feedback.previous_draft if feedback is not None else None
     sketch = feedback.previous_sketch if feedback is not None else None
+
+    if feedback is None and dsp_stepwise.stepwise_enabled():
+        # Stepwise DSP (default off): skeleton, per-step proofs, one assembled file. None means
+        # the lane did not produce a file and the ordinary path below runs.
+        stepwise = dsp_stepwise.run_for_pipeline(generator, request, verifier)
+        if stepwise is not None:
+            return stepwise
 
     direct = getattr(generator, "generate_direct_proof", None)
     if (

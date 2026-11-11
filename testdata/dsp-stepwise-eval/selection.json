@@ -1,0 +1,66 @@
+{
+ "reported": [
+  "dsp_mean_median_le_sd"
+ ],
+ "multi_step": [
+  {
+   "id": "mv_foundation_exceptional_section_counterexample",
+   "why": "base failed 2/2 with 6 repairs (statement may not hold in Lean)"
+  },
+  {
+   "id": "calculus_v5_derivative_difference_quotient_limit",
+   "why": "base repairs 3,1,1"
+  },
+  {
+   "id": "pq-compact-hausdorff-continuous-bijection-inverse",
+   "why": "base repairs 0,2,0"
+  },
+  {
+   "id": "seed-rank_nullity",
+   "why": "base repairs 1,2,2"
+  },
+  {
+   "id": "scheme-M13",
+   "why": "base repairs 2,1"
+  },
+  {
+   "id": "scheme-M10",
+   "why": "base repairs 1,1"
+  },
+  {
+   "id": "seed-absolute_value_not_differentiable",
+   "why": "base repairs 0,1,1 (easy tier)"
+  },
+  {
+   "id": "rat_adjacent_partial_fractions",
+   "why": "base repairs 1,0,1 (school algebra: not multi-step undergraduate; kept because base needed repairs)"
+  },
+  {
+   "id": "pq-coprime-moduli-unique-residue-solution",
+   "why": "no base data; hard tier, multi-step (CRT)"
+  },
+  {
+   "id": "calculus_v4_gradient_direction_bound",
+   "why": "no base data; hard tier, fixed statement"
+  }
+ ],
+ "regression": [
+  {
+   "id": "la_reuse_kernel_detects_zero",
+   "why": "base first try, no repairs"
+  },
+  {
+   "id": "seed-quadratic_not_injective",
+   "why": "base first try, no repairs"
+  },
+  {
+   "id": "disc_size_difference_closed",
+   "why": "base first try, no repairs"
+  },
+  {
+   "id": "pq-prime-above-every-bound",
+   "why": "base first try, no repairs"
+  }
+ ],
+ "source_of_base_data": "t2-lane first measurement (14 tuning items, 1-3 base runs each); other items have no base run on record"
+}
