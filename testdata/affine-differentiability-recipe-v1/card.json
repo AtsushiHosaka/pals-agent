@@ -1,0 +1,149 @@
+{
+ "schema_version": "pals.general-recipe-card.v1",
+ "id": "differentiability.affine.real.difference-quotient",
+ "revision": 1,
+ "family_id": "real-analysis",
+ "theorem_name": "affine_differentiable_difference_quotient",
+ "source_path": "proofs/affine_differentiable_difference_quotient.lean",
+ "target_source": "∀ (a b : ℝ), Differentiable ℝ (fun x : ℝ => a * x + b)",
+ "statement": "任意の実数 $a,b$ について、実数全体で定義された1次関数 $f(x)=ax+b$（傾き $a$、切片 $b$）が、$\\mathbb{R}$ のすべての点で微分可能であること（微分可能な関数であること）を、差分商の極限の定義から証明せよ。(Prove from the definition of the derivative that for all real numbers a and b, the linear function f(x)=ax+b is differentiable at every real point. This covers 2x+1, 3x-5 and constant functions.)",
+ "domain": "実数上の関数の微分可能性：1次関数（傾き $a$、切片 $b$ の $ax+b$。$a,b$ は実数）が至る所で微分可能であることの、差分商による証明",
+ "assumptions": [
+  "$a,b$ は実数（$0$ や負の数を含む）、$f:\\mathbb{R}\\to\\mathbb{R}$、$f(x)=ax+b$（$x$ は実数変数）。",
+  "微分可能性は、実数上の各点 $p$ で極限 $\\lim_{x\\to p}\\frac{f(x)-f(p)}{x-p}$ が存在することを指す。"
+ ],
+ "quantifiers": [
+  "任意の実数 $a,b$ と任意の実数 $p$ について、$f(x)=ax+b$ は $p$ で微分可能である（微分係数が存在する）。"
+ ],
+ "conclusion": "任意の実数 $a,b$ について $f(x)=ax+b$ は $\\mathbb{R}$ のすべての点で微分可能である。すなわち $f$ は $\\mathbb{R}$ 上の微分可能な関数であり、その微分係数は各点で $a$ である。",
+ "proof_method_tag": "difference_quotient",
+ "answer": "$a,b$ を任意の実数、$p$ を任意の実数とします。$f(x)=ax+b$ が $p$ で微分可能であるとは、極限 $\\lim_{x\\to p}\\dfrac{f(x)-f(p)}{x-p}$ が存在することです。\n\n$x\\ne p$ のとき、切片 $b$ が打ち消し合って $f(x)-f(p)=(ax+b)-(ap+b)=a(x-p)$ となるので、$\\dfrac{f(x)-f(p)}{x-p}=\\dfrac{a(x-p)}{x-p}=a$ です。この値は $x$ によらない定数 $a$ です。$x\\to p$ の極限を考えるときは $x\\ne p$ の点だけを見るので、定数 $a$ の極限は $a$ 自身であり、極限は存在して $a$ に等しくなります。$a=0$（定数関数）のときも、商はつねに $0$ なので同じ議論が成り立ちます。\n\nしたがって $f(x)=ax+b$ は $p$ で微分可能で、微分係数は $f'(p)=a$ です。$p$ は任意だったので、任意の実数 $a,b$ について $ax+b$ は $\\mathbb{R}$ のすべての点で微分可能です。たとえば $f(x)=3x-5$ の差分商は、どの点でもつねに $3$ です。\n",
+ "proof_outline": [
+  "Fix real numbers a and b and a real point p.",
+  "For x different from p, the difference quotient ((ax+b) - (ap+b))/(x - p) equals a, because b cancels.",
+  "A constant function has limit equal to that constant, so the limit as x tends to p exists and is a.",
+  "Hence ax+b is differentiable at every real point."
+ ],
+ "question_variants": {
+  "ja": [
+   "ax+bは微分可能であることを示してください。",
+   "任意の実数a,bについて1次関数 f(x)=ax+b が微分可能であることを証明してください。",
+   "1次関数の微分可能性を証明してください。",
+   "2x+1が微分可能であることを示してください。",
+   "傾きと切片をもつ直線 y=ax+b の微分可能性を証明せよ。",
+   "3x-5の微分可能性を教えてください。"
+  ],
+  "en": [
+   "Prove that ax+b is differentiable for all real numbers a and b.",
+   "Show that the linear function f(x)=ax+b is differentiable on the real line.",
+   "Why is 2x+1 differentiable?",
+   "Prove that a linear function with slope and intercept is differentiable."
+  ]
+ },
+ "aliases": {
+  "ja": [
+   "ax+b",
+   "1次関数",
+   "一次関数",
+   "直線",
+   "傾きと切片",
+   "微分可能性",
+   "微分可能",
+   "微分可能な関数",
+   "差分商",
+   "微分係数",
+   "2x+1",
+   "3x-5"
+  ],
+  "en": [
+   "ax+b",
+   "linear function",
+   "affine function",
+   "straight line",
+   "slope and intercept",
+   "differentiability of linear functions",
+   "difference quotient",
+   "derivative from the definition",
+   "real analysis"
+  ]
+ },
+ "hard_negatives": [
+  {
+   "id": "restricted_domain",
+   "dimension": "domain",
+   "statement": "区間 $[0,1]$ 上で $f(x)=ax+b$ が微分可能であることを証明せよ。",
+   "reason": "定義域が $[0,1]$ に制限された別の主張で、端点の扱いが異なる。ℝ全体の主張とは別である。"
+  },
+  {
+   "id": "continuous",
+   "dimension": "conclusion",
+   "statement": "関数 $f(x)=ax+b$ が $\\mathbb{R}$ 上で連続であることを証明せよ。",
+   "reason": "結論が連続性であり、微分可能性の証明では答えにならない。"
+  },
+  {
+   "id": "derivative_value",
+   "dimension": "conclusion",
+   "statement": "関数 $f(x)=ax+b$ の導関数が定数関数 $a$ であることを証明せよ。",
+   "reason": "導関数の値を求める主張であり、保存証明は微分可能であることだけを示す。"
+  },
+  {
+   "id": "homogeneous",
+   "dimension": "objects",
+   "statement": "任意の実数 $c$ について、$f(x)=cx$ が実数全体で微分可能であることを証明せよ。",
+   "reason": "切片のない特殊な関数であり、切片を含む一般形とは別の命題である。"
+  },
+  {
+   "id": "quadratic",
+   "dimension": "objects",
+   "statement": "任意の実数 $a,b,c$ について、$f(x)=ax^2+bx+c$ が実数全体で微分可能であることを証明せよ。",
+   "reason": "2次の項を含む別の関数であり、差分商が定数にならない。"
+  },
+  {
+   "id": "absolute_value",
+   "dimension": "objects",
+   "statement": "関数 $f(x)=a|x|+b$ が実数全体で微分可能であることを証明せよ。",
+   "reason": "$a\\ne0$ のとき $x=0$ で微分可能でなく、命題として別物である（偽になりうる）。"
+  },
+  {
+   "id": "complex",
+   "dimension": "domain",
+   "statement": "任意の複素数 $a,b$ について、複素数全体で定義された関数 $f(z)=az+b$ が正則であることを証明せよ。",
+   "reason": "定義域が $\\mathbb{C}$ であり、微分の意味も複素微分になる。"
+  },
+  {
+   "id": "by_epsilon_delta",
+   "dimension": "method",
+   "statement": "任意の実数 $a,b$ について $ax+b$ が微分可能であることを、$\\varepsilon$-$\\delta$ 論法で証明せよ。",
+   "reason": "要求された証明方法が保存回答の方法（差分商が定数であること）と異なる。"
+  },
+  {
+   "id": "at_a_point",
+   "dimension": "quantifiers",
+   "statement": "任意の実数 $a,b$ について、$f(x)=ax+b$ が $x=0$ で微分可能であることを証明せよ。",
+   "reason": "1点での微分可能性だけを問う弱い主張である。"
+  },
+  {
+   "id": "composite",
+   "dimension": "objects",
+   "statement": "任意の実数 $a,b$ について、$f(x)=(ax+b)^2$ が実数全体で微分可能であることを証明せよ。",
+   "reason": "合成した別の関数であり、保存回答の $f(x)=ax+b$ の証明そのものではない。"
+  }
+ ],
+ "provenance": {
+  "kind": "original_synthetic_problem_and_proof",
+  "license": "Apache-2.0",
+  "upstream_library": "Mathlib",
+  "upstream_license": "Apache-2.0",
+  "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+  "ported_from": "new general-form proof for a universally quantified family (seq27 general Recipe families)"
+ },
+ "lifecycle": {
+  "authored": true,
+  "independently_reviewed": false,
+  "admitted": false,
+  "retrievable": false,
+  "runtime_verified": false,
+  "deployed": false
+ },
+ "status": "authored_awaiting_execution"
+}

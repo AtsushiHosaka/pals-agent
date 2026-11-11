@@ -54,7 +54,20 @@ def test_settings_default_to_ollama(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.draft_embedding_dimension == 384
     assert settings.draft_embedding_timeout_seconds == 60.0
     assert settings.pfi_runtime_provenance_sha256 is None
-    assert settings.max_repair_attempts == 3
+    assert settings.max_repair_attempts == 6
+
+
+def test_factory_passes_the_lemma_alias_switch_to_the_pipeline(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _pin_embedding(monkeypatch)
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+    monkeypatch.setenv("PALS_ARTIFACTS_BUCKET", "pals-artifacts")
+    monkeypatch.delenv("PALS_LEMMA_ALIAS_REPAIR_ENABLED", raising=False)
+    assert build_pipeline(AgentSettings.from_env()).lemma_alias_repair is True
+
+    monkeypatch.setenv("PALS_LEMMA_ALIAS_REPAIR_ENABLED", "false")
+    assert build_pipeline(AgentSettings.from_env()).lemma_alias_repair is False
 
 
 def test_settings_reject_partial_recipe_selection_configuration(

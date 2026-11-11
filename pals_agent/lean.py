@@ -19,6 +19,7 @@ from tempfile import TemporaryDirectory
 
 from pals_agent.lean_audit import (
     TRUSTED_AUDIT_SOURCE,
+    AuditReport,
     audit_diagnostics,
     audit_failure,
     parse_audit_report,
@@ -715,7 +716,21 @@ class LeanVerifier:
         report = parse_audit_report(audited.stdout, nonce) if audited.returncode == 0 else None
         if report is None:
             return [audit_failure("Trusted Lean audit did not complete for this request.")]
-        return audit_diagnostics(report, declared_theorem_names(lean_code))
+        return self._audit_policy(report, lean_code)
+
+    def _audit_policy(self, report: AuditReport, lean_code: str) -> list[Diagnostic]:
+        """The audit policy under this verifier's profile (default profile: the audit's own)."""
+        declared = declared_theorem_names(lean_code)
+        profile = self.library_profile
+        if profile is None:
+            return audit_diagnostics(report, declared)
+        return audit_diagnostics(
+            report,
+            declared,
+            allowed_axioms=profile.axiom_allow_list,
+            unreviewed_roots=profile.statement_recorded_roots or (),
+            reviewed_roots=profile.reviewed_roots,
+        )
 
     def _audit_timeout(self) -> Diagnostic:
         return Diagnostic(

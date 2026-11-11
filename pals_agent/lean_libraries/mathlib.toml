@@ -1,0 +1,37 @@
+# The default library profile: the workspace PALS has always verified against.
+schema = "pals.lean-library-manifest.v1"
+
+[library]
+name = "mathlib"
+repo = "https://github.com/leanprover-community/mathlib4"
+commit = "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a"
+license = "Apache-2.0"
+attribution = "Copyright (c) The Mathlib Authors. Released under the Apache 2.0 license."
+
+[toolchain]
+lean = "leanprover/lean4:v4.32.0-rc1"
+workspace = "lean-workspace"
+silence_audit_deprecations = false
+# Everything the workspace contains: Lean itself, its reviewed dependencies and Mathlib.
+dependency_roots = [
+  "Init", "Std", "Lean", "Lake", "Batteries", "Aesop", "Qq", "Plausible", "ImportGraph",
+  "ProofWidgets", "LeanSearchClient", "Cli", "Mathlib",
+]
+
+[pins]
+mathlib = "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a"
+
+[[layers]]
+root = "Mathlib"
+trust = "kernel-checked-reviewed"
+description = "reviewed by the Mathlib maintainers"
+
+# No import restriction and no statement origin check: this profile is the historical default.
+[[profiles]]
+name = "mathlib-4.32"
+
+[audit]
+allowed_axioms = ["propext", "Classical.choice", "Quot.sound"]
+
+[build]
+modules_ref = "docker/lean-verifier.Dockerfile"

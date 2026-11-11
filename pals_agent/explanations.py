@@ -4,8 +4,11 @@ import json
 import math
 import re
 import time
+import unicodedata
 import uuid
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
+from contextvars import copy_context
 from dataclasses import asdict, dataclass
 from typing import Any, Literal, Protocol
 
@@ -15,7 +18,11 @@ from pals_agent.figure_calls import (
     labels_occur_in,
     split_figure,
 )
-from pals_agent.lean_target import LeanTargetDeclaration
+from pals_agent.lean_target import (
+    LeanTargetDeclaration,
+    extract_single_target_declaration,
+    matches_x_squared_continuity,
+)
 from pals_agent.math_task import ANSWER_PRESENTATION, ANSWER_SCOPE_REVIEW
 from pals_agent.prompt_safety import (
     MAX_PROBLEM_CHARS,
@@ -24,6 +31,7 @@ from pals_agent.prompt_safety import (
     learner_text_violation,
     untrusted_block,
 )
+from pals_agent.request_instructions import split_presentation_instructions
 
 _LEAN_SOURCE_TERM_PATTERN = re.compile(
     r"(?<![A-Za-z0-9_\\])(?:"
@@ -39,6 +47,7 @@ _LEAN_SOURCE_TERM_PATTERN = re.compile(
 _LEAN_QUALIFIED_IDENTIFIER_PATTERN = re.compile(
     r"(?<![A-Za-z0-9_])[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+(?![A-Za-z0-9_])"
 )
+_LATIN_ABBREVIATIONS = frozenset({"e.g", "i.e"})
 _BARE_LATEX_JSON_BACKSLASH_PATTERN = re.compile(
     r'(?<!\\)\\(?=(?:[A-Za-z]{2,}|(?!["\\\\/bfnrt]|u[0-9A-Fa-f]{4})))'
 )
@@ -84,6 +93,199 @@ Do not apply closure of natural-number divisibility under multiplication by a ne
 """
 
 
+# Required elements of an epsilon-delta proof that x² is continuous. This table is the single
+# source: the review prompt and its response format, the decision, and the generation prompt
+# all read it, so what is asked of the writer and of the reviewer cannot drift apart.
+# (id, requirement, how the element fails). A requirement is what must hold; the reviewer
+# alone also gets the failure text. The two catch-alls at the end have no requirement for the
+# writer and take status ok or wrong only.
+_EPSILON_DELTA_ELEMENTS: tuple[tuple[str, str, str], ...] = (
+    (
+        "epsilon_arbitrary",
+        "an arbitrary positive epsilon is introduced.",
+        "",
+    ),
+    (
+        "point_fixed",
+        "an arbitrary real point a is fixed (not one particular number), and x with "
+        "|x-a|<delta is taken.",
+        "",
+    ),
+    (
+        "delta_positive_justified",
+        "delta>0 is stated, or is evident from the definition of delta (a minimum of positive "
+        "quantities, a quotient of positive quantities, ...).",
+        "Only a definition whose positivity is not evident (for example delta=epsilon-|a| or "
+        "delta=1-epsilon), given with no reason, is missing.",
+    ),
+    (
+        "delta_bounded_by_one",
+        "|x-a|<1 follows from |x-a|<delta: delta is defined as a minimum with 1 (then delta<=1 "
+        "is evident and needs no further word), or the proof uses an equivalent mechanism, or a "
+        "construction that needs no bound by 1 (for example delta=sqrt(a²+epsilon)-|a| with "
+        "|x+a|<=|x-a|+2|a|).",
+        "If delta is not defined with a minimum with 1 and there is no equivalent mechanism, a "
+        "claim such as |x-a|<1 or |x|<|a|+1 has no basis: missing. A delta that is enlarged "
+        "(delta plus 1, twice delta) while still claimed to be at most 1, or an extra "
+        "assumption on x that delta does not imply, is wrong.",
+    ),
+    (
+        "delta_depends_on_point_and_epsilon",
+        "delta is an explicit formula in epsilon and a (a named constant standing for such an "
+        "expression counts).",
+        "A delta that ignores a (for example min(1, epsilon)) or is a fixed number fails.",
+    ),
+    (
+        "factorization",
+        "|x²-a²| is factored as |x-a||x+a|.",
+        "A sum instead of a product, or another function such as x³, fails.",
+    ),
+    (
+        "sum_bound",
+        "an upper bound for |x+a| that the final estimate uses (for example |x+a|<2|a|+1, "
+        "|x+a|<=2(|a|+1), or |x+a|<=|x-a|+2|a|; any constant that is large enough for the "
+        "estimate is fine) is derived: its basis (the triangle inequality, with |x-a|<1 or "
+        "|x|<|a|+1) is in the text, or is one evident step because the text has just stated "
+        "|x|<|a|+1 (or |x-a|<1) or writes |x+a|=|2a+(x-a)|. The bound that is derived must "
+        "imply the bound the final estimate uses. If that bound is written through a named "
+        "constant (C=2|a|+1), the definition of C must be large enough for it.",
+        "A bound asserted with no basis at all, where the step to it is not evident, is missing. "
+        "Deriving a weaker bound but concluding a stronger one is wrong (|x+a|<1+2|a| does not "
+        "give |x+a|<|a|+1, so it does not give |x+a|<C for C=|a|+1).",
+    ),
+    (
+        "final_inequality",
+        "the chain of inequalities ends at epsilon (or a fixed multiple of epsilon such as 2 "
+        "epsilon; it may end in an equality such as `= ε`), and every inequality the text "
+        "asserts anywhere, about delta or about any other quantity, is true. The step from "
+        "delta to epsilon (delta*K<=epsilon when delta<=epsilon/K, where K is the constant that "
+        "multiplies |x-a| in the estimate, for example K=2|a|+1, K=2(|a|+1) or K=2|a|+3) is "
+        "evident from the definition of the minimum. For a named constant, every inequality that "
+        "uses it must be true for its definition.",
+        "Check first that the chain reaches epsilon: one that stops at delta (it ends at "
+        "delta(2|a|+1)) or at another quantity is missing. Then check that every asserted "
+        "inequality is true: a false one is wrong, for example delta<=epsilon/(2|a|+1) claimed "
+        "for delta=min(1, epsilon/(|a|+1)), |x+a|<C for C=|a|+1 after only |x+a|<1+2|a|, or a "
+        "chain ending in epsilon+1. A true claim that is only a fixed multiple of epsilon "
+        "(|x²-a²|<2 epsilon for delta=min(1, epsilon/(|a|+1))) is fine.",
+    ),
+    (
+        "conclusion",
+        "continuity at a is concluded, hence everywhere because a is arbitrary.",
+        "",
+    ),
+    (
+        "presentation",
+        "",
+        "Status is ok or wrong only. Wrong when the opening previews the proof plan or the "
+        "conclusion, the text shows section headings, bullets or numbered steps, the same "
+        "calculation is written twice, a mathematical expression is outside $...$, or Lean "
+        "tactics or identifiers are mentioned. A general fact stated first and then applied "
+        "is not a repetition.",
+    ),
+    (
+        "other_defect",
+        "",
+        "Status is ok or wrong only. Wrong only for one of these three, each shown by a "
+        "specific sentence of the text: a false mathematical claim (a wrong assertion about "
+        "another function or property, not a step that is merely not spelled out); a false claim "
+        "about what Lean verified (such as that each inequality was separately verified by Lean); "
+        "circular reasoning (the conclusion is assumed). The output language and the Lean line "
+        "references are checked elsewhere: do not judge them. Ok if there is none.",
+    ),
+)
+EPSILON_DELTA_CHECK_IDS = tuple(element[0] for element in _EPSILON_DELTA_ELEMENTS)
+# Elements that cannot be "missing": they judge what the text says, not what it lacks.
+_OK_OR_WRONG_ONLY = frozenset({"presentation", "other_defect"})
+# Core elements are the mathematics of the proof: one sample's report is enough to reject.
+# The catch-alls are where a reviewer invents defects, so every sample has to report them.
+_AND_IDS = _OK_OR_WRONG_ONLY
+EPSILON_DELTA_CORE_IDS = tuple(i for i in EPSILON_DELTA_CHECK_IDS if i not in _AND_IDS)
+_EPSILON_DELTA_CHECK_DEFINITIONS = {
+    check_id: " ".join(part for part in (requirement, failure) if part)
+    for check_id, requirement, failure in _EPSILON_DELTA_ELEMENTS
+}
+# Evident facts need no word of justification (the proof is already verified by Lean).
+_EVIDENT_FACTS = (
+    "a minimum or quotient of positive numbers is positive; each argument of a minimum bounds "
+    "it from above (so delta<=1 and delta<= the second argument); the triangle inequality; "
+    "the difference of squares; cancelling a stated bound ((epsilon/C)C=epsilon)"
+)
+
+
+def _review_requirement(checklist_ids: tuple[str, ...]) -> str:
+    return (
+        """EPSILON-DELTA REQUIREMENT. The learner asked why x² is continuous, so the explanation
+must itself be an epsilon-delta proof of continuity, not an appeal to a continuity theorem.
+Judge the mathematics, never the notation. Your decision is computed from the checklist
+below, one entry per id; your `approved` field is ignored.
+Checklist (give every id exactly once):
+"""
+        + "\n".join(
+            f"- {check_id}: {_EPSILON_DELTA_CHECK_DEFINITIONS[check_id]}"
+            for check_id in checklist_ids
+        )
+        + f"""
+Status. The proof is already verified by Lean: ask only whether the argument is
+mathematically sound and complete, not whether every evident fact is spelled out. "ok": the
+element is stated, or is evident from the definitions in the text and brief standard facts,
+which need no word of justification: {_EVIDENT_FACTS}. "missing": the element is absent,
+or it is not evident and the text gives no reason. "wrong": the text states something
+false for that element. Every "missing" or "wrong" entry should have a `note` saying what is
+missing or wrong (a failed entry without one still counts); its `quote` (a short excerpt of
+the relevant sentence) is optional.
+"""
+        + """Never mark an element missing or wrong because of notation or phrasing:
+\\frac or \\dfrac,
+\\lvert or \\vert, \\min or \\operatorname{min}, ≤ or \\leq or \\leqslant, spacing commands,
+|(x-a)(x+a)|, "delta is positive" in words, epsilon>0 before or after the point or in
+display math, any variable names for the point and the variable, braces or parentheses for
+the minimum, mixing | | with \\lvert \\rvert, any other correct choice of delta (for example
+epsilon/(2(|a|+1))), x introduced explicitly or implicitly, sized delimiters (\\bigl \\bigr
+\\Bigl \\Bigr \\left \\right), multi-line layouts (aligned, align*, array), a named constant for
+a bound (C=2|a|+1, defined first and used in place of the expression), a general identity
+with other variable names (|u²-v²|=|u-v||u+v|) stated before it is applied. Style, level of
+detail, how explicit a step is, and the order of presentation are never grounds either. The
+opening's notation, wording and word order are not presentation defects.
+"""
+    )
+
+
+_EPSILON_DELTA_REVIEW_REQUIREMENT = _review_requirement(EPSILON_DELTA_CHECK_IDS)
+# What the writer is told, from the same table: the requirement of every proof element.
+_EPSILON_DELTA_WRITER_ELEMENTS = "\n".join(
+    f"- {requirement}" for _check_id, requirement, _ in _EPSILON_DELTA_ELEMENTS if requirement
+)
+_LEGACY_RESPONSE_FORMAT = """Return exactly one JSON object and no surrounding text:
+{"approved": true, "rationale": "a concise review reason"}
+or
+{"approved": false, "rationale": "a concise review reason"}"""
+
+
+def _checklist_response_format(checklist_ids: tuple[str, ...]) -> str:
+    catch_alls = [i for i in checklist_ids if i in _OK_OR_WRONG_ONLY]
+    return (
+        """Return exactly one JSON object and no surrounding text, with every checklist id once:
+{"rationale": "a concise review reason", "checks": [
+"""
+        + ",\n".join(
+            f'  {{"id": "{check_id}", "status": "ok", "quote": "", "note": ""}}'
+            for check_id in checklist_ids
+        )
+        + """
+]}
+Every status above is only a placeholder: judge each element on its own. `status` is "ok",
+"""
+        + '"missing" or "wrong"'
+        + (f' ("ok" or "wrong" for {" and ".join(catch_alls)})' if catch_alls else "")
+        + """; `note` says in a few
+words what is missing or wrong."""
+    )
+
+
+_CHECKLIST_RESPONSE_FORMAT = _checklist_response_format(EPSILON_DELTA_CHECK_IDS)
+
+
 class TextGenerationClient(Protocol):
     def generate(
         self,
@@ -124,11 +326,15 @@ class ProofOutputReviewError(RuntimeError):
         category: Literal["rejected", "transport", "schema"] = "schema",
         rationale: str = "",
         session_id: str | None = None,
+        samples: tuple[tuple[ReviewCheck, ...], ...] = (),
     ) -> None:
         super().__init__(message)
         self.category = category
         self.rationale = rationale[:2000]
         self.session_id = session_id
+        # In memory only (regression tooling): the checks of each independent review sample.
+        # Never log or persist; quotes and notes can contain proof text.
+        self.samples = samples
 
 
 @dataclass(frozen=True, slots=True)
@@ -140,6 +346,25 @@ class ProofOutputReview:
     reviewer_model: str
     session_id: str
     rationale: str
+    # The checklist of each independent review sample (two for the x² epsilon-delta review).
+    samples: tuple[tuple[ReviewCheck, ...], ...] = ()
+    # A reviewer's own `approved` flag disagreed with its checklist (the checklist decides).
+    approved_flag_contradicted_checks: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class ReviewCheck:
+    """One required element of the epsilon-delta proof, judged by the reviewer."""
+
+    id: str
+    status: Literal["ok", "missing", "wrong"]
+    quote: str  # informational only: it is never checked against the proof
+    note: str
+
+    @property
+    def blocks(self) -> bool:
+        """Any element that is not ok rejects the explanation."""
+        return self.status != "ok"
 
 
 @dataclass(frozen=True, slots=True)
@@ -241,6 +466,9 @@ class LeanGroundedOutputReviewer:
     max_attempts: int = 2
     monotonic: Callable[[], float] = time.monotonic
     session_id_factory: Callable[[], uuid.UUID] = uuid.uuid4
+    # The checklist elements asked of the x² epsilon-delta review. Production uses all of them;
+    # a regression run may switch off other_defect to measure what it costs (an ablation).
+    checklist_ids: tuple[str, ...] = EPSILON_DELTA_CHECK_IDS
 
     def __post_init__(self) -> None:
         if not self.model.strip():
@@ -249,6 +477,10 @@ class LeanGroundedOutputReviewer:
             raise ValueError("provider must be non-empty")
         if type(self.max_attempts) is not int or not 1 <= self.max_attempts <= 3:
             raise ValueError("max_attempts must be between one and three")
+        if set(self.checklist_ids) - set(EPSILON_DELTA_CHECK_IDS) or not set(
+            EPSILON_DELTA_CORE_IDS
+        ) <= set(self.checklist_ids):
+            raise ValueError("checklist_ids must contain every core element and no unknown id")
 
     def review_explanation(
         self,
@@ -260,18 +492,46 @@ class LeanGroundedOutputReviewer:
         deadline: float | None = None,
         timeout_seconds: float | None = None,
     ) -> ProofOutputReview:
-        return self._review(
-            kind="explanation",
-            session_id=str(self.session_id_factory()),
-            prompt=_output_review_prompt(
-                theorem_statement=theorem_statement,
-                lean_code=lean_code,
-                explanation=explanation,
-                language=language,
-            ),
-            deadline=deadline,
-            timeout_seconds=timeout_seconds,
+        prompt = _output_review_prompt(
+            theorem_statement=theorem_statement,
+            lean_code=lean_code,
+            explanation=explanation,
+            language=language,
+            checklist_ids=self.checklist_ids,
         )
+        if not _requires_epsilon_delta(theorem_statement, lean_code):
+            return self._review(
+                kind="explanation",
+                session_id=str(self.session_id_factory()),
+                prompt=prompt,
+                deadline=deadline,
+                timeout_seconds=timeout_seconds,
+            )
+        # The x² epsilon-delta requirement is judged element by element, twice and
+        # independently; the samples are combined by `_combine_samples`.
+        sessions = [str(self.session_id_factory()) for _ in range(CHECKLIST_SAMPLES)]
+
+        def sample(session_id: str) -> ProofOutputReview | ProofOutputReviewError:
+            try:
+                return self._review(
+                    kind="explanation",
+                    session_id=session_id,
+                    prompt=prompt,
+                    deadline=deadline,
+                    timeout_seconds=timeout_seconds,
+                    checklist_ids=self.checklist_ids,
+                )
+            except ProofOutputReviewError as error:
+                return error
+
+        # Separate Contexts keep the claim-bound meter/reporter, so every sample is counted;
+        # joining the pool drains the other sample even when one raises.
+        with ThreadPoolExecutor(
+            max_workers=CHECKLIST_SAMPLES, thread_name_prefix="pals-explanation-review"
+        ) as pool:
+            futures = [pool.submit(copy_context().run, sample, sid) for sid in sessions]
+            outcomes = [future.result() for future in futures]
+        return _combine_samples(outcomes, self.checklist_ids)
 
     def review_clarification(
         self,
@@ -312,6 +572,7 @@ class LeanGroundedOutputReviewer:
         prompt: str,
         deadline: float | None,
         timeout_seconds: float | None,
+        checklist_ids: tuple[str, ...] | None = None,
     ) -> ProofOutputReview:
         _validate_deadline_options(deadline, timeout_seconds)
         validation_error = ""
@@ -341,8 +602,20 @@ class LeanGroundedOutputReviewer:
                     session_id=session_id,
                 ) from exc
             _raise_if_deadline_reached(deadline, self.monotonic)
+            checks: tuple[ReviewCheck, ...] = ()
+            contradicted = False
             try:
-                approved, rationale = _output_review_decision(_parse_json_object(raw_output))
+                payload = _parse_json_object(raw_output)
+                if checklist_ids is None:
+                    approved, rationale = _output_review_decision(payload)
+                else:
+                    checks, rationale, flag = _epsilon_delta_checks(payload, checklist_ids)
+                    # A checklist sample only reports; `_combine_samples` decides. Its own
+                    # `approved` flag is compared with its own checklist for the record.
+                    approved = True
+                    contradicted = flag is not None and flag != (
+                        not any(check.blocks for check in checks)
+                    )
             except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
                 _raise_if_deadline_reached(deadline, self.monotonic)
                 validation_error = str(exc)
@@ -359,14 +632,17 @@ class LeanGroundedOutputReviewer:
                     reviewer_model=self.model,
                     session_id=session_id,
                     rationale=rationale,
+                    samples=(checks,) if checks else (),
+                    approved_flag_contradicted_checks=contradicted,
                 )
             # A valid negative decision settles this candidate. Only malformed review
             # responses are retryable; another vote must not publish rejected output.
             raise ProofOutputReviewError(
                 "independent reviewer rejected the output",
                 category="rejected",
-                rationale=rationale,
+                rationale=_checklist_rationale((checks,), rationale),
                 session_id=session_id,
+                samples=(checks,) if checks else (),
             )
 
         raise ProofOutputReviewError(
@@ -374,6 +650,86 @@ class LeanGroundedOutputReviewer:
             category="schema",
             session_id=session_id,
         )
+
+
+# The x² checklist review runs this many independent samples.
+CHECKLIST_SAMPLES = 2
+
+
+def single_sample_catch_all_ids(review: ProofOutputReview) -> tuple[str, ...]:
+    """Catch-all elements that some sample reported wrong but not every sample (no content).
+
+    These do not reject (the catch-alls need every sample) but are worth counting: they show
+    how often one sample alone accuses a good explanation, or one sample alone sees a leak.
+    """
+    found: list[str] = []
+    for check_id in EPSILON_DELTA_CHECK_IDS:
+        if check_id not in _AND_IDS:
+            continue
+        votes = [
+            check for sample in review.samples for check in sample if check.id == check_id
+        ]
+        if votes and any(v.blocks for v in votes) and not all(v.blocks for v in votes):
+            found.append(check_id)
+    return tuple(found)
+
+
+def _combine_samples(
+    outcomes: list[ProofOutputReview | ProofOutputReviewError],
+    checklist_ids: tuple[str, ...] = EPSILON_DELTA_CHECK_IDS,
+) -> ProofOutputReview:
+    """Combine the independent checklist samples; only the code decides.
+
+    * A core element (the mathematics of the epsilon-delta proof) rejects if ANY sample
+      reports it missing or wrong: a missed defect cannot be taken back.
+    * The two catch-alls (presentation, other_defect) reject only if EVERY sample reports the
+      same element wrong. They are where a reviewer invents defects that do not exist, so
+      one sample's accusation is not enough (measured: 7 of 9 false rejections).
+    * A rejection by a core element is conclusive even if the other sample failed. Otherwise
+      a sample that failed (transport or malformed output) fails the review, because a
+      catch-all needs every vote and a missing vote is never an approval.
+    """
+    reviews = [o for o in outcomes if isinstance(o, ProofOutputReview)]
+    failures = [o for o in outcomes if isinstance(o, ProofOutputReviewError)]
+    samples = tuple(sample for outcome in outcomes for sample in outcome.samples)
+    failed: dict[str, ReviewCheck] = {}
+    for review in reviews:
+        for sample in review.samples:
+            for check in sample:
+                if check.blocks and check.id in EPSILON_DELTA_CORE_IDS:
+                    failed.setdefault(check.id, check)
+    if not failures:
+        for check_id in _AND_IDS & set(checklist_ids):
+            votes = [
+                next(c for c in sample if c.id == check_id)
+                for review in reviews
+                for sample in review.samples
+            ]
+            if votes and all(vote.blocks for vote in votes):
+                failed.setdefault(check_id, votes[0])
+    if failed:
+        first = reviews[0] if reviews else None
+        raise ProofOutputReviewError(
+            "independent reviewer rejected the output",
+            category="rejected",
+            rationale=_checklist_rationale(
+                tuple((check,) for check in failed.values()), "(see the failed elements)"
+            ),
+            session_id=first.session_id if first else failures[0].session_id,
+            samples=samples,
+        )
+    if failures:
+        raise failures[0]
+    first = reviews[0]
+    return ProofOutputReview(
+        kind=first.kind,
+        reviewer_provider=first.reviewer_provider,
+        reviewer_model=first.reviewer_model,
+        session_id=first.session_id,
+        rationale=first.rationale,
+        samples=samples,
+        approved_flag_contradicted_checks=any(r.approved_flag_contradicted_checks for r in reviews),
+    )
 
 
 class ProofSemanticReviewUnavailable(RuntimeError):
@@ -500,7 +856,7 @@ class LeanProofExplainer:
             theorem_statement=theorem_statement,
             lean_code=lean_code,
             language=language,
-            require_epsilon_delta=_is_x_squared_continuity(theorem_statement),
+            require_epsilon_delta=_requires_epsilon_delta(theorem_statement, lean_code),
         )
         prompt = _with_review_feedback(prompt, review_feedback)
         _validate_deadline_options(deadline, timeout_seconds)
@@ -512,8 +868,8 @@ class LeanProofExplainer:
                     value,
                     lean_code,
                     language=language,
-                    require_epsilon_delta=_is_x_squared_continuity(theorem_statement),
                     require_linear_ending=True,
+                    strict_prose=True,
                 ),
                 # A rejected candidate may have failed on its figure, so a correction omits it.
                 None if review_feedback else _optional_figure(value.get("figure"), lean_code),
@@ -679,12 +1035,10 @@ def _validation_failure_reason(exc: Exception) -> str:
         return "lean_term"
     if "final equation is repeated" in message:
         return "repeated_final_equation"
+    if "output language" in message:
+        return "output_language"
     if "code points" in message:
         return "text_length"
-    if "x-squared continuity explanation must start" in message:
-        return "x_squared_opening"
-    if "x-squared continuity explanation must include" in message:
-        return "x_squared_epsilon_delta"
     if "sections must contain" in message:
         return "section_count"
     if "duplicate explanation section id" in message:
@@ -736,8 +1090,8 @@ def _parse_explanation(
     lean_code: str,
     *,
     language: str = "ja",
-    require_epsilon_delta: bool = False,
     require_linear_ending: bool = False,
+    strict_prose: bool = False,
 ) -> tuple[str, tuple[ExplanationSection, ...], str]:
     _require_output_language(language)
     overview = _required_bounded_language_text(
@@ -752,8 +1106,8 @@ def _parse_explanation(
         minimum=1,
         maximum=600,
     )
-    _reject_lean_source_terms(overview, "overview")
-    _reject_lean_source_terms(conclusion, "conclusion")
+    _reject_lean_source_terms(overview, "overview", strict=strict_prose, language=language)
+    _reject_lean_source_terms(conclusion, "conclusion", strict=strict_prose, language=language)
     _reject_unsafe_learner_prose(overview, "overview")
     _reject_unsafe_learner_prose(conclusion, "conclusion")
     raw_sections = _required_list(payload, "sections")
@@ -782,8 +1136,10 @@ def _parse_explanation(
             minimum=1,
             maximum=800,
         )
-        _reject_lean_source_terms(title, "section title")
-        _reject_lean_source_terms(summary, "section summary")
+        _reject_lean_source_terms(title, "section title", strict=strict_prose, language=language)
+        _reject_lean_source_terms(
+            summary, "section summary", strict=strict_prose, language=language
+        )
         _reject_unsafe_learner_prose(title, "section title")
         _reject_unsafe_learner_prose(summary, "section summary")
         sections.append(
@@ -794,20 +1150,47 @@ def _parse_explanation(
                 references=references,
             )
         )
-    if require_epsilon_delta:
-        if language == "ja" and not overview.startswith("$\\varepsilon>0$ を任意に取ります。"):
-            raise ValueError(
-                "x-squared continuity explanation must start with the mathematical proof"
-            )
-        if not _has_x_squared_epsilon_delta(
-            "\n".join([overview, *(section.summary for section in sections), conclusion])
-        ):
-            raise ValueError(
-                "x-squared continuity explanation must include epsilon-delta reasoning"
-            )
+    if strict_prose:
+        _require_prose_language([overview, *(s.summary for s in sections), conclusion], language)
     if require_linear_ending:
         _reject_repeated_final_equation(sections[-1].summary, conclusion)
     return overview, tuple(sections), conclusion
+
+
+_MATH_SPAN_PATTERN = re.compile(r"\$\$.*?\$\$|\$.*?\$|\\\(.*?\\\)|\\\[.*?\\\]", re.S)
+# The share of the prose letters (math spans removed) that must be in the output language.
+# Japanese prose is almost all kana and kanji (measured minimum over the regression set and the
+# test fixtures: above 0.9); 0.3 tolerates names and a few Latin words but rejects English or
+# Chinese prose, and kana must be at least 0.1 so that Chinese prose is not taken for Japanese.
+_JA_SHARE, _JA_KANA_SHARE, _EN_SHARE, _ZH_SHARE = 0.3, 0.1, 0.6, 0.3
+_MIN_PROSE_LETTERS = 8
+
+
+def _require_prose_language(texts: list[str], language: str) -> None:
+    """Reject an explanation with a field whose prose (outside math) is not in the language.
+
+    Each field (overview, every section summary, conclusion) is judged on its own, so one
+    English paragraph cannot hide inside a long Japanese explanation. This is a deterministic
+    script check, deliberately coarse: it catches prose written in another language, not
+    wording. A field with too little prose to judge is accepted.
+    """
+    for text in texts:
+        prose = _MATH_SPAN_PATTERN.sub(" ", text)
+        letters = [c for c in prose if unicodedata.category(c).startswith("L")]
+        if len(letters) < _MIN_PROSE_LETTERS:
+            continue
+        total = len(letters)
+        kana = sum(1 for c in letters if 0x3040 <= ord(c) <= 0x30FF)
+        han = sum(1 for c in letters if 0x4E00 <= ord(c) <= 0x9FFF)
+        latin = sum(1 for c in letters if c.isascii())
+        ok = {
+            "ja": (kana + han) / total >= _JA_SHARE and kana / total >= _JA_KANA_SHARE,
+            "en": latin / total >= _EN_SHARE,
+            "zh-Hans": han / total >= _ZH_SHARE and kana / total < _JA_KANA_SHARE / 2,
+            "zh-Hant": han / total >= _ZH_SHARE and kana / total < _JA_KANA_SHARE / 2,
+        }[language]
+        if not ok:
+            raise ValueError("explanation prose is not written in the requested output language")
 
 
 def _reject_repeated_final_equation(last_section: str, conclusion: str) -> None:
@@ -1056,18 +1439,51 @@ def _reject_unsafe_learner_prose(text: str, label: str) -> None:
         raise ValueError(f"{label} rejected by prompt safety: {violation}")
 
 
-def _reject_lean_source_terms(text: str, label: str) -> None:
+# Leaks that the fixed tactic list does not see. They are checked outside math, on generated
+# explanations only (`strict`): a lowercase snake_case name (a library lemma such as
+# `abs_add_le`), the words Lean / Mathlib, and a tactic written as a command at a line start.
+# A snake_case name needs a lowercase word of two letters or more, so `x_0` and `a_n` do not
+# match; English prose has no such token. "Lean" is rejected in every language: a learner
+# proof has no reason to talk about the checker, and a claim of what Lean verified is the
+# false statement the review is asked to catch.
+_SNAKE_CASE_NAME_PATTERN = re.compile(r"(?<![A-Za-z0-9_])[a-z]{2,}(?:_[a-z0-9]+)+(?![A-Za-z0-9_])")
+_LEAN_BRAND_PATTERN = re.compile(r"(?<![A-Za-z])(?:Lean|Mathlib)(?![A-Za-z])")
+_TACTIC_COMMAND_LINE_PATTERN = re.compile(
+    r"(?m)^[ \t]*(?:exact|apply|refine|intro|intros|constructor|obtain|specialize|unfold"
+    r"|positivity|calc)\b(?=[ \t]*(?:$|[^A-Za-z \t]|[A-Za-z0-9_']+(?:[_.]|[ \t]*$)))"
+)
+
+
+def _reject_lean_source_terms(
+    text: str, label: str, *, strict: bool = False, language: str = "ja"
+) -> None:
     """Keep learner prose independent from the Lean implementation vocabulary."""
+    _ = language
     if "`" in text:
         raise ValueError(f"{label} must not quote Lean source code")
     source_term = _LEAN_SOURCE_TERM_PATTERN.search(text)
     if source_term is not None:
         raise ValueError(f"{label} must not mention Lean tactic or command: {source_term.group(0)}")
-    qualified_identifier = _LEAN_QUALIFIED_IDENTIFIER_PATTERN.search(text)
-    if qualified_identifier is not None:
+    for qualified_identifier in _LEAN_QUALIFIED_IDENTIFIER_PATTERN.finditer(text):
+        # "e.g." and "i.e." are ordinary English abbreviations, not namespaced identifiers.
+        if qualified_identifier.group(0).lower() in _LATIN_ABBREVIATIONS:
+            continue
         raise ValueError(
             f"{label} must not mention Lean identifier: {qualified_identifier.group(0)}"
         )
+    if not strict:
+        return
+    # A line break written as \n before a word is read back as a literal backslash-n by the
+    # JSON repair (it looks like a TeX command), so a command line is also looked for there.
+    prose = _MATH_SPAN_PATTERN.sub(" ", text).replace("\\n", "\n")
+    for pattern, kind in (
+        (_SNAKE_CASE_NAME_PATTERN, "lemma name"),
+        (_LEAN_BRAND_PATTERN, "checker name"),
+        (_TACTIC_COMMAND_LINE_PATTERN, "tactic command"),
+    ):
+        leak = pattern.search(prose)
+        if leak is not None:
+            raise ValueError(f"{label} must not mention Lean {kind}: {leak.group(0).strip()}")
 
 
 def _is_japanese_code_point(character: str) -> bool:
@@ -1128,7 +1544,8 @@ def _explanation_prompt(
     x_squared_instruction = ""
     if require_epsilon_delta:
         opening_instruction = (
-            "The overview must begin exactly with:\n$\\varepsilon>0$ を任意に取ります。"
+            "Begin with an arbitrary positive epsilon, using natural Japanese wording. "
+            "For example: $\\varepsilon>0$ を任意に取ります。"
             if language == "ja"
             else (
                 "Begin directly with an epsilon-delta proof in the requested output language, "
@@ -1141,6 +1558,11 @@ theorem: give an explicit positive delta choice and use the factorization/bound 
 Write the mathematical proof itself from the first sentence. {opening_instruction}
 Then proceed in textbook order: fix the real point, choose delta explicitly, assume the
 delta-neighborhood condition, derive the factorization and epsilon bound, and conclude continuity.
+The proof must contain these elements, which an independent reviewer checks one by one:
+{_EPSILON_DELTA_WRITER_ELEMENTS}
+A fact that is evident from the definitions or is a brief standard fact ({_EVIDENT_FACTS}) needs
+at most a phrase; do not pad it into a paragraph, and do not leave out a step that is not
+evident. Any valid choice of delta that makes these elements hold is fine.
 Do not begin with a summary. Do not create visible section titles, a proof-plan preview, or a
 conclusion preview. Never use source-commentary headings such as ライブラリの利用, 示したい内容,
 or 連続性判定を使う. Use direct proof prose such as “Fix”, “Let”, “Set”, “Assume”, and
@@ -1226,7 +1648,8 @@ Return exactly one JSON object with this schema:
       ]
     }}
   ],
-  "conclusion": "one short final sentence; the explicit final answer when asked to compute or solve"
+  "conclusion": "one short final sentence; the explicit final answer when asked to compute or solve",
+  "figure": "a figure call object exactly as specified above, or null"
 }}
 
 Write all learner-facing prose in the requested output language. Overview and conclusion must be
@@ -1359,6 +1782,7 @@ def _output_review_prompt(
     selected_text: str = "",
     after_clarification_id: str | None = None,
     parent_clarification: dict[str, Any] | None = None,
+    checklist_ids: tuple[str, ...] = EPSILON_DELTA_CHECK_IDS,
 ) -> str:
     _require_output_language(language)
     reviewed_output: dict[str, Any] = {
@@ -1414,7 +1838,9 @@ def _output_review_prompt(
     figure_review = (
         "`explanation.figure` is a closed illustration template, drawn beside the proof and "
         "proving nothing. Reject the output if its labels, marks or `claim` values state "
-        "something the verified theorem does not establish or assume.\n"
+        "something the verified theorem does not establish or assume. A graph template's "
+        "`domain` and `range` (and `anchor`/`offsets`) only choose the visible window and "
+        "sample positions; they state no mathematical claim, so never reject for them.\n"
         if explanation.visualization is not None and clarification is None
         else ""
     )
@@ -1478,22 +1904,42 @@ def _output_review_prompt(
             "bullets, numbered steps, and commentary that substitutes for direct proof prose.\n"
         )
     )
+    checklist_review = clarification is None and _requires_epsilon_delta(
+        theorem_statement, lean_code
+    )
+    semantic_requirement = _review_requirement(checklist_ids) if checklist_review else ""
+    response_format = (
+        _checklist_response_format(checklist_ids) if checklist_review else _LEGACY_RESPONSE_FORMAT
+    )
+    # In checklist mode the output language is checked by code and the Lean line references by
+    # the structural layer; the reviewer is not asked to judge either (it invented defects).
+    language_clause = (
+        "" if checklist_review else f" and all learner-facing prose is written in `{language}`"
+    )
+    neutral = (
+        ""
+        if checklist_review
+        else (
+            "Mathematical notation, formula variables, and exact Lean excerpts are "
+            "language-neutral: do not\nreject a candidate merely because those non-prose spans "
+            f"are not words in `{language}`.\n"
+        )
+    )
+    source_correspondence = "" if checklist_review else _SOURCE_CORRESPONDENCE_INSTRUCTION
     return f"""You are an independent review session for learner-facing mathematical output.
 {ANSWER_SCOPE_REVIEW}
 You did not generate the candidate. Do not continue or repair it. Review only the supplied
 candidate against the verified Lean source and the learner theorem statement. A clarification
 must also be grounded in the supplied explanation. Approve only if every mathematical claim in
-the candidate is supported by those sources and all learner-facing prose is written in `{language}`.
-Mathematical notation, formula variables, and exact Lean excerpts are language-neutral: do not
-reject a candidate merely because those non-prose spans are not words in `{language}`.
-For a verified theorem, standard mathematical derivations of its stated claim are grounded even
-when the Lean proof uses automation. Do not require the learner-facing explanation to mention a
-tactic, source line, or other Lean implementation detail. Reject mathematical or grounding
+the candidate is supported by those sources{language_clause}.
+{neutral}For a verified theorem, standard mathematical derivations of its stated claim are grounded
+even when the Lean proof uses automation. Do not require the learner-facing explanation to
+mention a tactic, source line, or other Lean implementation detail. Reject mathematical or grounding
 contradictions in the candidate itself. Accept mathematically equivalent orders of algebraic
 expansion and standard implicit equalities; do not invent a missing step when the displayed
 equalities already establish it. A rejection must identify an actual invalid inference or
 violated output requirement, not a preferred wording or alternative proof order.
-{_SOURCE_CORRESPONDENCE_INSTRUCTION}
+{source_correspondence}
 {_STATED_CONVENTION_INSTRUCTION}
 {_NONSTANDARD_DEFINITION_INSTRUCTION}
 When the candidate uses such a nonstandard definition, reject it if no section justifies the
@@ -1506,16 +1952,13 @@ variables or raw `x^m∈I` and `x∈√(IJ)`; require KaTeX-compatible TeX such 
 `$x^m\\in I$` and `$x\\in\\sqrt{{IJ}}$`. Apply this formatting check to explanation
 overview, summaries, conclusion, and clarification answer/key points. The learner
 request, Lean source, citations, and saved context may contain raw notation.
-{output_quality_review}
+{output_quality_review}{semantic_requirement}
 {figure_review}Do not reveal hidden chain-of-thought.
 
 The proof is already verified. Your decision controls only whether this {output_kind} can be
 published; it must not alter the proof's verified state.
 
-Return exactly one JSON object and no surrounding text:
-{{"approved": true, "rationale": "a concise review reason"}}
-or
-{{"approved": false, "rationale": "a concise review reason"}}
+{response_format}
 
 User theorem statement:
 {_learner_text("theorem_statement", theorem_statement, notice=True)}
@@ -1528,6 +1971,66 @@ Verified Lean source:
 {visible_proof_input}
 Candidate {output_kind} JSON (structured evidence; field names and internal titles are not shown):
 {json.dumps(reviewed_output, ensure_ascii=False, sort_keys=True)}"""
+
+
+_NO_REASON_GIVEN = "(the reviewer gave no reason)"
+
+
+def _epsilon_delta_checks(
+    payload: dict[str, Any],
+    checklist_ids: tuple[str, ...] = EPSILON_DELTA_CHECK_IDS,
+) -> tuple[tuple[ReviewCheck, ...], str, bool | None]:
+    """Parse the closed checklist; a missing, repeated or unknown id is a schema failure."""
+    allowed = {"rationale", "checks", "approved"}
+    if not {"rationale", "checks"} <= set(payload) <= allowed:
+        raise ValueError("checklist review must contain rationale and checks only")
+    rationale = payload["rationale"]
+    if not isinstance(rationale, str) or not rationale.strip() or len(rationale) > 8_000:
+        raise ValueError("checklist review rationale must be a bounded nonblank string")
+    flag = payload.get("approved")
+    if flag is not None and type(flag) is not bool:
+        raise ValueError("checklist review approved flag must be boolean")
+    raw_checks = payload["checks"]
+    if not isinstance(raw_checks, list):
+        raise ValueError("checks must be a list")
+    by_id: dict[str, ReviewCheck] = {}
+    for raw in raw_checks:
+        if (
+            not isinstance(raw, dict)
+            or not {"id", "status", "note"} <= set(raw) <= {"id", "status", "quote", "note"}
+        ):
+            raise ValueError("each check must have id, status and note (quote is optional)")
+        check_id, status = raw["id"], raw["status"]
+        quote, note = raw.get("quote", ""), raw["note"]
+        if (
+            check_id not in checklist_ids
+            or check_id in by_id
+            or status not in {"ok", "missing", "wrong"}
+            or not isinstance(quote, str)
+            or not isinstance(note, str)
+            or len(quote) > 4_000
+            or len(note) > 2_000
+            or (check_id in _OK_OR_WRONG_ONLY and status == "missing")
+        ):
+            raise ValueError("invalid or repeated checklist entry")
+        if status != "ok" and not note.strip():
+            # A negative vote stands without a reason (it is never retried into an approval).
+            note = _NO_REASON_GIVEN
+        by_id[check_id] = ReviewCheck(id=check_id, status=status, quote=quote, note=note)
+    if set(by_id) != set(checklist_ids):
+        raise ValueError("every checklist id must be answered exactly once")
+    return tuple(by_id[i] for i in checklist_ids), rationale, flag
+
+
+def _checklist_rationale(samples: tuple[tuple[ReviewCheck, ...], ...], rationale: str) -> str:
+    """Private rejection reason: the failed elements and their notes, never the quotes."""
+    failed: dict[str, str] = {}
+    for checks in samples:
+        for check in checks:
+            if check.blocks:
+                failed.setdefault(check.id, f"{check.id} ({check.status}): {check.note.strip()}")
+    ordered = [failed[i] for i in EPSILON_DELTA_CHECK_IDS if i in failed]
+    return "Checks: " + " | ".join(ordered) + f"\nReviewer: {rationale}" if ordered else rationale
 
 
 def _review_approved(payload: dict[str, Any]) -> bool:
@@ -1567,6 +2070,15 @@ def _proof_semantic_review_prompt(
     lean_code: str,
 ) -> str:
     formal = formal_statement or "(No separate formal statement was supplied.)"
+    # Presentation, language and format instructions are not part of the mathematical claim.
+    split = split_presentation_instructions(theorem_statement)
+    theorem_statement = split.claim
+    removed_note = (
+        "\n(Presentation, language or format instructions were removed from this request; "
+        "another stage satisfies them.)"
+        if split.instructions
+        else ""
+    )
     return f"""You are an independent proof-review session. You did not generate this Lean
 candidate. {ANSWER_SCOPE_REVIEW}
 The deterministic parser extracted exactly this one target declaration; reject if it
@@ -1598,6 +2110,12 @@ only the notion it names: every other notion keeps its standard definition (a fi
 convention, such as replacing "is a field" by "every nonzero element is invertible", is weaker.
 Successful type checking does not establish that this is the theorem the learner requested.
 Base a rejection on that specific semantic mismatch, not on a guessed library-lemma meaning.
+Presentation, language and format requests (for example to write the proposition or the
+proof in a given language, in some style or at some length) are satisfied by a separate
+explanation stage, never by this Lean artifact. Never reject because the Lean source is not
+prose or is not written in such a language. A method the learner explicitly requires (for
+example the epsilon-delta definition) is part of the mathematical claim, not a presentation
+request.
 Lean compilation alone is not approval. Do not repair
 or continue the proof. Return exactly one JSON object and no surrounding text:
 {{\"approved\": true, \"rationale\": \"concise review rationale\"}}
@@ -1607,7 +2125,7 @@ The rationale must be nonblank, under 8,000 characters, and must not disclose hi
 chain-of-thought.
 
 Learner request:
-{theorem_statement}
+{theorem_statement}{removed_note}
 
 Learner-provided formal statement:
 {formal}
@@ -1621,11 +2139,29 @@ Lean candidate source:
 ```"""
 
 
-def _is_x_squared_continuity(theorem_statement: str) -> bool:
+# A request that names another property of x² (derivative, uniform continuity, ...).
+_OTHER_PROPERTY_PATTERN = re.compile(r"導関数|微分|一様|derivative|differentiab|uniform")
+# Wording that adds a second function, a sum or another proposition to the request.
+_NOT_ONLY_X_SQUARED_PATTERN = re.compile(
+    r"x\^(?!2(?![0-9]))|x\^\{(?!2\})|[³⁴⁵⁶⁷⁸⁹]"  # another power
+    r"|x(?:\^2|²)[+\-−*/×÷]|[+\-−*/×÷]x(?:\^2|²)"  # x² combined with something
+    r"|\(x[+\-−]"  # (x-1)^2 and the like
+    r"|sin|cos|exp|log|sqrt|√"  # other functions
+)
+
+
+def _asks_about_x_squared_continuity(theorem_statement: str) -> bool:
+    """The request mentions both x² and continuity (it may also name another property)."""
     compact = re.sub(r"\s+", "", theorem_statement).lower()
     return "連続" in compact and ("x²" in compact or "x^2" in compact)
 
 
+def _names_another_property(theorem_statement: str) -> bool:
+    return _OTHER_PROPERTY_PATTERN.search(re.sub(r"\s+", "", theorem_statement).lower()) is not None
+
+
+# Kept for explanation_v2 (flag off by default). The production line gates x² epsilon-delta in the
+# output reviewer instead, so the parse path no longer calls this.
 def _has_x_squared_epsilon_delta(text: str) -> bool:
     compact = (
         re.sub(r"\s+", "", text)
@@ -1720,6 +2256,38 @@ def _is_sufficient_x_squared_delta_choice(choice: str) -> bool:
     a_coefficient = matched.group("a_coefficient_first") or matched.group("a_coefficient_last")
     constant = matched.group("constant_last") or matched.group("constant_first")
     return int(a_coefficient) >= 2 and int(constant) >= 1
+
+
+def _is_x_squared_continuity(theorem_statement: str) -> bool:
+    """Conservative wording check: the request asks only for the continuity of x².
+
+    Used when the Lean target cannot be read as one declaration (for example a helper lemma
+    plus the main theorem). It is deliberately biased towards False: wrongly requiring an
+    epsilon-delta proof makes a correct explanation of another claim fail review, while
+    missing the requirement only leaves the general review in force. It is False when the
+    request names another property (derivative, uniform continuity), another power or
+    function, an expression combined with x², or says 連続 more than once (several claims).
+    """
+    compact = re.sub(r"\s+", "", theorem_statement).lower()
+    return (
+        _asks_about_x_squared_continuity(theorem_statement)
+        and not _names_another_property(theorem_statement)
+        and _NOT_ONLY_X_SQUARED_PATTERN.search(compact) is None
+        and compact.count("連続") == 1
+    )
+
+
+def _requires_epsilon_delta(theorem_statement: str, lean_code: str) -> bool:
+    """Whether the explanation must be an epsilon-delta proof of the continuity of x².
+
+    The verified Lean statement decides when it can be read: `Continuous (fun x : ℝ => x ^ 2)`
+    is recognised whatever language or notation the learner used. The wording of the learner's
+    request is consulted only when the artifact has no single readable target.
+    """
+    target = extract_single_target_declaration(lean_code)
+    if target is not None:
+        return matches_x_squared_continuity(target.proposition)
+    return _is_x_squared_continuity(theorem_statement)
 
 
 def _line_reference_table(lean_code: str) -> str:

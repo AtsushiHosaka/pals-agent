@@ -1306,7 +1306,7 @@ def test_worker_logs_a_closed_failure_reason_without_exception_text(
 
     api = FakeApi()
     api.state = "verified"
-    api.lean_code = "example : True := by\n  trivial"
+    api.lean_code = "theorem sq : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
     worker = _worker(api=api, explainer=InvalidExplainer())
 
     with caplog.at_level("ERROR"):
@@ -1319,6 +1319,36 @@ def test_worker_logs_a_closed_failure_reason_without_exception_text(
     ) in caplog.text
     assert "language=ja x_squared_gate=True lean_lines=2" in caplog.text
     assert "secret model text" not in caplog.text
+
+
+
+
+def test_failure_log_gate_follows_the_verified_lean_statement_not_the_request_wording(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    class InvalidExplainer:
+        def explain(self, **_: object) -> ProofExplanation:
+            raise ExplanationGenerationError(
+                "secret model text",
+                attempt_outputs=("secret model text",),
+                attempt_failures=("reference_excerpt", "reference_excerpt", "text_length"),
+            )
+
+    api = FakeApi()
+    api.state = "verified"
+    api.lean_code = "example : True := by\n  trivial"
+    worker = _worker(api=api, explainer=InvalidExplainer())
+
+    with caplog.at_level("ERROR"):
+        _process_proof(worker, "job-1")
+
+    assert api.explanation_updates[-1]["diagnostics"][0].code == "pals.explanation_failed"
+    assert (
+        "explanation_generation_failed resource=explanation id=job-1 "
+        "reason=validation:reference_excerpt,reference_excerpt,text_length elapsed_ms="
+    ) in caplog.text
+    # The request text mentions x² continuity, but the verified statement is another theorem.
+    assert "language=ja x_squared_gate=False lean_lines=2" in caplog.text
 
 
 def test_review_failure_reason_names_only_categories() -> None:

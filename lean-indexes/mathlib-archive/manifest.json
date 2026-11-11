@@ -1,0 +1,37 @@
+{
+  "attribution": "Copyright (c) The Mathlib Authors and the individual Archive authors named in each file header. Released under the Apache 2.0 license.",
+  "build_seconds": 0.09,
+  "by_kind": {
+    "abbrev": 33,
+    "class": 2,
+    "def": 236,
+    "inductive": 12,
+    "instance": 22,
+    "structure": 14,
+    "theorem": 1121
+  },
+  "by_layer": {
+    "Archive": 1027,
+    "Counterexamples": 413
+  },
+  "by_trust": {
+    "kernel-checked-unreviewed": 1440
+  },
+  "claims": "declarations exist in the source text; not that they compile or are true",
+  "commit": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+  "declarations": 1440,
+  "decls_jsonl_gz_sha256": "64b4e3edd1fcff05356c94c52af63c433c2f3a4f08b7e42857996d6f16ca4577",
+  "files": 113,
+  "jsonl_gz_bytes": 54496,
+  "library": "mathlib-archive",
+  "license": "Apache-2.0",
+  "plugin": null,
+  "repo": "https://github.com/leanprover-community/mathlib4",
+  "schema": "pals.library-declaration-index.v1",
+  "skipped": {
+    "anonymous_instance": 77,
+    "example": 56,
+    "private": 33
+  },
+  "sqlite_bytes": 774144
+}

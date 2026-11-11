@@ -1,0 +1,149 @@
+{
+ "schema_version": "pals.general-recipe-card.v1",
+ "id": "differentiability.linear.real.difference-quotient",
+ "revision": 1,
+ "family_id": "real-analysis",
+ "theorem_name": "linear_differentiable_difference_quotient",
+ "source_path": "proofs/linear_differentiable_difference_quotient.lean",
+ "target_source": "∀ (c : ℝ), Differentiable ℝ (fun x : ℝ => c * x)",
+ "statement": "任意の実数 $c$ について、実数全体で定義された関数 $f(x)=cx$（$x$ の定数倍、比例関数）が、$\\mathbb{R}$ のすべての点で微分可能であること（微分可能な関数であること）を、差分商の極限の定義から証明せよ。(Prove from the definition of the derivative that for every real number c, the function f(x)=cx is differentiable at every real point. This covers 2x, 3x, -x and the zero function.)",
+ "domain": "実数上の関数の微分可能性：1次の比例関数（xの定数倍、$cx$。$c$ は実数）が至る所で微分可能であることの、差分商による証明",
+ "assumptions": [
+  "$c$ は実数（$0$ や負の数を含む）、$f:\\mathbb{R}\\to\\mathbb{R}$、$f(x)=cx$（$x$ は実数変数）。",
+  "微分可能性は、実数上の各点 $a$ で極限 $\\lim_{x\\to a}\\frac{f(x)-f(a)}{x-a}$ が存在することを指す。"
+ ],
+ "quantifiers": [
+  "任意の実数 $c$ と任意の実数 $a$ について、$f(x)=cx$ は $a$ で微分可能である（微分係数が存在する）。"
+ ],
+ "conclusion": "任意の実数 $c$ について $f(x)=cx$ は $\\mathbb{R}$ のすべての点で微分可能である。すなわち $f$ は $\\mathbb{R}$ 上の微分可能な関数であり、その微分係数は各点で $c$ である。",
+ "proof_method_tag": "difference_quotient",
+ "answer": "$c$ を任意の実数、$a$ を任意の実数とします。$f(x)=cx$ が $a$ で微分可能であるとは、極限 $\\lim_{x\\to a}\\dfrac{f(x)-f(a)}{x-a}$ が存在することです。\n\n$x\\ne a$ のとき、$f(x)-f(a)=cx-ca=c(x-a)$ なので、$\\dfrac{f(x)-f(a)}{x-a}=\\dfrac{c(x-a)}{x-a}=c$ です。この値は $x$ によらない定数 $c$ です。$x\\to a$ の極限を考えるときは $x\\ne a$ の点だけを見るので、定数 $c$ の極限は $c$ 自身であり、極限は存在して $c$ に等しくなります。$c=0$ のときも、商はつねに $0$ なので同じ議論が成り立ちます。\n\nしたがって $f(x)=cx$ は $a$ で微分可能で、微分係数は $f'(a)=c$ です。$a$ は任意だったので、任意の実数 $c$ について $cx$ は $\\mathbb{R}$ のすべての点で微分可能です。たとえば $c=3$ なら、$3x$ の差分商はつねに $3$ です。\n",
+ "proof_outline": [
+  "Fix a real number c and a real point a.",
+  "For x different from a, the difference quotient (cx - ca)/(x - a) equals c.",
+  "A constant function has limit equal to that constant, so the limit as x tends to a exists and is c.",
+  "Hence cx is differentiable at every real point."
+ ],
+ "question_variants": {
+  "ja": [
+   "cxは微分可能であることを示してください。",
+   "任意の実数cについてc x が微分可能であることを証明してください。",
+   "比例関数 f(x)=cx の微分可能性を証明してください。",
+   "3xが微分可能であることを示してください。",
+   "xの定数倍の微分可能性を証明せよ。",
+   "2xの微分可能性を教えてください。"
+  ],
+  "en": [
+   "Prove that cx is differentiable for every real number c.",
+   "Show that the function f(x)=cx is differentiable on the real line.",
+   "Why is 3x differentiable?",
+   "Prove that a constant multiple of x is differentiable."
+  ]
+ },
+ "aliases": {
+  "ja": [
+   "cx",
+   "比例関数",
+   "定数倍",
+   "xの定数倍",
+   "1次関数",
+   "微分可能性",
+   "微分可能",
+   "微分可能な関数",
+   "差分商",
+   "微分係数",
+   "3x",
+   "2x"
+  ],
+  "en": [
+   "cx",
+   "linear function",
+   "proportional function",
+   "constant multiple",
+   "multiple of x",
+   "differentiability of linear functions",
+   "difference quotient",
+   "derivative from the definition",
+   "real analysis"
+  ]
+ },
+ "hard_negatives": [
+  {
+   "id": "restricted_domain",
+   "dimension": "domain",
+   "statement": "区間 $[0,1]$ 上で $f(x)=cx$ が微分可能であることを証明せよ。",
+   "reason": "定義域が $[0,1]$ に制限された別の主張で、端点の扱いが異なる。ℝ全体の主張とは別である。"
+  },
+  {
+   "id": "continuous",
+   "dimension": "conclusion",
+   "statement": "関数 $f(x)=cx$ が $\\mathbb{R}$ 上で連続であることを証明せよ。",
+   "reason": "結論が連続性であり、微分可能性の証明では答えにならない。"
+  },
+  {
+   "id": "derivative_value",
+   "dimension": "conclusion",
+   "statement": "関数 $f(x)=cx$ の導関数が定数関数 $c$ であることを証明せよ。",
+   "reason": "導関数の値を求める主張であり、保存証明は微分可能であることだけを示す。"
+  },
+  {
+   "id": "affine",
+   "dimension": "objects",
+   "statement": "任意の実数 $a,b$ について、$f(x)=ax+b$ が実数全体で微分可能であることを証明せよ。",
+   "reason": "切片 $b$ を含む別の関数であり、保存回答の $f(x)=cx$ の証明そのものではない。"
+  },
+  {
+   "id": "quadratic",
+   "dimension": "objects",
+   "statement": "任意の実数 $c$ について、$f(x)=cx^2$ が実数全体で微分可能であることを証明せよ。",
+   "reason": "2次の項を含む別の関数であり、差分商が定数にならない。"
+  },
+  {
+   "id": "absolute_value",
+   "dimension": "objects",
+   "statement": "関数 $f(x)=c|x|$ が実数全体で微分可能であることを証明せよ。",
+   "reason": "$c\\ne0$ のとき $x=0$ で微分可能でなく、命題として別物である（偽になりうる）。"
+  },
+  {
+   "id": "complex",
+   "dimension": "domain",
+   "statement": "任意の複素数 $c$ について、複素数全体で定義された関数 $f(z)=cz$ が正則であることを証明せよ。",
+   "reason": "定義域が $\\mathbb{C}$ であり、微分の意味も複素微分になる。"
+  },
+  {
+   "id": "by_epsilon_delta",
+   "dimension": "method",
+   "statement": "任意の実数 $c$ について $cx$ が微分可能であることを、$\\varepsilon$-$\\delta$ 論法で証明せよ。",
+   "reason": "要求された証明方法が保存回答の方法（差分商が定数であること）と異なる。"
+  },
+  {
+   "id": "at_a_point",
+   "dimension": "quantifiers",
+   "statement": "任意の実数 $c$ について、$f(x)=cx$ が $x=0$ で微分可能であることを証明せよ。",
+   "reason": "1点での微分可能性だけを問う弱い主張である。"
+  },
+  {
+   "id": "sum_with_constant",
+   "dimension": "objects",
+   "statement": "任意の実数 $c$ について、$f(x)=cx+1$ が実数全体で微分可能であることを証明せよ。",
+   "reason": "別の関数であり、保存回答の $f(x)=cx$ の証明そのものではない。"
+  }
+ ],
+ "provenance": {
+  "kind": "original_synthetic_problem_and_proof",
+  "license": "Apache-2.0",
+  "upstream_library": "Mathlib",
+  "upstream_license": "Apache-2.0",
+  "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+  "ported_from": "new general-form proof for a universally quantified family (seq27 general Recipe families)"
+ },
+ "lifecycle": {
+  "authored": true,
+  "independently_reviewed": false,
+  "admitted": false,
+  "retrievable": false,
+  "runtime_verified": false,
+  "deployed": false
+ },
+ "status": "authored_awaiting_execution"
+}
