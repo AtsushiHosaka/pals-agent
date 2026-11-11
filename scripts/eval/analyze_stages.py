@@ -59,7 +59,8 @@ def add_normalised(
             by_run[key].append((_parse_ts(a["started_at"]), _parse_ts(a["ended_at"])))
     for r in runs:
         merged: list[list[float]] = []
-        for start, end in sorted(by_run.get((r["problem_id"], r["arm"], int(r.get("repeat", 1))), [])):
+        key = (r["problem_id"], r["arm"], int(r.get("repeat", 1)))
+        for start, end in sorted(by_run.get(key, [])):
             if merged and start <= merged[-1][1]:
                 merged[-1][1] = max(merged[-1][1], end)
             else:
