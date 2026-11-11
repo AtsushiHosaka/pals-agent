@@ -1,0 +1,77 @@
+| id | 種別 | i | ii | iib | iii | iv | v |
+|---|---|---|---|---|---|---|---|
+| P01_x2 | def | G | G | G | G | G | G |
+| P02_x3 | def | G | G | G | G | G | G |
+| P03_x5 | def | G | G | G | G | G | G |
+| P04_3x | def | G | G | G | G | G | G |
+| P05_2x1 | def | G | G | G | G | G | G |
+| P06_0x5 | def | G | G | G | G | G | G |
+| P07_x2_sq | def | G | G | G | G | G | G |
+| P08_xx | nondef | × | × | × | × | × | G |
+| P09_xm1 | nondef | × | × | × | × | × | G |
+| P10_x | nondef | × | × | G | × | × | G |
+| P11_negx | nondef | × | × | G | × | × | G |
+| P12_xdiv2 | nondef | × | × | × | × | × | G |
+| P13_xxx | nondef | × | × | × | × | × | G |
+| P14_xp1 | nondef | × | × | G | × | × | G |
+| P15_2x_p_x | nondef | × | × | × | × | × | G |
+| P16_at_x2 | at | × | × | × | × | G | × |
+| P17_at_3x | at | × | × | × | × | G | × |
+| P18_x2_p_3x1 | comp | × | × | - | × | G | - |
+| P19_x2_3x_1 | comp | × | × | - | × | × | - |
+| P20_x3_x2 | comp | × | × | - | × | G | - |
+| P21_3x2 | comp | × | × | - | × | G | - |
+| P22_x2_plus_x | comp | × | × | - | × | × | - |
+| P23_x2_1x | comp | × | × | - | × | G | - |
+| P24_x2_x3_x4 | comp | × | × | - | × | G | - |
+| P25_2x2_3x3 | comp | × | × | - | × | G | - |
+| P26_add_abs | hyp | × | × | - | × | G | - |
+| P27_cmul_abs | hyp | × | × | - | × | G | - |
+| P28_ff | hyp | × | × | - | × | G | - |
+| P29_x2_g | hyp | × | × | - | × | G | - |
+| P31_mono_x3 | mono | × | × | G | × | × | G |
+| P32_mono_x5 | mono | × | × | G | × | × | G |
+| P33_mono_x7 | mono | × | × | G | × | × | G |
+| P34_mono_gen | mono | × | × | G | × | G | G |
+| P35_d_x3 | diff | G | S | G | G | G | G |
+| P36_d_2x1 | diff | G | G | G | G | G | G |
+| P37_d_3x | diff | G | G | G | G | G | G |
+| P38_d_xx | diff | × | S | S | × | S | G |
+| P39_d_xm1 | diff | × | S | S | × | S | G |
+| N01_x2_p1 | neg | × | × | × | × | × | × |
+| N02_inv | neg | × | × | × | × | × | × |
+| N03_mono_x2 | neg | × | × | × | × | × | × |
+| N04_abs_cont | neg | × | × | × | × | × | × |
+| N05_abs_diff | neg | × | × | × | × | × | × |
+| N06_ucont_x2 | neg | × | × | × | × | × | × |
+| N07_x2x | neg | × | × | G | × | × | G |
+| N08_mono_x4 | neg | × | × | × | × | × | × |
+| N09_step | neg | × | × | × | × | × | × |
+| N10_x2_p_inv | neg | × | × | - | × | × | - |
+
+positives 38 (i) pass 10 (i) fail 28
+ii rescued 2 clean(G, no shortcut) 0 shortcut/no-G 2 ['P38_d_xx', 'P39_d_xm1'] | total passes among positives 12
+iib rescued 9 clean(G, no shortcut) 7 shortcut/no-G 2 ['P38_d_xx', 'P39_d_xm1'] | total passes among positives 19
+iii rescued 0 clean(G, no shortcut) 0 shortcut/no-G 0 [] | total passes among positives 10
+iv rescued 15 clean(G, no shortcut) 13 shortcut/no-G 2 ['P38_d_xx', 'P39_d_xm1'] | total passes among positives 25
+v rescued 14 clean(G, no shortcut) 14 shortcut/no-G 0 [] | total passes among positives 24
+union clean rescue 26 still failing ['P19_x2_3x_1', 'P22_x2_plus_x']
+negatives passed: [('N07_x2x', 'iib', True, []), ('N07_x2x', 'v', True, [])]
+import(main) i n 48 median 3.9 min 3.15 max 7.47
+import(main) ii n 48 median 4.1 min 3.24 max 5.5
+import(main) iib n 35 median 4.1 min 3.17 max 6.04
+import(main) iii n 48 median 4.2 min 3.14 max 6.48
+import(main) iv n 48 median 4.2 min 3.07 max 7.16
+import(main) v n 35 median 3.9 min 3.3 max 7.57
+append i n 12 median 4.8 min 3.8 max 16.79
+append iib n 10 median 4.7 min 3.68 max 6.12
+append iii n 12 median 5.2 min 4.2 max 14.05
+append iv n 12 median 5.2 min 4.13 max 16.97
+import(rerun) i n 12 median 4.5 min 3.54 max 5.82
+import(rerun) iii n 12 median 4.3 min 3.68 max 5.92
+import(rerun) iv n 12 median 4.6 min 3.56 max 5.66
+pairs same-statement same-closer: key import(main) / import(rerun) / append
+i n 12 import main 4.0 rerun 4.5 append 4.8
+iii n 12 import main 4.3 rerun 4.3 append 5.2
+iv n 12 import main 4.2 rerun 4.6 append 5.2
+verdict disagreements import vs append: []
