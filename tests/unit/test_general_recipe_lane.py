@@ -152,3 +152,14 @@ def test_answer_with_a_fake_runner_makes_no_model_call_and_reports_timings():
     assert result.model_calls == 0
     assert set(result.timings_ms) >= {"match", "build", "lean", "total"}
     assert result.outcome in {"answered", "miss"}
+
+
+def test_a_logged_error_vetoes_a_declaration_even_when_axioms_look_clean():
+    # a deterministic timeout logs an error but can leave `'x' does not depend on any axioms`
+    output = (
+        "'g' depends on axioms: [propext]\n"
+        "/tmp/I.lean:9:0: error: (deterministic) timeout at `whnf`, maximum number of heartbeats\n"
+        "'inst_a' does not depend on any axioms\n"
+        "'inst_b' depends on axioms: [propext]\n"
+    )
+    assert lane.errored_declarations(output) == {"inst_a"}

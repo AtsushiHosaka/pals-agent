@@ -279,8 +279,8 @@ def _attempt(recipe: PoolRecipe, request: str, index: int) -> Attempt:
     text = (
         f"{recipe_text}\n\n#print axioms {general}\n\n"
         f"theorem {instance} : {proposition} := by\n  first\n{body}\n\n"
-        f"#print axioms {instance}\n"
         f"set_option pp.proofs true in\nset_option pp.fieldNotation false in\n#print {instance}\n"
+        f"#print axioms {instance}\n"  # last: a streaming reader sees the term before the verdict
     )
     return Attempt(recipe, general, instance, proposition, text)
 
@@ -360,6 +360,33 @@ class LeanRunner:
         return LeanRunner(lake_out("which", "lean"), lake_out("printenv", "LEAN_PATH"))
 
 
+_VERDICT_LINE = re.compile(
+    r"'(\w+)' (?:depends on axioms: \[[^\]]*\]|does not depend on any axioms)"
+)
+_ERROR_LINE = re.compile(r"\.lean:\d+:\d+: error")
+
+
+def errored_declarations(output: str) -> set[str]:
+    """Names whose elaboration logged an error.
+
+    A deterministic timeout (``maxHeartbeats``) logs an error yet can leave the declaration in the
+    environment with no ``sorryAx`` in its axioms, so ``#print axioms`` alone is not a verdict.
+    Lean prints each declaration's messages before the next command's output, so the errors
+    logged since the previous ``#print axioms`` line belong to the declaration printed next.
+    """
+    errored: set[str] = set()
+    pending = False
+    for line in output.splitlines():
+        if _ERROR_LINE.search(line):
+            pending = True
+        match = _VERDICT_LINE.search(line)
+        if match:
+            if pending:
+                errored.add(match.group(1))
+            pending = False
+    return errored
+
+
 def _axioms(output: str, name: str) -> set[str] | None:
     match = re.search(rf"'{re.escape(name)}' depends on axioms: \[([^\]]*)\]", output)
     if match:
@@ -379,6 +406,11 @@ def back_check(source: LaneSource, attempt: Attempt, output: str) -> str | None:
     declared = f"theorem {attempt.instance_name} : {attempt.proposition} := by"
     if declared not in source.source or attempt.proposition != source.proposition:
         return "statement_mismatch"
+    errored = errored_declarations(output)
+    if attempt.instance_name in errored:
+        return "lean_rejected"  # an error was logged for this declaration (e.g. a timeout)
+    if attempt.general_name in errored:
+        return "recipe_not_clean"
     instance_axioms = _axioms(output, attempt.instance_name)
     if instance_axioms is None:
         return "lean_rejected"  # unknown constant: the declaration did not elaborate

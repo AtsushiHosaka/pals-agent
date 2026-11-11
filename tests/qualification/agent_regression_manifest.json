@@ -867,6 +867,82 @@
   {
    "id": "tests.unit.test_lean_profiles_real_frontier::test_sorry_and_extra_axioms_stay_forbidden",
    "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_general_recipe_instantiated_by_lean_with_no_model_call[composed-continuity]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_general_recipe_instantiated_by_lean_with_no_model_call[ring-identity]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_general_recipe_instantiated_by_lean_with_no_model_call[ring-identity-numerals]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_general_recipe_instantiated_by_lean_with_no_model_call[order-hypotheses]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_general_recipe_instantiated_by_lean_with_no_model_call[set-hypothesis]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_numeric_parameter_recipe_specialises_to_x_squared_without_the_concrete_card",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_a_statement_that_is_not_an_instance_is_never_answered[Continuous (fun x : \\u211d => x ^ 2 + 1)]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_a_statement_that_is_not_an_instance_is_never_answered[\\u2200 n : \\u2115, (5 : \\u211d) ^ n \\u2264 3 ^ n]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_a_closer_cannot_stand_in_for_the_recipe",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_recipe_containing_sorry_is_rejected",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_portfolio_closes_without_a_model_and_reports_the_tactic[\\u2200 x : \\u211d, 0 \\u2264 x ^ 2-positivity]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_portfolio_closes_without_a_model_and_reports_the_tactic[\\u2200 n : \\u2115, \\xac n < 0-simp]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_portfolio_closes_without_a_model_and_reports_the_tactic[example (a b : \\u2124) : (a + b) * (a - b) = a ^ 2 - b ^ 2 := by sorry-ring]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_portfolio_closes_without_a_model_and_reports_the_tactic[\\u2200 n : \\u2115, n < 3 \\u2192 n + n < 6-omega]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_a_false_statement_is_never_answered",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_a_recipe_wins_before_the_portfolio_and_the_portfolio_never_changes_the_statement",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_exact_search_records_the_mathlib_lemma_it_found",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_warm_worker_serves_several_requests_from_one_import",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_a_heartbeat_timeout_is_never_accepted_as_a_proof",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane and automation portfolio, model-free); not provided on this runner."
   }
  ],
  "allowed_unexecuted_modules": [
@@ -893,6 +969,14 @@
   {
    "id": "tests.unit.test_lean_profiles_real_frontier",
    "reason": "Every case needs the real pinned Lean workspace; not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real",
+   "reason": "Needs the real pinned Lean workspace with built Mathlib; not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real",
+   "reason": "Needs the real pinned Lean workspace with built Mathlib; not provided on this runner."
   }
  ]
 }
