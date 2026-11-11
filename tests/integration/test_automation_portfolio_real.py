@@ -89,3 +89,17 @@ def test_a_heartbeat_timeout_is_never_accepted_as_a_proof(runner):
         "∀ x y : ℝ, x * y ≤ (x ^ 2 + y ^ 2) / 2 + 1", [], runner, portfolio=starved, budget_s=60
     )
     assert result.outcome == "miss"
+
+
+def test_a_timed_out_warm_worker_is_replaced_and_never_leaks_output_into_the_next_request(runner):
+    worker = ap.WarmWorker(runner, ROOT / "scripts/eval/warm_worker.lean")
+    try:
+        slow = "theorem pals_slow : ∀ n : ℕ, n ≤ n + 1 := by\n  intros; exact?\n"
+        with pytest.raises(TimeoutError):
+            worker.check(slow, timeout_s=0.5)
+        assert not worker.alive()
+        worker.restart()
+        out, _ = worker.check("theorem t : (1 : ℕ) + 1 = 2 := rfl\n#print axioms t\n")
+        assert "'t' does not depend on any axioms" in out and "pals_slow" not in out
+    finally:
+        worker.close()

@@ -139,6 +139,7 @@ class Attempt:
     verdict: str | None = None  # None = accepted
     at_s: float | None = None  # seconds since process start when its verdict arrived
     lemma: str | None = None
+    call: str | None = None
 
 
 def build_unified(
@@ -247,6 +248,7 @@ def run_stream(
 
 _AX = re.compile(r"'(pals_\w+)' (?:depends on axioms: \[([^\]]*)\]|does not depend on any axioms)")
 _LEMMA = re.compile(r"\[apply\] .*?exact\s+(\(?[\w.'?!]+)")
+_CALL = re.compile(r"\[apply\] (?:\(expose_names;\s*)?exact\s+(.+?)\)?\s*$", re.M)
 
 
 def _verdict(axioms: str | None) -> str | None:
@@ -264,6 +266,7 @@ class SolveResult:
     route: str | None = None  # recipe | portfolio
     by: str | None = None
     lemma: str | None = None
+    call: str | None = None
     proposition: str | None = None
     source_sha256: str | None = None
     model_calls: int = 0
@@ -373,6 +376,22 @@ class WarmWorker:
     """
 
     def __init__(self, runner: lane.LeanRunner, worker_source: Path) -> None:
+        self._runner, self._source = runner, worker_source
+        self._start()
+
+    def alive(self) -> bool:
+        return self.proc.poll() is None
+
+    def restart(self) -> None:
+        """Replace a killed or stuck worker (the Mathlib import is paid again)."""
+        if self.alive():
+            self.proc.kill()
+        self.proc.wait()
+        self._dir.cleanup()
+        self._start()
+
+    def _start(self) -> None:
+        runner, worker_source = self._runner, self._source
         env = {
             "PATH": os.environ.get("PATH", ""),
             "LEAN_PATH": runner.lean_path,
@@ -384,34 +403,80 @@ class WarmWorker:
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            text=True,
             env=env,
-            bufsize=1,
+            bufsize=0,
         )
-        assert self.proc.stdout is not None
-        line = self.proc.stdout.readline().strip()
-        if line != "PALS_READY":
+        self._buf = b""
+        if self._read_line(time.monotonic() + 120.0) != "PALS_READY":
             raise RuntimeError("warm worker did not start")
         self.startup_s = time.monotonic() - t0
         self._dir = tempfile.TemporaryDirectory(prefix="pals-warm-")
+        self._counter = 0
 
     def check(self, source: str, *, timeout_s: float = 60.0) -> tuple[str, float]:
-        assert self.proc.stdin is not None and self.proc.stdout is not None
-        path = Path(self._dir.name) / "req.lean"
+        """Elaborate ``source`` in the warm environment.
+
+        A timeout or a dead worker kills and reaps the process (``alive()`` becomes False, the
+        caller restarts it), so output of one request can never be read as the next one's.
+        """
+        assert self.proc.stdin is not None
+        self._counter += 1
+        path = Path(self._dir.name) / f"req{self._counter}.lean"
         path.write_text(source)
         t0 = time.monotonic()
-        self.proc.stdin.write(str(path) + "\n")
-        self.proc.stdin.flush()
+        try:
+            self.proc.stdin.write((str(path) + "\n").encode())
+            self.proc.stdin.flush()
+        except (BrokenPipeError, OSError) as error:
+            self._reap()
+            raise RuntimeError("warm worker is not running") from error
         out: list[str] = []
+        done = f"PALS_DONE {path}"
+        deadline = t0 + timeout_s
         while True:
-            if time.monotonic() - t0 > timeout_s:
-                self.proc.kill()
+            line = self._read_line(deadline)
+            if line is None:
+                self._reap()
                 raise TimeoutError("warm worker timeout")
-            line = self.proc.stdout.readline()
-            if not line or line.strip() == "PALS_DONE":
+            if line == done:
                 break
-            out.append(line)
+            out.append(line + "\n")
         return "".join(out), time.monotonic() - t0
+
+    def _read_line(self, deadline: float) -> str | None:
+        """One output line, or None at the deadline; a dead worker raises RuntimeError."""
+        assert self.proc.stdout is not None
+        fd = self.proc.stdout.fileno()
+        while b"\n" not in self._buf:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                return None
+            ready, _, _ = select.select([fd], [], [], min(0.2, remaining))
+            if not ready:
+                if self.proc.poll() is not None:
+                    self._reap()
+                    raise RuntimeError("warm worker exited")
+                continue
+            data = os.read(fd, 65536)
+            if not data:
+                self._reap()
+                raise RuntimeError("warm worker exited")
+            self._buf += data
+        raw, self._buf = self._buf.split(b"\n", 1)
+        return raw.decode(errors="replace")
+
+    def _reap(self) -> None:
+        if self.proc.poll() is None:
+            self.proc.kill()
+        self.proc.wait()
+
+    def prewarm_search(self) -> float:
+        """Build the ``exact?`` index once (seconds), so no request pays for it."""
+        t0 = time.monotonic()
+        self.check(
+            "theorem pals_prewarm : ∀ n : ℕ, n ≤ n + 1 := by\n  intros; exact?\n", timeout_s=120.0
+        )
+        return time.monotonic() - t0
 
     def close(self) -> None:
         if self.proc.stdin:
@@ -427,8 +492,13 @@ def solve_warm(
     *,
     candidates: int = lane.DEFAULT_CANDIDATES,
     portfolio: tuple[Tactic, ...] = PORTFOLIO,
+    deadline: float | None = None,
 ) -> SolveResult:
-    """Staged first-success run on a warm worker: Recipe candidates, then each tactic in turn."""
+    """Staged first-success run on a warm worker: Recipe candidates, then each tactic in turn.
+
+    ``deadline`` (``time.monotonic()``) is a hard budget: no attempt is started after it and the
+    running one is killed by the worker timeout.
+    """
     t0 = time.monotonic()
     try:
         proposition = check_formal_statement(request_formal)
@@ -467,12 +537,20 @@ def solve_warm(
                 result.total_s = time.monotonic() - t0
                 return result
     for k, tactic in enumerate(portfolio):
+        if deadline is not None and time.monotonic() >= deadline:
+            result.code = "budget_exhausted"
+            break
         decl = f"pals_portfolio_{k}"
         text = prefix + (
             f"set_option maxHeartbeats {tactic.heartbeats} in\n"
             f"theorem {decl} : {proposition} := by\n  {tactic.text}\n#print axioms {decl}\n"
         )
-        output, seconds = worker.check(text)
+        remaining = 60.0 if deadline is None else max(0.5, deadline - time.monotonic())
+        try:
+            output, seconds = worker.check(text, timeout_s=min(60.0, remaining))
+        except TimeoutError:
+            result.code = "budget_exhausted"
+            break
         match = _AX.search(output)
         attempt = Attempt("portfolio", tactic.name, decl)
         attempt.at_s = round(time.monotonic() - t0, 3)
@@ -489,6 +567,8 @@ def solve_warm(
             attempt.lemma = (
                 found[-1].strip().lstrip("(") if tactic.name == "exact?" and found else None
             )
+            calls = _CALL.findall(output)
+            attempt.call = calls[-1].strip() if tactic.name == "exact?" and calls else None
         result.attempts.append(attempt)
         if attempt.verdict is None:
             result.outcome, result.route, result.by, result.code = (
@@ -498,6 +578,7 @@ def solve_warm(
                 None,
             )
             result.lemma = attempt.lemma
+            result.call = attempt.call
             result.answered_s = attempt.at_s
             break
     result.total_s = time.monotonic() - t0

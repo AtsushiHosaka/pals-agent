@@ -22,7 +22,7 @@ unsafe def run : IO Unit := do
     let s ← IO.processCommands inputCtx {} cmdState
     for msg in s.commandState.messages.toList do
       stdout.putStr (← msg.toString)
-    stdout.putStrLn "PALS_DONE"
+    stdout.putStrLn s!"PALS_DONE {path}"
     stdout.flush
 
 @[implemented_by run] opaque mainSafe : IO Unit

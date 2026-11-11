@@ -943,6 +943,10 @@
   {
    "id": "tests.integration.test_automation_portfolio_real::test_a_heartbeat_timeout_is_never_accepted_as_a_proof",
    "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane and automation portfolio, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_a_timed_out_warm_worker_is_replaced_and_never_leaks_output_into_the_next_request",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane and automation portfolio, model-free); not provided on this runner."
   }
  ],
  "allowed_unexecuted_modules": [

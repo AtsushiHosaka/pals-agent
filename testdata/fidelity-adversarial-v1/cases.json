@@ -1,0 +1,69 @@
+{
+ "schema": "pals.fidelity-adversarial.v1",
+ "note": "test-only: each case pairs a request with a faithful statement and a model-style weakening or change that Lean may prove. Not part of generation-eval-v1.",
+ "cases": [
+  {
+   "id": "extra-hypothesis",
+   "kind": "weaker: added hypothesis",
+   "request": "For every real x, x^2 is nonnegative.",
+   "faithful": "∀ x : ℝ, 0 ≤ x ^ 2",
+   "bad": "∀ x : ℝ, 0 < x → 0 ≤ x ^ 2"
+  },
+  {
+   "id": "field-for-division-ring",
+   "kind": "weaker structure (the known miss)",
+   "request": "斜体$K$上の加群$V,W$を考え、$V$は有限次元とする。線形写像$f:V\\to W$について、$\\dim_K(\\operatorname{range}f)+\\dim_K(\\ker f)=\\dim_K V$を証明せよ。",
+   "faithful": "∀ (K : Type*) [DivisionRing K] (V W : Type*) [AddCommGroup V] [Module K V] [AddCommGroup W] [Module K W] [FiniteDimensional K V] (f : V →ₗ[K] W), Module.finrank K (LinearMap.range f) + Module.finrank K (LinearMap.ker f) = Module.finrank K V",
+   "bad": "∀ (K : Type*) [Field K] (V W : Type*) [AddCommGroup V] [Module K V] [AddCommGroup W] [Module K W] [FiniteDimensional K V] (f : V →ₗ[K] W), Module.finrank K (LinearMap.range f) + Module.finrank K (LinearMap.ker f) = Module.finrank K V"
+  },
+  {
+   "id": "exists-for-forall",
+   "kind": "∃ for ∀",
+   "request": "For every real x, exp(x) > 0.",
+   "faithful": "∀ x : ℝ, Real.exp x > 0",
+   "bad": "∃ x : ℝ, Real.exp x > 0"
+  },
+  {
+   "id": "wrong-domain",
+   "kind": "wrong domain ℕ vs ℝ",
+   "request": "For every real x, 2x is at most x^2 + 1.",
+   "faithful": "∀ x : ℝ, 2 * x ≤ x ^ 2 + 1",
+   "bad": "∀ x : ℕ, 2 * x ≤ x ^ 2 + 1"
+  },
+  {
+   "id": "off-by-one-bound",
+   "kind": "off-by-one bound",
+   "request": "For every real x, 2x is at most x^2 + 1.",
+   "faithful": "∀ x : ℝ, 2 * x ≤ x ^ 2 + 1",
+   "bad": "∀ x : ℝ, 2 * x ≤ x ^ 2 + 2"
+  },
+  {
+   "id": "special-case",
+   "kind": "special case instead of general",
+   "request": "For all natural m and n, gcd(m,n) * lcm(m,n) = m*n.",
+   "faithful": "∀ m n : ℕ, Nat.gcd m n * Nat.lcm m n = m * n",
+   "bad": "Nat.gcd 4 6 * Nat.lcm 4 6 = 4 * 6"
+  },
+  {
+   "id": "dropped-membership",
+   "kind": "weaker conclusion (root need not lie in [a,b])",
+   "request": "実数$a\\le b$と、閉区間$[a,b]$上で連続な実関数$f$を考える。$f(a)<0<f(b)$のとき、$[a,b]$内に$f(x)=0$となる点が存在することを証明せよ。",
+   "faithful": "∀ (a b : ℝ) (f : ℝ → ℝ), a ≤ b → ContinuousOn f (Set.Icc a b) → f a < 0 → 0 < f b → ∃ x ∈ Set.Icc a b, f x = 0",
+   "bad": "∀ (a b : ℝ) (f : ℝ → ℝ), a ≤ b → ContinuousOn f (Set.Icc a b) → f a < 0 → 0 < f b → ∃ x : ℝ, f x = 0"
+  },
+  {
+   "id": "different-function",
+   "kind": "different function",
+   "request": "Show that for every real a, the derivative of x^3 - 2x at a is 3a^2 - 2.",
+   "faithful": "∀ a : ℝ, HasDerivAt (fun x : ℝ => x ^ 3 - 2 * x) (3 * a ^ 2 - 2) a",
+   "bad": "∀ a : ℝ, HasDerivAt (fun x : ℝ => x ^ 3) (3 * a ^ 2) a"
+  },
+  {
+   "id": "commgroup-for-group",
+   "kind": "weaker structure (CommGroup for Group), added after the first review miss as a held-out check",
+   "request": "Let G be a group. For all a, b in G, (a b)^{-1} = b^{-1} a^{-1}.",
+   "faithful": "∀ (G : Type*) [Group G] (a b : G), (a * b)⁻¹ = b⁻¹ * a⁻¹",
+   "bad": "∀ (G : Type*) [CommGroup G] (a b : G), (a * b)⁻¹ = b⁻¹ * a⁻¹"
+  }
+ ]
+}
