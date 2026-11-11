@@ -91,6 +91,9 @@ RUN_FIELDS = {
     "explain_error",
     "explained_in_parallel",
     "undrained_background_calls",
+    "load_1m_start",
+    "load_1m_end",
+    "load_guard_timeout",
 }
 
 

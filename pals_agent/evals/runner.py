@@ -13,6 +13,7 @@ Full    ``run_pipeline_once`` around a caller-built ``ProofPipeline`` (Tier 2/3;
 from __future__ import annotations
 
 import json
+import os
 import random
 import time
 from collections.abc import Callable, Iterable
@@ -451,6 +452,13 @@ def run_tier1(
     return out
 
 
+def _load_1m() -> float | None:
+    try:
+        return round(os.getloadavg()[0], 2)
+    except OSError:
+        return None
+
+
 def run_pipeline_once(
     problem: dict[str, Any],
     pipeline: Any,
@@ -471,6 +479,7 @@ def run_pipeline_once(
     run_id = f"{scope.run_id}-{arm}-{problem['id']}-{repeat}"
     started, t0 = now_iso(), time.monotonic()
     error, state = None, "error"
+    load_start = _load_1m()
     pipeline_s: float | None = None
     answer_s: float | None = None
     extra: dict[str, Any] = {}
@@ -480,6 +489,7 @@ def run_pipeline_once(
                 statement=problem["statement"],
                 formal_statement=problem.get("fixed_lean_statement"),
                 proof_job_id=run_id,
+                routine=problem.get("tier") == "easy",  # ignored unless PALS_T2_NO_DRAFT is on
             )
             pipeline_s = time.monotonic() - t0  # the clock stops before any bookkeeping below
             state = result.state
@@ -513,5 +523,10 @@ def run_pipeline_once(
         started=started,
         termination=meta.get("termination_reason"),
         error=error,
-        extra={"answer_s": answer_s, **extra},
+        extra={
+            "answer_s": answer_s,
+            "load_1m_start": load_start,
+            "load_1m_end": _load_1m(),
+            **extra,
+        },
     )

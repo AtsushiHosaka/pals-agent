@@ -34,6 +34,42 @@ def load(path: Path) -> list[dict[str, Any]]:
     return [json.loads(x) for x in path.read_text().splitlines() if x.strip()]
 
 
+def _parse_ts(value: str) -> float:
+    from datetime import datetime
+
+    return datetime.fromisoformat(value).timestamp()
+
+
+def add_normalised(
+    runs: list[dict[str, Any]], attempts: list[dict[str, Any]], lean_normal_s: float
+) -> None:
+    """PROJECTION, not a measurement: ``wall_norm_s`` / ``answer_norm_s`` with every Lean check
+    shortened to ``lean_normal_s``.
+
+    Per run, the Lean intervals (lean_check and sketch_check) are merged where they overlap (a
+    race compiles two candidates at once, which costs the clock once), and each merged interval
+    longer than ``lean_normal_s`` is cut to that length. Model time and everything else stay as
+    measured; this assumes the model calls would not have been slower or faster with a quiet
+    machine.
+    """
+    by_run: dict[tuple[str, str, int], list[tuple[float, float]]] = defaultdict(list)
+    for a in attempts:
+        if a.get("stage") in ("lean_check", "sketch_check") and a.get("started_at"):
+            key = (a["problem_id"], a["arm"], int(a.get("repeat", 1)))
+            by_run[key].append((_parse_ts(a["started_at"]), _parse_ts(a["ended_at"])))
+    for r in runs:
+        merged: list[list[float]] = []
+        for start, end in sorted(by_run.get((r["problem_id"], r["arm"], int(r["repeat"])), [])):
+            if merged and start <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], end)
+            else:
+                merged.append([start, end])
+        cut = sum(max(0.0, end - start - lean_normal_s) for start, end in merged)
+        for raw, norm in (("wall_s", "wall_norm_s"), ("answer_s", "answer_norm_s")):
+            if r.get(raw) is not None:
+                r[norm] = max(0.0, float(r[raw]) - cut)
+
+
 def quantile(values: list[float], q: float) -> float:
     """Linear-interpolated quantile (type 7)."""
     xs = sorted(values)
@@ -62,7 +98,31 @@ def arm_summary(runs: list[dict[str, Any]], arm: str) -> None:
         f" cost_total=${sum(col('cost_usd')):.3f} calls_mean={st.mean(col('model_calls')):.1f}"
     )
     print(line)
-    for key in ("wall_s", "answer_s", "review_s", "explain_wait_s"):
+    loads = [
+        (r["load_1m_start"], r["load_1m_end"]) for r in rows if r.get("load_1m_start") is not None
+    ]
+    if loads:
+        print(
+            f"    host load (1 min) at item start: mean={st.mean(a for a, _ in loads):.1f}"
+            f" max={max(a for a, _ in loads):.1f};"
+            f" at item end: mean={st.mean(b for _, b in loads):.1f}"
+            f" max={max(b for _, b in loads):.1f}"
+        )
+    lean_s = sorted(
+        float(x) for x in col("lean_check_median_s")
+    )  # filled by main() from the attempt rows
+    if lean_s:
+        print(
+            f"    measured Lean check per item (median of checks): p50={quantile(lean_s, 0.5):.1f}s"
+        )
+    for key in (
+        "wall_s",
+        "wall_norm_s",
+        "answer_s",
+        "answer_norm_s",
+        "review_s",
+        "explain_wait_s",
+    ):
         v = col(key)
         if v:
             print(
@@ -131,13 +191,32 @@ def main() -> None:
     ap.add_argument("run_dir", type=Path)
     ap.add_argument("--base", default="base")
     ap.add_argument("--treat", default="combined")
+    ap.add_argument(
+        "--lean-normal-s",
+        type=float,
+        default=None,
+        help="projection: cut every Lean check to this many seconds (the unloaded figure)",
+    )
+    ap.add_argument("--arms", help="comma list for the per-arm summary (default: base,treat)")
     args = ap.parse_args()
     rows = load(args.run_dir / "records.jsonl")
     runs = [r for r in rows if r.get("schema", "").endswith("run.v1")]
     attempts = [r for r in rows if r.get("schema", "").endswith("attempt.v1")]
     print(f"runs={len(runs)} attempts={len(attempts)} errors={sum(1 for r in runs if r['error'])}")
     ok = [r for r in runs if not r["error"]]
-    for arm in (args.base, args.treat):
+    checks: dict[tuple[str, str, int], list[float]] = defaultdict(list)
+    for a in attempts:
+        if a.get("stage") == "lean_check":
+            checks[(a["problem_id"], a["arm"], int(a.get("repeat", 1)))].append(
+                a["elapsed_ms"] / 1000
+            )
+    for r in runs:
+        c = checks.get((r["problem_id"], r["arm"], int(r["repeat"])))
+        if c:
+            r["lean_check_median_s"] = st.median(c)
+    if args.lean_normal_s is not None:
+        add_normalised(runs, attempts, args.lean_normal_s)
+    for arm in args.arms.split(",") if args.arms else (args.base, args.treat):
         arm_summary(runs, arm)
     for key, label in (("first_attempt_ok", "first-attempt ok"), ("success", "success")):
         report_metric(ok, args.base, args.treat, key, label, binary=True)
@@ -146,6 +225,8 @@ def main() -> None:
         "output_tokens",
         "wall_s",
         "answer_s",
+        "wall_norm_s",
+        "answer_norm_s",
         "review_s",
         "explain_wait_s",
         "cost_usd",

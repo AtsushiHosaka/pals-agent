@@ -36,6 +36,8 @@ FLAG_NAMES = {
     "race": "PALS_T2_PARALLEL_CANDIDATES_ENABLED",
     "patch": "PALS_T2_PATCH_REPAIR_ENABLED",
     "pexpl": "PALS_T2_PARALLEL_EXPLANATION_ENABLED",
+    "nodraft": "PALS_T2_NO_DRAFT_ENABLED",
+    "names": "PALS_T2_NAME_SAFETY_ENABLED",
 }
 ARM_FLAGS: dict[str, set[str]] = {
     "base": set(),
@@ -47,6 +49,9 @@ ARM_FLAGS: dict[str, set[str]] = {
     "race": {"race"},
     "patch": {"patch"},
     "pexpl": {"pexpl"},
+    "nodraft": {"nodraft"},
+    "nd_k2": {"nodraft", "race"},
+    "nd_k2_names": {"nodraft", "race", "names"},
     "t2_norace": {"nosketch", "patch", "pexpl"},
     "t2_nopatch": {"nosketch", "race", "pexpl"},
     "t2_nonosketch": {"race", "patch", "pexpl"},
@@ -132,6 +137,45 @@ def build(args: argparse.Namespace):
         timeout_seconds=args.lean_timeout,
     )
     return generator, verifier
+
+
+def load_1m() -> float:
+    return os.getloadavg()[0]
+
+
+def wait_for_quiet_machine(args: argparse.Namespace, state: dict[str, Any]) -> bool:
+    """Wait until the 1-minute load is <= --max-load, polling; give up after the first timeout.
+
+    Returns True when the run proceeds under a load above the limit (the row is flagged)."""
+    if args.max_load is None or state.get("gave_up"):
+        return bool(state.get("gave_up"))
+    deadline = time.monotonic() + args.load_wait_minutes * 60
+    while load_1m() > args.max_load:
+        if time.monotonic() >= deadline:
+            state["gave_up"] = True
+            print(f"load guard: load {load_1m():.1f} > {args.max_load}; going on", flush=True)
+            return True
+        time.sleep(15)
+    return False
+
+
+PROBE_CODE = (
+    "import Mathlib\n\ntheorem pals_probe (a b : ℝ) : a ^ 2 + b ^ 2 ≥ 2 * a * b := by\n"
+    "  nlinarith [sq_nonneg (a - b)]\n"
+)
+
+
+def probe_lean(verifier: Any, out: Path, label: str, repeats: int = 3) -> None:
+    """Time a fixed small proof through the real verifier; the unloaded figure for normalising."""
+    times = []
+    for _ in range(repeats):
+        t = time.monotonic()
+        verifier.verify(PROBE_CODE)
+        times.append(round(time.monotonic() - t, 2))
+    row = {"label": label, "load_1m": round(load_1m(), 2), "seconds": times}
+    with (out / "lean_probe.jsonl").open("a") as fh:
+        fh.write(json.dumps(row) + "\n")
+    print("lean probe", row, flush=True)
 
 
 def build_answer_stage(args: argparse.Namespace):
@@ -468,12 +512,16 @@ def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
         max_repair_attempts=args.max_repairs,
         explainer=explainer,
     )
+    load_state: dict[str, Any] = {}
+    wait_for_quiet_machine(args, load_state)
+    probe_lean(verifier, args.out, "start")
     for pid, arm, rep in interleaved_schedule(
         list(by_id), args.arms.split(","), args.repeats, args.seed
     ):
         if meter.exhausted():
             print("budget reached; stopping", flush=True)
             break
+        wait_for_quiet_machine(args, load_state)
         env = set_arm(arm)
         meter.arm = arm
         post = (
@@ -491,7 +539,11 @@ def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
                 model="gpt-6.1-terra",
                 artifact_dir=args.out / "art",
                 usage_scope_factory=lambda cb: usage_scope(lambda x: (cb(x), meter.add(x))),  # noqa: B023
-                config={"flags": env, "max_repairs": args.max_repairs},
+                config={
+                    "flags": env,
+                    "max_repairs": args.max_repairs,
+                    "load_guard_gave_up": bool(load_state.get("gave_up")),
+                },
                 post_run=post,
             )
         print(
@@ -500,6 +552,7 @@ def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
             f"run_usd={meter.run_usd:.4f} err={r['error']}",
             flush=True,
         )
+    probe_lean(verifier, args.out, "end")
 
 
 def main() -> None:
@@ -525,6 +578,10 @@ def main() -> None:
         ap.add_argument(f"--{name}", required=True)
     ap.add_argument("--lean-timeout", type=float, default=300.0)
     ap.add_argument("--max-repairs", type=int, default=3, help="repair cap (tier2)")
+    ap.add_argument(
+        "--max-load", type=float, default=None, help="tier2: wait for 1-min load <= this"
+    )
+    ap.add_argument("--load-wait-minutes", type=float, default=30.0)
     ap.add_argument(
         "--answer",
         action="store_true",
