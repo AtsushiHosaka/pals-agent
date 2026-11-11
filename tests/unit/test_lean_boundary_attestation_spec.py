@@ -250,3 +250,101 @@ def test_invalid_memory_setting_is_refused(monkeypatch: pytest.MonkeyPatch, valu
     monkeypatch.setenv("PALS_VERIFIER_MEMORY_GIB", value)
     with pytest.raises(boundary_module.BoundaryAttestationError):
         boundary_module._max_memory_bytes()
+
+
+def _stub_boundary_environment(
+    monkeypatch: pytest.MonkeyPatch, cgroup: Path, *, cpu_max: str, memory_max: str
+) -> None:
+    for name, content in (("cpu.max", cpu_max), ("memory.max", memory_max), ("pids.max", "64")):
+        (cgroup / name).write_text(content, encoding="ascii")
+    monkeypatch.setattr(boundary_module, "_cgroup_v2_root", lambda: cgroup)
+    monkeypatch.setattr(boundary_module.os, "geteuid", lambda: 65532)
+    monkeypatch.setattr(boundary_module, "_proc_status", lambda: "")
+    monkeypatch.setattr(boundary_module, "_hex_status_value", lambda *_: 0)
+    monkeypatch.setattr(boundary_module, "_decimal_status_value", lambda *_: 1)
+    monkeypatch.setattr(boundary_module, "_network_interfaces", lambda: ("lo",))
+    monkeypatch.setattr(boundary_module, "_is_read_only", lambda _path: True)
+    monkeypatch.setattr(boundary_module, "_is_bounded_tmpfs", lambda *_a, **_k: True)
+    monkeypatch.setattr(boundary_module, "_pressure_events_readable", lambda: True)
+    monkeypatch.setattr(boundary_module, "_nofile_limited", lambda: True)
+    # A closed environment: the developer's own credentials must not trip the credential check.
+    monkeypatch.setattr(boundary_module.os, "environ", {})
+
+
+def _attest(entry_point: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Any:
+    if entry_point == "http":
+        monkeypatch.setattr(boundary_module, "_network_interfaces", lambda: ("eth0", "lo"))
+    if entry_point == "unix":
+        return boundary_module.attest_runtime_boundary(
+            project_dir=tmp_path,
+            scratch_dir=tmp_path,
+            socket_dir=tmp_path,
+            scratch_max_bytes=1,
+            socket_max_bytes=1,
+        )
+    return boundary_module.attest_http_runtime_boundary(
+        project_dir=tmp_path,
+        scratch_dir=tmp_path,
+        scratch_max_bytes=1,
+        allowed_reference_environment_names=frozenset(),
+    )
+
+
+@pytest.mark.parametrize("entry_point", ["unix", "http"])
+@pytest.mark.parametrize(
+    ("env_cpus", "env_gib", "cpu_max", "memory_max", "accepted"),
+    [
+        (None, None, "200000 100000", str(8 * _GIB), True),
+        (None, None, "400000 100000", str(8 * _GIB), False),
+        (None, None, "200000 100000", str(16 * _GIB), False),
+        ("4", "16", "400000 100000", str(16 * _GIB), True),
+        ("4", "16", "400000 100000", str(16 * _GIB + 1), False),
+        ("4", "16", "400001 100000", str(16 * _GIB), False),
+    ],
+)
+def test_attestation_entry_points_honour_the_reviewed_ceilings(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    entry_point: str,
+    env_cpus: str | None,
+    env_gib: str | None,
+    cpu_max: str,
+    memory_max: str,
+    accepted: bool,
+) -> None:
+    cgroup = tmp_path / "cg"
+    cgroup.mkdir()
+    _stub_boundary_environment(monkeypatch, cgroup, cpu_max=cpu_max, memory_max=memory_max)
+    if env_cpus is not None:
+        monkeypatch.setenv("PALS_VERIFIER_CPUS", env_cpus)
+    if env_gib is not None:
+        monkeypatch.setenv("PALS_VERIFIER_MEMORY_GIB", env_gib)
+    if accepted:
+        evidence = _attest(entry_point, tmp_path, monkeypatch)
+        assert evidence.cpu_cgroup_limited and evidence.memory_cgroup_limited
+    else:
+        with pytest.raises(BoundaryAttestationError, match="CPU|memory"):
+            _attest(entry_point, tmp_path, monkeypatch)
+
+
+@pytest.mark.parametrize(
+    ("env", "quota", "expected"),
+    [
+        (None, 200000, True),
+        (None, 200001, False),
+        ("4", 400000, True),
+        ("4", 400001, False),
+    ],
+)
+def test_cgroup_v1_cpu_path_honours_the_reviewed_ceiling(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, env: str | None, quota: int, expected: bool
+) -> None:
+    (tmp_path / "cpu.cfs_quota_us").write_text(str(quota), encoding="ascii")
+    (tmp_path / "cpu.cfs_period_us").write_text("100000", encoding="ascii")
+    monkeypatch.setattr(boundary_module, "_cgroup_v2_root", lambda: None)
+    monkeypatch.setattr(boundary_module, "_cgroup_v1_controller_root", lambda _names: tmp_path)
+    if env is None:
+        monkeypatch.delenv("PALS_VERIFIER_CPUS", raising=False)
+    else:
+        monkeypatch.setenv("PALS_VERIFIER_CPUS", env)
+    assert boundary_module._cpu_cgroup_limited() is expected
