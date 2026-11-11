@@ -31,7 +31,7 @@ from typing import Any
 
 from pals_agent.explanations import ExplanationDeadlineExceeded, ProofExplanation
 from pals_agent.runtime_latency import latency_label
-from pals_agent.usage import forward_usage, hold_usage
+from pals_agent.usage import forward_usage, hold_usage, reporter_active
 
 logger = logging.getLogger(__name__)
 
@@ -119,10 +119,17 @@ class SpeculativeExplanation:
             ) from None
         except BaseException:
             # A direct call that raised would also have used (and reported) its tokens.
-            forward_usage(self.take_usage_once())
+            self._forward_if_reportable()
             raise
-        forward_usage(self.take_usage_once())
+        self._forward_if_reportable()
         return explanation
+
+    def _forward_if_reportable(self) -> None:
+        """Forward the held usage only when a reporter is active. ``take_usage_once`` marks it
+        handed out, so taking it with nobody to report to would lose it for good; left alone, a
+        later settle (``t2_lane.settle_unadopted``) still reports it."""
+        if reporter_active():
+            forward_usage(self.take_usage_once())
 
     def take_usage_once(self) -> list[dict[str, Any]]:
         """The call's usage, handed out exactly once: adopt, settle and discard accounting all

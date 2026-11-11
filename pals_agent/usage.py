@@ -66,6 +66,11 @@ def usage_scope(reporter: Callable[[dict[str, Any]], None]) -> Iterator[None]:
         _reporter.reset(token)
 
 
+def reporter_active() -> bool:
+    """Whether a usage reporter is active in this context (forwarding would reach somebody)."""
+    return _reporter.get() is not None
+
+
 def forward_usage(records: list[dict[str, Any]]) -> None:
     """Hand records that were held back to the reporter that is active now, if any.
 

@@ -510,6 +510,10 @@ class RunBackground:
         with self._lock:
             self._futures.discard(future)
 
+    def pending(self) -> int:
+        with self._lock:
+            return len(self._futures)
+
     def drain(self, timeout: float = 180.0) -> int:
         """Wait for them; their usage is forwarded when each ends. Returns how many were still
         running at the deadline (their usage is then not counted in this run)."""
