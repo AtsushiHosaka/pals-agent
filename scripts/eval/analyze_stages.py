@@ -220,6 +220,15 @@ def main() -> None:
         add_normalised(runs, attempts, args.lean_normal_s)
     for arm in args.arms.split(",") if args.arms else (args.base, args.treat):
         arm_summary(runs, arm)
+    discarded_path = args.run_dir / "discarded.jsonl"
+    if discarded_path.exists():
+        spent: dict[str, float] = defaultdict(float)
+        for d in load(discarded_path):
+            spent[d["arm"]] += d["usd"]
+        print(
+            "discarded speculative work (explanation/review started, not used), included in cost: "
+            + ", ".join(f"{arm}=${usd:.3f}" for arm, usd in sorted(spent.items()))
+        )
     for key, label in (("first_attempt_ok", "first-attempt ok"), ("success", "success")):
         report_metric(ok, args.base, args.treat, key, label, binary=True)
     for key in (

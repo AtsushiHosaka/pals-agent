@@ -572,7 +572,17 @@ def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
             if args.answer
             else None
         )
-        with t2_lane.discarded_usage_scope(lambda row: (scope.on_usage(row), meter.add(row))):
+        def count_discarded(row: dict[str, Any], arm: str = arm, pid: str = pid) -> None:
+            """Work that was started and not used (a discarded explanation or review): spend."""
+            from pals_agent.evals.runner import estimate_usd
+
+            scope.on_usage(row)
+            meter.add(row)
+            usd = estimate_usd(row["model"], row["input_tokens"], row["output_tokens"]) or 0.0
+            with (args.out / "discarded.jsonl").open("a") as fh:
+                fh.write(json.dumps({"arm": arm, "problem_id": pid, "usd": usd}) + "\n")
+
+        with t2_lane.discarded_usage_scope(count_discarded):
             r = run_pipeline_once(
                 by_id[pid],
                 pipelines[arm],
