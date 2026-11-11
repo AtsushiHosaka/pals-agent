@@ -4,6 +4,7 @@ import contextlib
 import json
 import re
 import threading
+import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextvars import copy_context
@@ -1226,6 +1227,18 @@ class ProofPipeline:
             previous_draft=generated.draft,
             previous_sketch=generated.sketch,
         )
+        alternate = self._try_alternate_candidate(
+            request=request,
+            feedback=base_feedback,
+            cumulative_diagnostics=cumulative_diagnostics,
+            problem_id=problem_id,
+            attempt=attempt,
+            repairs_used=repairs_used,
+            attempt_evidence=attempt_evidence,
+            on_status=on_status,
+        )
+        if alternate is not None:
+            return alternate
         if t2_lane.patch_repair_enabled():
             patched = self._try_patch_repair(
                 request=request,
@@ -1342,6 +1355,70 @@ class ProofPipeline:
             on_status=on_status,
         )
         return RepairGeneration(generated=repaired, route_decision=route_decision)
+
+    def _try_alternate_candidate(
+        self,
+        *,
+        request: ProofRequest,
+        feedback: GenerationFeedback,
+        cumulative_diagnostics: list[Diagnostic],
+        problem_id: str,
+        attempt: int,
+        repairs_used: int,
+        attempt_evidence: dict[str, Any],
+        on_status: StatusCallback | None,
+    ) -> RepairGeneration | None:
+        """T2 heterogeneous race: the other candidate of the first attempt, instead of a repair.
+
+        The API compile of the submitted candidate failed. The race kept the candidate that did
+        not win (it passed the same preflight); submitting it is the next attempt, counted as one
+        repair exactly like a model repair, with no model call. Only for a plain compile failure
+        and only once per delivery; a source identical to the failed one, a still-running call that
+        misses the wait, or no alternate falls through to the ordinary repair.
+        """
+        slot = t2_lane.repair_alternate()
+        if slot is None or not feedback.previous_lean_code.strip():
+            return None
+        codes = {d.code for d in feedback.diagnostics if d.severity == "error" and d.code}
+        if (
+            codes & _MODEL_DECIDES_CODES
+            or _HARNESS_MISMATCH_CODE in codes
+            or any(code.startswith("pals.") for code in codes)
+        ):
+            return None
+        started = time.monotonic()
+        held = slot.take(t2_lane.ALTERNATE_WAIT_SECONDS)
+        if (
+            held is None
+            or not held.lean_code.strip()
+            or held.lean_code == feedback.previous_lean_code
+        ):
+            return None
+        _emit(
+            on_status,
+            "repairing",
+            cumulative_diagnostics,
+            None,
+            feedback.previous_lean_code,
+            {
+                **_request_context(request, problem_id=problem_id),
+                "failed_attempt": attempt,
+                "repair_attempt": repairs_used + 1,
+                "repair_route": "prove",
+                "t2_alternate_candidate": True,
+                "attempt_evidence": attempt_evidence,
+                "max_repair_attempts": self.max_repair_attempts,
+            },
+        )
+        decision = RepairRouteDecision(
+            route="prove",
+            rationale="T2 heterogeneous race: the held second candidate.",
+            raw_model_output="",
+            model=held.model,
+            provider="pals-t2-alternate",
+            elapsed_ms=int((time.monotonic() - started) * 1000),
+        )
+        return RepairGeneration(generated=held, route_decision=decision)
 
     def _try_patch_repair(
         self,
@@ -1488,21 +1565,33 @@ class ProofPipeline:
         """
         decided = threading.Lock()
         claimed = False
+        background = t2_lane.current_background()
+        slot: t2_lane.AlternateSlot | None = None
+        if t2_lane.hetero_race_enabled() and background is not None:
+            # The candidate that does not win is kept: a failed API compile submits it instead of
+            # asking the model for a repair.
+            slot = background.alternate = t2_lane.AlternateSlot(t2_lane.CANDIDATE_COUNT)
 
         def task(cancel: threading.Event) -> _RacedCandidate:
             nonlocal claimed
-            generated = prove_once()
-            code = generated.lean_code
-            if not code.strip():
-                return _RacedCandidate(generated, None, preflight_errors=1_000)
-            errors = sum(d.severity == "error" for d in preflight(code))
-            if errors == 0:
-                with decided:
-                    if claimed or cancel.is_set():
-                        return _RacedCandidate(generated, None, preflight_errors=0)
-                    claimed = True
-                    cancel.set()
-            return _RacedCandidate(generated, None, preflight_errors=errors)
+            try:
+                generated = prove_once()
+                code = generated.lean_code
+                if not code.strip():
+                    return _RacedCandidate(generated, None, preflight_errors=1_000)
+                errors = sum(d.severity == "error" for d in preflight(code))
+                if errors == 0:
+                    with decided:
+                        if claimed or cancel.is_set():
+                            if slot is not None:
+                                slot.offer(generated)
+                            return _RacedCandidate(generated, None, preflight_errors=0)
+                        claimed = True
+                        cancel.set()
+                return _RacedCandidate(generated, None, preflight_errors=errors)
+            finally:
+                if slot is not None:
+                    slot.finished_one()
 
         result = t2_lane.race_candidates(
             [task] * t2_lane.CANDIDATE_COUNT,

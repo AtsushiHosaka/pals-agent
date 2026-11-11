@@ -297,3 +297,25 @@ def test_a_failed_compile_settles_the_carry_before_the_repair_starts(
 
     assert during_repair == [1]
     assert [r["usage"]["input_tokens"] for r in api.recorded] == [5]  # exactly once
+
+
+def test_a_failed_compile_hands_the_held_alternate_to_the_repair_and_only_then(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    slot = t2_lane.AlternateSlot(0)
+    background = t2_lane.RunBackground()
+    background.alternate = slot
+    seen: list[Any] = []
+    monkeypatch.setattr(
+        SqsProofWorker, "process_proof_job",
+        lambda self, *a, **k: seen.append(t2_lane.repair_alternate()) or True,
+    )
+    worker = _worker(_Recorder(), RecordingSemanticReviewer())
+    for state in ("drafting", "semantic_review"):
+        worker._resume_with_carry(
+            _T2Carry(background=background), {"state": state}, proof_job_id="j", claim_id="c",
+            extend_visibility=None,
+        )
+
+    assert seen == [slot, None]  # the repair gets it; the review path never does
+    assert t2_lane.repair_alternate() is None  # and it does not leak out of the call

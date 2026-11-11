@@ -1455,8 +1455,16 @@ class SqsProofWorker:
             carry.drain()
         reporter = self._claim_usage_reporter(proof_job_id, claim_id)
         token = _T2_CARRY.set(carry if usable else None)
+        # A failed compile of the winner may be answered by the race's other candidate instead of
+        # a model repair (heterogeneous race only; the slot is None otherwise).
+        alternate = (
+            getattr(getattr(carry, "background", None), "alternate", None)
+            if carry is not None and not usable else None
+        )
         try:
-            with usage_scope(reporter) if reporter is not None and usable else ExitStack():
+            with (
+                usage_scope(reporter) if reporter is not None and usable else ExitStack()
+            ), t2_lane.alternate_for_repair(alternate):
                 return self.process_proof_job(
                     proof_job_id,
                     claim_id=claim_id,

@@ -44,6 +44,12 @@ PARALLEL_EXPLANATION_ENV = "PALS_T2_PARALLEL_EXPLANATION_ENABLED"
 PARALLEL_REVIEW_ENV = "PALS_T2_PARALLEL_REVIEW_ENABLED"
 NO_DRAFT_ENV = "PALS_T2_NO_DRAFT_ENABLED"
 NAME_SAFETY_ENV = "PALS_T2_NAME_SAFETY_ENABLED"
+HETERO_RACE_ENV = "PALS_T2_HETERO_RACE_ENABLED"
+# Reasoning effort of each race candidate when HETERO_RACE_ENV is on: a fast one and a strong one.
+HETERO_EFFORTS = ("low", "medium")
+# How long a failed compile waits for the held alternate candidate to finish generating. A model
+# repair costs about as much, so waiting longer than this never pays.
+ALTERNATE_WAIT_SECONDS = 60.0
 CANDIDATE_COUNT = 2
 # Consecutive repairs that may use a patch before the full repair path takes over.
 PATCH_REPAIR_MAX_ROUNDS = 2
@@ -62,6 +68,10 @@ def no_sketch_enabled() -> bool:
 
 def parallel_candidates_enabled() -> bool:
     return _flag(PARALLEL_CANDIDATES_ENV)
+
+
+def hetero_race_enabled() -> bool:
+    return _flag(HETERO_RACE_ENV)
 
 
 def patch_repair_enabled() -> bool:
@@ -106,6 +116,7 @@ def validate_flags() -> None:
         parallel_review_enabled,
         no_draft_enabled,
         name_safety_enabled,
+        hetero_race_enabled,
         lean_slots,
         lean_process_slots,
     ):
@@ -261,11 +272,20 @@ VARIANT_INSTRUCTIONS = (
 )
 
 
+def variant_effort() -> str | None:
+    """The reasoning effort of the race candidate running in this context (None outside a
+    heterogeneous race): candidate 0 is the fast one, candidate 1 the strong one."""
+    index = _variant.get()
+    if index is None or not hetero_race_enabled():
+        return None
+    return HETERO_EFFORTS[index % len(HETERO_EFFORTS)]
+
+
 def variant_instruction() -> str:
     """The instruction of the candidate running in this context ('' outside a race)."""
     index = _variant.get()
-    if index is None:
-        return ""
+    if index is None or hetero_race_enabled():
+        return ""  # candidates differ by effort, not by prompt, when the race is heterogeneous
     return VARIANT_INSTRUCTIONS[index % len(VARIANT_INSTRUCTIONS)]
 
 
@@ -493,6 +513,67 @@ _PENDING: set[Future[Any]] = set()  # fallback for work started outside a pipeli
 _PENDING_LOCK = threading.Lock()
 
 
+class AlternateSlot:
+    """The race candidate that did not win, kept for a failed compile of the winner.
+
+    Only a candidate that passed the worker's own preflight is offered. ``take`` hands it out at
+    most once (a redelivered or resumed delivery cannot submit it twice) and waits for a candidate
+    that is still being generated, up to a deadline; it returns None once every candidate has
+    finished without one. Usage is not tracked here: the race forwards each candidate's usage
+    exactly once when the candidate ends.
+    """
+
+    def __init__(self, candidates: int) -> None:
+        self._cond = threading.Condition()
+        self._running = candidates
+        self._offered: Any = None
+        self._taken = False
+
+    def offer(self, generated: Any) -> None:
+        with self._cond:
+            if self._offered is None and not self._taken:
+                self._offered = generated
+            self._cond.notify_all()
+
+    def finished_one(self) -> None:
+        with self._cond:
+            self._running -= 1
+            self._cond.notify_all()
+
+    def take(self, timeout: float) -> Any:
+        deadline = time.monotonic() + max(0.0, timeout)
+        with self._cond:
+            while self._offered is None and self._running > 0 and not self._taken:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    break
+                self._cond.wait(remaining)
+            if self._taken or self._offered is None:
+                return None
+            self._taken = True
+            offered, self._offered = self._offered, None
+            return offered
+
+
+_repair_alternate: ContextVar[AlternateSlot | None] = ContextVar(
+    "pals_t2_repair_alternate", default=None
+)
+
+
+def repair_alternate() -> AlternateSlot | None:
+    """The alternate a repair run may use instead of a model repair (set by the worker)."""
+    return _repair_alternate.get()
+
+
+@contextmanager
+def alternate_for_repair(slot: AlternateSlot | None) -> Iterator[None]:
+    token = _repair_alternate.set(slot)
+    try:
+        yield
+    finally:
+        _repair_alternate.reset(token)
+
+
 class RunBackground:
     """Calls one pipeline run left running (race losers, an unused Draft, discarded
     explanations). Per run, so one run's accounting never waits for, or mixes with, another's."""
@@ -500,6 +581,7 @@ class RunBackground:
     def __init__(self) -> None:
         self._lock = threading.Lock()
         self._futures: set[Future[Any]] = set()
+        self.alternate: AlternateSlot | None = None  # set by a heterogeneous race
 
     def track(self, future: Future[Any]) -> None:
         with self._lock:

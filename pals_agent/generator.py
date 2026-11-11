@@ -46,7 +46,12 @@ from pals_agent.prompt_safety import (
 from pals_agent.proof_reuse_usage import model_role
 from pals_agent.sketch_repair import normalize_header
 from pals_agent.statement_template import TEMPLATE_INSTRUCTION, assemble
-from pals_agent.t2_lane import NAME_SAFETY_GUIDANCE, name_safety_enabled, variant_instruction
+from pals_agent.t2_lane import (
+    NAME_SAFETY_GUIDANCE,
+    name_safety_enabled,
+    variant_effort,
+    variant_instruction,
+)
 
 _LEAN_BLOCK_RE = re.compile(r"```(?:lean4?|Lean)?\s*(.*?)```", re.DOTALL)
 _MAX_REPAIR_INSTRUCTION_BYTES = 8_192
@@ -663,6 +668,10 @@ class HybridLeanGenerator:
             # whole run. It never changes in response to failures or retry count.
             if role != ModelRole.ROUTE and model != RELEASE_MODEL:
                 effort = client.reasoning_effort or effort
+            # T2 heterogeneous race: this candidate's own effort (never over a request's choice).
+            race_effort = variant_effort() if role == ModelRole.PROVE else None
+            if race_effort is not None and model != RELEASE_MODEL:
+                effort = race_effort
             effort = selected_effort or effort
             client = replace(client, reasoning_effort=effort)
         elif selected_effort is not None:
