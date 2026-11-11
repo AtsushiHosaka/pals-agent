@@ -41,6 +41,11 @@ from pals_agent.lean_source_policy import (
     strip_lean_comments_and_strings,
     with_auditable_examples,
 )
+from pals_agent.lean_verifier.resident import (
+    ResidentBusy,
+    ResidentLean,
+    ResidentUnavailable,
+)
 from pals_agent.models import Diagnostic, VerificationResult
 
 _PLACEHOLDER_RE = re.compile(
@@ -111,6 +116,12 @@ class LeanVerifier:
     # Opt-in (``None`` = off): verify over a proposed small import header and, when that fails the
     # way a missing import does, once more over the source as written. See ``lean_import_plan``.
     import_planning: ImportPlanning | None = None
+    # Opt-in (``None`` = off): a warm Mathlib process that serves the compile and the trusted audit
+    # of a default-profile source that imports exactly ``Mathlib``, by forking per request. Anything
+    # it cannot serve (other imports, busy, restarting, killed child) falls back to the cold path
+    # below, so enabling it can only make a request faster, never change its verdict.
+    # See ``pals_agent.lean_verifier.resident``.
+    resident: ResidentLean | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "scratch_dir", Path(self.scratch_dir))
@@ -361,16 +372,28 @@ class LeanVerifier:
 
             started_at = time.monotonic()
             deadline = started_at + budget
-            command, child_environment = self._reuse_environment(
-                command, child_environment, lean_binary=lean_binary,
-                lake_binary=lake_binary, temporary_dir=temporary_dir, deadline=deadline,
-            )
-            remaining = (
-                budget if self.lake_environment_cache is None
-                else deadline - time.monotonic()
-            )
             compile_started = time.monotonic()
-            if remaining <= 0:
+            completed = self._resident_compile(
+                lean_file,
+                olean_file if audited and not separate_audit_compile else None,
+                temporary_dir,
+                budget,
+            )
+            if completed is not None:
+                remaining = 0.0
+            else:
+                command, child_environment = self._reuse_environment(
+                    command, child_environment, lean_binary=lean_binary,
+                    lake_binary=lake_binary, temporary_dir=temporary_dir, deadline=deadline,
+                )
+                remaining = (
+                    budget if self.lake_environment_cache is None
+                    else deadline - time.monotonic()
+                )
+                compile_started = time.monotonic()
+            if completed is not None:
+                pass
+            elif remaining <= 0:
                 completed = _ProcessResult(-signal.SIGKILL, "", "", True, False)
             else:
                 limited_command = _limited_command(
@@ -498,6 +521,68 @@ class LeanVerifier:
             stderr=stderr,
             elapsed_ms=elapsed_ms,
         )
+
+    def _resident_usable(self) -> ResidentLean | None:
+        """The warm worker, only for the default profile and a verifier whose receipts do not
+        attest the literal ``lake env lean`` command (Recipe admission)."""
+        resident = self.resident
+        profile = self.library_profile
+        # The warm audit is derived from the default audit program; a profile with another audit
+        # (a different Lean, recorded trust roots) keeps the cold path.
+        if profile is not None and not (
+            profile.is_default and profile.audit_source == TRUSTED_AUDIT_SOURCE
+        ):
+            return None
+        if resident is None or self.literal_admission_command or not resident.alive():
+            return None
+        return resident
+
+    def _resident_compile(
+        self, source: Path, olean: Path | None, workdir: Path, timeout_seconds: float
+    ) -> _ProcessResult | None:
+        """``None`` means: use the cold path (not served, busy, or interrupted)."""
+        resident = self._resident_usable()
+        if resident is None or timeout_seconds <= 0:
+            return None
+        try:
+            outcome = resident.compile(
+                source, workdir=workdir, olean=olean, timeout_s=timeout_seconds
+            )
+        except (ResidentBusy, ResidentUnavailable):
+            return None
+        if outcome.unsupported or outcome.aborted:
+            return None
+        if outcome.timed_out:
+            return _ProcessResult(-signal.SIGKILL, "", "", True, False)
+        if outcome.output_limited:
+            return _ProcessResult(outcome.returncode, "", "", False, True)
+        return _ProcessResult(outcome.returncode, outcome.stdout, "", False, False)
+
+    def _resident_audit(
+        self, olean: Path, reference: Path, nonce: str, workdir: Path, timeout_seconds: float
+    ) -> _ProcessResult | list[Diagnostic] | None:
+        resident = self._resident_usable()
+        if resident is None or timeout_seconds <= 0:
+            return None
+        try:
+            outcome = resident.audit(
+                olean, reference, nonce, workdir=workdir, timeout_s=timeout_seconds
+            )
+        except (ResidentBusy, ResidentUnavailable):
+            return None
+        if outcome.unsupported or outcome.aborted:
+            return None
+        if outcome.timed_out:
+            return [self._audit_timeout()]
+        if outcome.output_limited:
+            return [
+                Diagnostic(
+                    severity="error",
+                    code="lean.output_limit",
+                    message="Lean exceeded the combined output limit.",
+                )
+            ]
+        return _ProcessResult(outcome.returncode, outcome.stdout, "", False, False)
 
     def _reuse_environment(
         self, command: list[str], base: dict[str, str], *, lean_binary: str,
@@ -673,7 +758,11 @@ class LeanVerifier:
                 lake_binary=lake_binary,
                 olean_file=olean_file,
             )
-            compiled = run(artifact_command)
+            compiled = self._resident_compile(
+                candidate, olean_file, audit_dir, max(0.0, deadline - time.monotonic())
+            )
+            if compiled is None:
+                compiled = run(artifact_command)
             if isinstance(compiled, list):
                 return compiled
             if not _compiler_accepted(compiled):
@@ -706,11 +795,15 @@ class LeanVerifier:
             str(olean_file),
             str(reference_file),
         ]
-        audited = run(
-            [lake_binary, "env", *lean_arguments]
-            if lake_binary is not None and command[0] == lake_binary
-            else lean_arguments
+        audited = self._resident_audit(
+            olean_file, reference_file, nonce, audit_dir, deadline - time.monotonic()
         )
+        if audited is None:
+            audited = run(
+                [lake_binary, "env", *lean_arguments]
+                if lake_binary is not None and command[0] == lake_binary
+                else lean_arguments
+            )
         if isinstance(audited, list):
             return audited
         report = parse_audit_report(audited.stdout, nonce) if audited.returncode == 0 else None
