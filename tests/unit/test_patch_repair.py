@@ -170,3 +170,21 @@ def test_an_unterminated_string_or_comment_fails_closed() -> None:
     # and a source with such a state protects every line
     source = 'import Mathlib\ntheorem t : True := by\n  have s := "abc\n  trivial\n'
     assert protected_through(source) == len(source.splitlines())
+
+
+def test_raw_strings_have_no_escapes_and_cannot_hide_what_follows() -> None:
+    # r"a\" is a complete raw string; the old scanner read \" as an escape and swallowed the rest
+    assert _body_rejected('    have s := r"a\\"\n    axiom bad : False\n    have t := r"b"')
+    assert _body_rejected('    have s := r#"a"b\\"#\n    axiom bad : False\n    have t := r#"c"#')
+    assert not _body_rejected('    have s : String := r#"a"b"#\n    positivity')
+    assert not _body_rejected('    have s : String := r"a\\"\n    positivity')
+    # a raw string that never closes fails closed
+    assert _body_rejected('    have s := r#"never closed"\n    positivity')
+
+
+def test_interpolated_strings_with_a_hole_fail_closed_plain_ones_do_not() -> None:
+    assert _body_rejected('    have s := s!"a{sorry}b"\n    positivity')
+    assert _body_rejected('    have s := s!"a{"q"}b"\n    positivity')
+    assert not _body_rejected('    have s : String := s!"plain text"\n    positivity')
+    # an identifier ending in r before a string is not a raw string opener
+    assert not _body_rejected('    have s : String := foo_r "x"\n    positivity')

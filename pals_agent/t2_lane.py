@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import contextlib
 import hashlib
+import logging
 import os
 import threading
 import time
@@ -32,7 +33,9 @@ from contextvars import ContextVar, copy_context
 from dataclasses import dataclass, field
 from typing import Any, Generic, TypeVar
 
-from pals_agent.usage import forward_usage, hold_usage
+from pals_agent.usage import forward_usage, forward_usage_strict, hold_usage
+
+logger = logging.getLogger(__name__)
 
 NO_SKETCH_ENV = "PALS_T2_NO_SKETCH_ENABLED"
 PARALLEL_CANDIDATES_ENV = "PALS_T2_PARALLEL_CANDIDATES_ENABLED"
@@ -142,6 +145,23 @@ def process_lean_slot() -> Iterator[None]:
         semaphore = _process_slots.setdefault(size, threading.BoundedSemaphore(size))
     with semaphore:
         yield
+
+
+_lost_lock = threading.Lock()
+_lost_reports = 0
+
+
+def _note_lost_usage_report() -> None:
+    global _lost_reports
+    with _lost_lock:
+        _lost_reports += 1
+    logger.warning("t2_usage_report_failed")  # closed code: no content
+
+
+def lost_usage_reports() -> int:
+    """How many speculative-call usage records could not be reported (process lifetime)."""
+    with _lost_lock:
+        return _lost_reports
 
 
 class SlottedVerifier:
@@ -325,7 +345,7 @@ def settle_unadopted(handle: Any, timeout: float = 120.0) -> None:
     silently lost. Waits up to ``timeout`` for the call to end, then reports what it used."""
     handle.discard()
     handle.wait(timeout)
-    forward_usage(handle.held_usage())
+    forward_usage(handle.take_usage_once())
 
 
 def _account_discarded(handle: Any, sink: Callable[[dict[str, Any]], None]) -> None:
@@ -335,9 +355,11 @@ def _account_discarded(handle: Any, sink: Callable[[dict[str, Any]], None]) -> N
     def work() -> None:
         try:
             handle.wait()
-            for record in handle.held_usage():
-                with contextlib.suppress(Exception):
+            for record in handle.take_usage_once():
+                try:
                     sink(record)
+                except Exception:  # noqa: BLE001 -- counted and logged, never silent
+                    _note_lost_usage_report()
         finally:
             future.set_result(None)
 
@@ -369,8 +391,10 @@ class ExplanationRun:
         # An evaluation may set its own sink; otherwise a discarded call is metered through the
         # ordinary usage reporter of this context, so production spend is never under-reported.
         parent = copy_context()
+        # Each report runs in its own copy: ``Context.run`` cannot be entered by two threads at
+        # once, and two discarded calls can finish together.
         self._sink = _discarded_sink.get() or (
-            lambda record: parent.run(forward_usage, [record])
+            lambda record: parent.copy().run(forward_usage_strict, [record])
         )
 
     def _drop(self, handle: Any) -> None:

@@ -82,6 +82,22 @@ def forward_usage(records: list[dict[str, Any]]) -> None:
             logger.warning("Provider usage recording failed (%s)", type(exc).__name__)
 
 
+def forward_usage_strict(records: list[dict[str, Any]]) -> None:
+    """Like :func:`forward_usage` but a failing reporter raises (after every record was tried),
+    for callers that must count a usage record that could not be reported."""
+    reporter = _reporter.get()
+    if reporter is None:
+        return
+    first: Exception | None = None
+    for record in records:
+        try:
+            reporter(dict(record))
+        except Exception as exc:  # noqa: BLE001
+            first = first or exc
+    if first is not None:
+        raise first
+
+
 @contextmanager
 def hold_usage() -> Iterator[list[dict[str, Any]]]:
     """Collect this scope's usage without reporting it; pair with :func:`forward_usage`."""

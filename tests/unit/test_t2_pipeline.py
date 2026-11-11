@@ -716,8 +716,9 @@ def test_background_is_exposed_and_drainable_when_the_run_raises(
     _flags(monkeypatch, **{t2_lane.NO_SKETCH_ENV: True, t2_lane.PARALLEL_CANDIDATES_ENV: True})
     seen: list[dict[str, Any]] = []
     with usage_scope(seen.append):
-        pipeline = _pipeline(tmp_path, Generator([GOOD, BAD], proof_delays=[0.0, 0.3]),
-                             ScriptedVerifier({GOOD}))
+        pipeline = _pipeline(
+            tmp_path, Generator([GOOD, BAD], proof_delays=[0.0, 0.3]), ScriptedVerifier({GOOD})
+        )
         pipeline.run_statement(statement=STATEMENT, proof_job_id=JOB)
         raised: BaseException | None = None
         try:
@@ -807,3 +808,86 @@ def test_discarded_speculative_calls_are_metered_through_the_normal_reporter(
         # an unadopted kept handle is settled explicitly, never silently lost
         t2_lane.settle_unadopted(kept)
     assert [r["input_tokens"] for r in seen] == [5, 5]
+
+
+def test_two_discarded_calls_finishing_together_both_report_their_usage(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(t2_lane.PARALLEL_EXPLANATION_ENV, "true")
+    seen: list[dict[str, Any]] = []
+
+    def slow_reporter(record: dict[str, Any]) -> None:
+        time.sleep(0.25)  # overlap the two reporting threads
+        seen.append(record)
+
+    explainer = RecordingExplainer()
+    with usage_scope(slow_reporter):
+        run = t2_lane.ExplanationRun(explainer.explain, "ja")
+        run.start(statement="s", lean_code="v1")
+        run.start(statement="s", lean_code="v2")
+        for handle in list(run._handles.values()):
+            handle.wait(5)
+        assert run.finish(verified=False, statement="s", lean_code="v1") is None
+        assert t2_lane.drain_background(5) == 0
+    assert [r["input_tokens"] for r in seen] == [5, 5]
+
+
+def test_a_failing_usage_report_is_counted_not_swallowed(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setenv(t2_lane.PARALLEL_EXPLANATION_ENV, "true")
+
+    def broken(record: dict[str, Any]) -> None:
+        raise RuntimeError("reporter down")
+
+    before = t2_lane.lost_usage_reports()
+    explainer = RecordingExplainer()
+    with usage_scope(broken):
+        run = t2_lane.ExplanationRun(explainer.explain, "ja")
+        run.start(statement="s", lean_code="v1")
+        for handle in list(run._handles.values()):
+            handle.wait(5)
+        run.finish(verified=False, statement="s", lean_code="v1")
+        assert t2_lane.drain_background(5) == 0
+    assert t2_lane.lost_usage_reports() == before + 1
+    assert any("t2_usage_report_failed" in r.getMessage() for r in caplog.records)
+
+
+def _finished_handle(explainer: "RecordingExplainer") -> Any:
+    from pals_agent.speculative_explanation import SpeculativeExplanation
+
+    handle = SpeculativeExplanation.start(
+        explain=explainer.explain,
+        theorem_statement="s",
+        lean_code="v",
+        language="ja",
+        deadline=time.monotonic() + 60,
+        timeout_seconds=5,
+    )
+    handle.wait(5)
+    return handle
+
+
+def test_usage_is_reported_exactly_once_whatever_the_order_of_adopt_and_settle() -> None:
+    def run(order: list[str]) -> int:
+        seen: list[dict[str, Any]] = []
+        with usage_scope(seen.append):
+            handle = _finished_handle(RecordingExplainer())
+            for step in order:
+                if step == "adopt":
+                    handle.adopt(
+                        theorem_statement="s", lean_code="v", language="ja", wait_seconds=1
+                    )
+                elif step == "settle":
+                    t2_lane.settle_unadopted(handle)
+                else:  # discard-accounting path
+                    t2_lane._account_discarded(handle, seen.append)
+                    t2_lane.drain_background(5)
+        return len(seen)
+
+    assert run(["adopt", "settle"]) == 1
+    assert run(["settle", "adopt"]) == 1
+    assert run(["settle", "settle"]) == 1
+    assert run(["adopt", "discard"]) == 1
+    assert run(["discard", "settle"]) == 1
+    assert run(["settle", "discard"]) == 1

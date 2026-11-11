@@ -68,6 +68,16 @@ def _char_literal_end(source: str, start: int) -> int | None:
     return i + 1 if i < n and source[i] == "'" else None
 
 
+def _raw_string_opener(source: str, i: int) -> bool:
+    """``r"`` or ``r#"`` (any number of ``#``) at ``source[i]``, not the end of an identifier."""
+    if i and (source[i - 1].isalnum() or source[i - 1] in "_'.!?"):
+        return False
+    j = i + 1
+    while j < len(source) and source[j] == "#":
+        j += 1
+    return j < len(source) and source[j] == '"'
+
+
 def scan_source(source: str) -> tuple[str, bool]:
     """``source`` with comments, string literals and char literals replaced by spaces (newlines
     kept), plus whether the text was well formed. ``False`` means an unterminated string or block
@@ -105,7 +115,21 @@ def scan_source(source: str) -> tuple[str, bool]:
             else:
                 out.extend("\n" if c == "\n" else " " for c in source[i:end])
                 i = end
+        elif source[i] == "r" and _raw_string_opener(source, i):
+            hashes = 0
+            j = i + 1
+            while source[j] == "#":
+                hashes += 1
+                j += 1
+            terminator = '"' + "#" * hashes
+            end = source.find(terminator, j + 1)
+            if end < 0:
+                return "".join(out), False  # a raw string that never closes: fail closed
+            stop = end + len(terminator)
+            out.extend("\n" if c == "\n" else " " for c in source[i:stop])
+            i = stop
         elif source[i] == '"':
+            interpolated = i >= 2 and source[i - 1] == "!" and source[i - 2].isalpha()
             out.append(" ")
             i += 1
             closed = False
@@ -114,6 +138,9 @@ def scan_source(source: str) -> tuple[str, bool]:
                     out.append("  ")
                     i += 2
                     continue
+                if interpolated and source[i] == "{":
+                    # s!"..{term}.." holds code the scanner does not model: fail closed
+                    return "".join(out), False
                 if source[i] == '"':
                     out.append(" ")
                     i += 1
