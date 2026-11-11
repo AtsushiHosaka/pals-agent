@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 import pytest
@@ -56,8 +57,11 @@ def test_multiline_model_tactics_are_indented_into_the_theorem() -> None:
 def test_unknown_gate_modes_are_refused() -> None:
     with pytest.raises(ValueError):
         fa.FastAnswer(  # type: ignore[arg-type]
-            resident=None, verifier=type("V", (), {"resident": None})(), model=None,
-            scratch=Path("."), gate_mode="nope",
+            resident=None,
+            verifier=type("V", (), {"resident": None})(),
+            model=None,
+            scratch=Path("."),
+            gate_mode="nope",
         )
 
 
@@ -65,22 +69,32 @@ def test_unknown_gate_modes_are_refused() -> None:
 def fast(tmp_path_factory: pytest.TempPathFactory):  # type: ignore[no-untyped-def]
     from pals_agent.lean import LeanVerifier
     from pals_agent.lean_verifier.resident import ResidentConfig, ResidentLean
+    from pals_agent.lean_verifier.resident.manager import default_read_roots
 
     lean = os.environ["PALS_RESIDENT_LEAN"]
     scratch = tmp_path_factory.mktemp("fa")
     resident = ResidentLean(
         ResidentConfig(
-            lean_binary=lean, lean_path=os.environ["PALS_RESIDENT_LEAN_PATH"],
-            build_dir=scratch / "b", max_children=4,
+            lean_binary=lean,
+            lean_path=os.environ["PALS_RESIDENT_LEAN_PATH"],
+            build_dir=scratch / "b",
+            max_children=4,
+            project_dir=Path(os.environ["PALS_RESIDENT_LEAN_PROJECT"]),
+            confine=sys.platform.startswith("linux"),
+            request_root=scratch,
+            read_roots=default_read_roots(lean, os.environ["PALS_RESIDENT_LEAN_PATH"]),
         )
     )
     resident.start()
     toolchain = Path(lean).parent
     verifier = LeanVerifier(
-        lean_binary=lean, lake_binary=str(toolchain / "lake"),
+        lean_binary=lean,
+        lake_binary=str(toolchain / "lake"),
         project_dir=Path(os.environ["PALS_RESIDENT_LEAN_PROJECT"]),
-        child_path=f"{toolchain}:/usr/bin:/bin", elan_home=str(Path.home() / ".elan"),
-        scratch_dir=scratch, resident=resident,
+        child_path=f"{toolchain}:/usr/bin:/bin",
+        elan_home=str(Path.home() / ".elan"),
+        scratch_dir=scratch,
+        resident=resident,
     )
     yield resident, verifier, scratch
     resident.close()
@@ -104,10 +118,15 @@ def fake_model(script: dict):  # type: ignore[no-untyped-def]
 @REAL
 def test_a_true_statement_with_a_good_proof_is_answered_and_verified(fast) -> None:  # type: ignore[no-untyped-def]
     resident, verifier, scratch = fast
-    merged = {"kind": "prove", "formal": "∀ n : ℕ, n + 0 = n", "tactics": ["intro n\nsimp"],
-              "negation_tactics": []}
-    answer = fa.FastAnswer(resident, verifier, fake_model({"merged": merged}), scratch,
-                           calls=2, gate_mode="terse2")
+    merged = {
+        "kind": "prove",
+        "formal": "∀ n : ℕ, n + 0 = n",
+        "tactics": ["intro n\nsimp"],
+        "negation_tactics": [],
+    }
+    answer = fa.FastAnswer(
+        resident, verifier, fake_model({"merged": merged}), scratch, calls=2, gate_mode="terse2"
+    )
     result = answer.run("Show n + 0 = n for every natural n.", "en")
     assert result.outcome == "answered" and result.verified and result.gate is not None
     assert result.gate.passed and result.explanation
@@ -116,8 +135,12 @@ def test_a_true_statement_with_a_good_proof_is_answered_and_verified(fast) -> No
 @REAL
 def test_a_rejecting_review_blocks_the_answer_even_when_lean_proves_it(fast) -> None:  # type: ignore[no-untyped-def]
     resident, verifier, scratch = fast
-    merged = {"kind": "prove", "formal": "∀ n : ℕ, n + 0 = n", "tactics": ["intro n\nsimp"],
-              "negation_tactics": []}
+    merged = {
+        "kind": "prove",
+        "formal": "∀ n : ℕ, n + 0 = n",
+        "tactics": ["intro n\nsimp"],
+        "negation_tactics": [],
+    }
     model = fake_model({"merged": merged, "faithful": False})
     answer = fa.FastAnswer(resident, verifier, model, scratch, calls=2, gate_mode="terse2")
     result = answer.run("Show n + 0 = n for every natural n.", "en")
@@ -127,8 +150,12 @@ def test_a_rejecting_review_blocks_the_answer_even_when_lean_proves_it(fast) -> 
 @REAL
 def test_a_false_statement_with_a_wrong_proof_is_never_answered(fast) -> None:  # type: ignore[no-untyped-def]
     resident, verifier, scratch = fast
-    merged = {"kind": "prove", "formal": "(2 : ℕ) + 2 = 5", "tactics": ["norm_num", "simp"],
-              "negation_tactics": []}
+    merged = {
+        "kind": "prove",
+        "formal": "(2 : ℕ) + 2 = 5",
+        "tactics": ["norm_num", "simp"],
+        "negation_tactics": [],
+    }
     answer = fa.FastAnswer(resident, verifier, fake_model({"merged": merged}), scratch, calls=2)
     result = answer.run("Show 2 + 2 = 5.", "en")
     assert result.outcome == "fallthrough" and not result.verified
@@ -137,11 +164,15 @@ def test_a_false_statement_with_a_wrong_proof_is_never_answered(fast) -> None:  
 @REAL
 def test_a_question_is_answered_no_by_proving_the_negation(fast) -> None:  # type: ignore[no-untyped-def]
     resident, verifier, scratch = fast
-    merged = {"kind": "decide", "formal": "Function.Injective (fun x : ℝ => x ^ 2)",
-              "tactics": [], "negation_tactics": [
-                  "intro h\nhave := @h 1 (-1) (by norm_num)\nnorm_num at this"]}
-    answer = fa.FastAnswer(resident, verifier, fake_model({"merged": merged}), scratch,
-                           calls=2, gate_mode="terse2")
+    merged = {
+        "kind": "decide",
+        "formal": "Function.Injective (fun x : ℝ => x ^ 2)",
+        "tactics": [],
+        "negation_tactics": ["intro h\nhave := @h 1 (-1) (by norm_num)\nnorm_num at this"],
+    }
+    answer = fa.FastAnswer(
+        resident, verifier, fake_model({"merged": merged}), scratch, calls=2, gate_mode="terse2"
+    )
     result = answer.run("Is x ↦ x² injective on the reals?", "en")
     assert result.outcome == "answered" and result.answer == "no"
     assert result.proved is not None and result.proved.startswith("¬")

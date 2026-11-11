@@ -48,16 +48,25 @@ def main() -> None:
     )
     parser.add_argument("--project", type=Path, default=ROOT / "lean-workspace")
     args = parser.parse_args()
+    args.out = args.out.resolve()
     args.out.mkdir(parents=True, exist_ok=True)
     lean = f"{args.toolchain}/bin/lean"
     lean_path = subprocess.run(
-        [f"{args.toolchain}/bin/lake", "env", "printenv", "LEAN_PATH"], cwd=args.project,
-        capture_output=True, text=True, check=True,
+        [f"{args.toolchain}/bin/lake", "env", "printenv", "LEAN_PATH"],
+        cwd=args.project,
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout.strip()
     resident = ResidentLean(
         ResidentConfig(
-            lean_binary=lean, lean_path=lean_path, build_dir=args.out / "resident",
-            max_children=8, queue_timeout_s=30.0, warm_exact=True,
+            project_dir=args.project,
+            lean_binary=lean,
+            lean_path=lean_path,
+            build_dir=args.out / "resident",
+            max_children=8,
+            queue_timeout_s=30.0,
+            warm_exact=True,
         )
     )
     resident.start()
@@ -89,11 +98,17 @@ def main() -> None:
                 m.tactics = [*m.tactics, *other.tactics]
                 m.negation_tactics = [*m.negation_tactics, *other.negation_tactics]
         row = {
-            "id": pid, "effort": args.effort, "call_s": round(call_s, 2), "kind": m.kind,
-            "formal": m.formal, "tactics": m.tactics, "neg": m.negation_tactics,
+            "id": pid,
+            "effort": args.effort,
+            "call_s": round(call_s, 2),
+            "kind": m.kind,
+            "formal": m.formal,
+            "tactics": m.tactics,
+            "neg": m.negation_tactics,
             "tokens": recorder.events[0]["output_tokens"] if recorder.events else None,
             "same_statement": sum(c.formal == m.formal for c in calls),
-            "closed_by": None, "race_s": None,
+            "closed_by": None,
+            "race_s": None,
         }
         if m.kind in {"prove", "decide"} and m.formal:
             statements = [(m.formal, fa.model_tactics(m.tactics))]
@@ -111,13 +126,14 @@ def main() -> None:
                 t1 = time.monotonic()
                 done = worker.check_race(
                     [s if good else "" for s, good in zip(sources, ok, strict=True)],
-                    lambda i, out, ok=ok: ok[i]
-                    and "error" not in out.lower()
-                    and "sorry" not in out.lower(),
+                    lambda i, out, ok=ok: (
+                        ok[i] and "error" not in out.lower() and "sorry" not in out.lower()
+                    ),
                     timeout_s=20.0,
                 )
                 winners = [
-                    tactics[i].name for i, out in sorted(done.items())
+                    tactics[i].name
+                    for i, out in sorted(done.items())
                     if ok[i] and "error" not in out.lower() and "sorry" not in out.lower()
                 ]
                 if winners:
@@ -125,8 +141,18 @@ def main() -> None:
                     row["race_s"] = round(time.monotonic() - t1, 2)
                     break
         rows.append(row)
-        print(pid[:34], args.effort, m.kind, row["call_s"], row["tokens"], row["closed_by"],
-              row["race_s"], "same", row["same_statement"], flush=True)
+        print(
+            pid[:34],
+            args.effort,
+            m.kind,
+            row["call_s"],
+            row["tokens"],
+            row["closed_by"],
+            row["race_s"],
+            "same",
+            row["same_statement"],
+            flush=True,
+        )
     name = f"merged_{args.effort}_p{args.parallel}.json"
     (args.out / name).write_text(json.dumps(rows, ensure_ascii=False))
     resident.close()

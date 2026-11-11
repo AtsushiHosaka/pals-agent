@@ -44,9 +44,12 @@ from pals_agent.lean_verifier.resident import (  # noqa: E402
 LABELS = (
     ("Classify the request, translate it into Lean 4 (Mathlib) and give", "merged"),
     ("Classify the request", "formalise"),
-    ("You review a formalisation. REQUEST is what a learner asked. STATEMENT is a Lean 4 (Mathlib) "
-     "proposition that will be proved. Approve only if STATEMENT is exactly the mathematical claim "
-     "of REQUEST: same", "review_terse"),
+    (
+        "You review a formalisation. REQUEST is what a learner asked. STATEMENT is a Lean 4 "
+        "(Mathlib) proposition that will be proved. Approve only if STATEMENT is exactly the "
+        "mathematical claim of REQUEST: same",
+        "review_terse",
+    ),
     ("You review a formalisation", "review"),
     ("Describe in plain", "backtranslate"),
     ("REQUEST is what a learner asked. DESCRIPTION", "compare"),
@@ -109,13 +112,16 @@ def instrumented_model(key: str, recorder: Recorder, default: str, overrides: di
             with recorder.lock:
                 recorder.events.append(
                     {
-                        "label": label, "model": model, "effort": effort,
+                        "label": label,
+                        "model": model,
+                        "effort": effort,
                         "prompt_chars": len(prompt),
                         "input_tokens": sum(r.get("input_tokens", 0) for r in rows),
                         "output_tokens": sum(r.get("output_tokens", 0) for r in rows),
                         "start": round(start - recorder.t0, 3),
                         "end": round(end - recorder.t0, 3),
-                        "seconds": round(end - start, 3), "error": error,
+                        "seconds": round(end - start, 3),
+                        "error": error,
                     }
                 )
 
@@ -123,21 +129,33 @@ def instrumented_model(key: str, recorder: Recorder, default: str, overrides: di
 
 
 FRESHMAN_NL = [
-    "ode_separable_zero_solution", "pq-absolute-value-nondifferentiability",
-    "poly_square_nonnegative", "pq-sum-of-first-n-integers",
+    "ode_separable_zero_solution",
+    "pq-absolute-value-nondifferentiability",
+    "poly_square_nonnegative",
+    "pq-sum-of-first-n-integers",
     "seed-absolute_value_not_differentiable",
-    "seed-cubic_derivative", "seed-determinant_nonzero_decision",
-    "seed-linear_system_inconsistent", "seed-natural_power_continuous",
-    "seed-projection_not_injective", "seed-quadratic_not_injective", "seed-reciprocal_derivative",
+    "seed-cubic_derivative",
+    "seed-determinant_nonzero_decision",
+    "seed-linear_system_inconsistent",
+    "seed-natural_power_continuous",
+    "seed-projection_not_injective",
+    "seed-quadratic_not_injective",
+    "seed-reciprocal_derivative",
 ]
 FRESHMAN_GIVEN = [
-    "calculus_v3_limit_fixed_shift", "calculus_v3_limit_order", "la_reuse_kernel_detects_zero",
+    "calculus_v3_limit_fixed_shift",
+    "calculus_v3_limit_order",
+    "la_reuse_kernel_detects_zero",
     "la_v5_matrix_of_composition",
 ]
 UNDERGRAD = [
-    "nt_bezout_101_37", "exlog_exp_strictly_positive", "trig_expand_difference_square_le_two",
-    "disc_size_difference_closed", "coord_quarter_turn_orthogonal_components",
-    "calc_integral_square_zero_one", "pq-irrational-square-root-two",
+    "nt_bezout_101_37",
+    "exlog_exp_strictly_positive",
+    "trig_expand_difference_square_le_two",
+    "disc_size_difference_closed",
+    "coord_quarter_turn_orthogonal_components",
+    "calc_integral_square_zero_one",
+    "pq-irrational-square-root-two",
     "pq-continuous-interval-self-map-fixed-po",
 ]
 SETS = {
@@ -173,6 +191,7 @@ def main() -> None:
     )
     parser.add_argument("--project", type=Path, default=ROOT / "lean-workspace")
     args = parser.parse_args()
+    args.out = args.out.resolve()
     args.out.mkdir(parents=True, exist_ok=True)
     overrides = dict(item.split("=", 1) for item in args.override)
     spend = [0.0]
@@ -183,29 +202,46 @@ def main() -> None:
     lean = f"{args.toolchain}/bin/lean"
     lake = f"{args.toolchain}/bin/lake"
     lean_path = subprocess.run(
-        [lake, "env", "printenv", "LEAN_PATH"], cwd=args.project, capture_output=True, text=True,
+        [lake, "env", "printenv", "LEAN_PATH"],
+        cwd=args.project,
+        capture_output=True,
+        text=True,
         check=True,
     ).stdout.strip()
     resident = ResidentLean(
         ResidentConfig(
-            lean_binary=lean, lean_path=lean_path, build_dir=args.out / "resident",
-            max_children=args.max_children, queue_timeout_s=30.0, warm_exact=True,
+            project_dir=args.project,
+            lean_binary=lean,
+            lean_path=lean_path,
+            build_dir=args.out / "resident",
+            max_children=args.max_children,
+            queue_timeout_s=30.0,
+            warm_exact=True,
         )
     )
     print("resident startup s", round(resident.start(), 2), "load", os.getloadavg(), flush=True)
     scratch = args.out / "scratch"
     scratch.mkdir(exist_ok=True)
     verifier = LeanVerifier(
-        lean_binary=lean, lake_binary=lake, project_dir=args.project,
-        child_path=f"{args.toolchain}/bin:/usr/bin:/bin", elan_home=str(Path.home() / ".elan"),
-        scratch_dir=scratch, timeout_seconds=120.0, resident=resident,
+        lean_binary=lean,
+        lake_binary=lake,
+        project_dir=args.project,
+        child_path=f"{args.toolchain}/bin:/usr/bin:/bin",
+        elan_home=str(Path.home() / ".elan"),
+        scratch_dir=scratch,
+        timeout_seconds=120.0,
+        resident=resident,
     )
     recorder = Recorder()
     model = instrumented_model(load_key(args.env_file), recorder, args.default, overrides)
     s0 = stage0.Stage0(
-        ResidentWorker(resident, scratch_dir=scratch), lane.load_fixture_recipes(ROOT / "testdata"),
-        model, require_flags=False, roundtrip_mode=args.roundtrip,
-        worker_factory=lambda: ResidentWorker(resident, scratch_dir=scratch), prefetch=False,
+        ResidentWorker(resident, scratch_dir=scratch),
+        lane.load_fixture_recipes(ROOT / "testdata"),
+        model,
+        require_flags=False,
+        roundtrip_mode=args.roundtrip,
+        worker_factory=lambda: ResidentWorker(resident, scratch_dir=scratch),
+        prefetch=False,
     )
     problems = json.loads((ROOT / "testdata/generation-eval-v1/manifest.json").read_text())[
         "problems"
@@ -221,7 +257,9 @@ def main() -> None:
                 recorder.reset()
                 t0 = time.monotonic()
                 r = s0.run(
-                    p["statement"], p["language"], formal=given or None,
+                    p["statement"],
+                    p["language"],
+                    formal=given or None,
                     budget_s=args.budget_given if given else args.budget_formalised,
                 )
                 stage0_s = time.monotonic() - t0
@@ -230,9 +268,7 @@ def main() -> None:
                 if r.outcome == "answered" and r.formal_proved:
                     t1 = time.monotonic()
                     try:
-                        prop = ap.check_formal_statement(
-                            r.formal_proved, allow_header=bool(given)
-                        )
+                        prop = ap.check_formal_statement(r.formal_proved, allow_header=bool(given))
                         tactic = next((t for t in ap.PORTFOLIO if t.name == r.by), None)
                         if tactic is not None:
                             verified = verifier.verify(candidate_source(prop, tactic)).success
@@ -240,16 +276,31 @@ def main() -> None:
                         verified = f"error:{type(error).__name__}"
                     audit_s = time.monotonic() - t1
                 row = {
-                    "variant": args.name, "id": pid, "repeat": repeat, "tier": p["tier"],
-                    "field": p["field"], "language": p["language"],
-                    "formal_source": r.formal_source, "outcome": r.outcome, "reason": r.reason,
-                    "kind": r.kind, "by": r.by, "stage0_s": round(stage0_s, 2),
-                    "seconds": r.seconds, "audit_s": round(audit_s, 2),
-                    "verified": verified, "shown_s": round(stage0_s + audit_s, 2),
-                    "calls": events, "formal": r.formal, "request": p["statement"],
+                    "variant": args.name,
+                    "id": pid,
+                    "repeat": repeat,
+                    "tier": p["tier"],
+                    "field": p["field"],
+                    "language": p["language"],
+                    "formal_source": r.formal_source,
+                    "outcome": r.outcome,
+                    "reason": r.reason,
+                    "kind": r.kind,
+                    "by": r.by,
+                    "stage0_s": round(stage0_s, 2),
+                    "seconds": r.seconds,
+                    "audit_s": round(audit_s, 2),
+                    "verified": verified,
+                    "shown_s": round(stage0_s + audit_s, 2),
+                    "calls": events,
+                    "formal": r.formal,
+                    "request": p["statement"],
                     "answer_text": r.answer_text,
-                    "gate": None if r.gate is None else {
-                        "passed": r.gate.passed, "reasons": r.gate.reasons,
+                    "gate": None
+                    if r.gate is None
+                    else {
+                        "passed": r.gate.passed,
+                        "reasons": r.gate.reasons,
                     },
                 }
                 fh.write(json.dumps(row, ensure_ascii=False) + "\n")

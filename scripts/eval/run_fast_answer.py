@@ -48,34 +48,55 @@ def main() -> None:
     )
     parser.add_argument("--project", type=Path, default=ROOT / "lean-workspace")
     args = parser.parse_args()
+    args.out = args.out.resolve()
     args.out.mkdir(parents=True, exist_ok=True)
     overrides = dict(item.split("=", 1) for item in args.override)
     lean = f"{args.toolchain}/bin/lean"
     lake = f"{args.toolchain}/bin/lake"
     lean_path = subprocess.run(
-        [lake, "env", "printenv", "LEAN_PATH"], cwd=args.project, capture_output=True, text=True,
+        [lake, "env", "printenv", "LEAN_PATH"],
+        cwd=args.project,
+        capture_output=True,
+        text=True,
         check=True,
     ).stdout.strip()
     resident = ResidentLean(
         ResidentConfig(
-            lean_binary=lean, lean_path=lean_path, build_dir=args.out / "resident",
-            max_children=8, queue_timeout_s=30.0, warm_exact=True,
+            project_dir=args.project,
+            lean_binary=lean,
+            lean_path=lean_path,
+            build_dir=args.out / "resident",
+            max_children=8,
+            queue_timeout_s=30.0,
+            warm_exact=True,
         )
     )
     print("resident startup s", round(resident.start(), 2), "load", os.getloadavg(), flush=True)
     scratch = args.out / "scratch"
     scratch.mkdir(exist_ok=True)
     verifier = LeanVerifier(
-        lean_binary=lean, lake_binary=lake, project_dir=args.project,
-        child_path=f"{args.toolchain}/bin:/usr/bin:/bin", elan_home=str(Path.home() / ".elan"),
-        scratch_dir=scratch, timeout_seconds=120.0, resident=resident,
+        lean_binary=lean,
+        lake_binary=lake,
+        project_dir=args.project,
+        child_path=f"{args.toolchain}/bin:/usr/bin:/bin",
+        elan_home=str(Path.home() / ".elan"),
+        scratch_dir=scratch,
+        timeout_seconds=120.0,
+        resident=resident,
     )
     recorder = Recorder()
     model = instrumented_model(load_key(args.env_file), recorder, args.default, overrides)
     fast = FastAnswer(
-        resident, verifier, model, scratch, calls=args.calls, roundtrip=args.roundtrip,
-        explain=not args.no_explain, gate_mode=args.gate_mode,
-        speculative_gate=not args.no_speculative_gate, race_budget_s=args.race_budget,
+        resident,
+        verifier,
+        model,
+        scratch,
+        calls=args.calls,
+        roundtrip=args.roundtrip,
+        explain=not args.no_explain,
+        gate_mode=args.gate_mode,
+        speculative_gate=not args.no_speculative_gate,
+        race_budget_s=args.race_budget,
     )
     problems = json.loads((ROOT / "testdata/generation-eval-v1/manifest.json").read_text())[
         "problems"
@@ -91,16 +112,34 @@ def main() -> None:
                 recorder.reset()
                 r = fast.run(p["statement"], p["language"])
                 row = {
-                    "variant": args.name, "id": pid, "repeat": repeat, "tier": p["tier"],
-                    "field": p["field"], "language": p["language"], "outcome": r.outcome,
-                    "reason": r.reason, "kind": r.kind, "answer": r.answer, "tactic": r.tactic,
-                    "tactic_text": r.tactic_text, "verified": r.verified, "formal": r.formal,
-                    "proved": r.proved, "explanation": r.explanation, "request": p["statement"],
-                    "seconds": r.seconds, "statements": r.statements,
-                    "gate": None if r.gate is None else {
-                        "passed": r.gate.passed, "reasons": r.gate.reasons,
-                        "agree": r.gate.agree, "reviewed": r.gate.reviewed,
-                        "roundtrip": r.gate.roundtrip, "issue": r.gate.review_issue,
+                    "variant": args.name,
+                    "id": pid,
+                    "repeat": repeat,
+                    "tier": p["tier"],
+                    "field": p["field"],
+                    "language": p["language"],
+                    "outcome": r.outcome,
+                    "reason": r.reason,
+                    "kind": r.kind,
+                    "answer": r.answer,
+                    "tactic": r.tactic,
+                    "tactic_text": r.tactic_text,
+                    "verified": r.verified,
+                    "formal": r.formal,
+                    "proved": r.proved,
+                    "explanation": r.explanation,
+                    "request": p["statement"],
+                    "seconds": r.seconds,
+                    "statements": r.statements,
+                    "gate": None
+                    if r.gate is None
+                    else {
+                        "passed": r.gate.passed,
+                        "reasons": r.gate.reasons,
+                        "agree": r.gate.agree,
+                        "reviewed": r.gate.reviewed,
+                        "roundtrip": r.gate.roundtrip,
+                        "issue": r.gate.review_issue,
                         "rt_issue": r.gate.roundtrip_issue,
                     },
                     "calls": list(recorder.events),

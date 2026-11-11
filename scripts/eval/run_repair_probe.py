@@ -39,7 +39,9 @@ REPAIR_PROMPT = (
     "the goal.\n\n"
 )
 SCHEMA = {
-    "type": "object", "additionalProperties": False, "required": ["tactics"],
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["tactics"],
     "properties": {"tactics": {"type": "array", "items": {"type": "string"}}},
 }
 
@@ -57,15 +59,26 @@ def main() -> None:
     )
     parser.add_argument("--project", type=Path, default=ROOT / "lean-workspace")
     args = parser.parse_args()
+    args.out = args.out.resolve()
     args.out.mkdir(parents=True, exist_ok=True)
     lean_path = subprocess.run(
-        [f"{args.toolchain}/bin/lake", "env", "printenv", "LEAN_PATH"], cwd=args.project,
-        capture_output=True, text=True, check=True,
+        [f"{args.toolchain}/bin/lake", "env", "printenv", "LEAN_PATH"],
+        cwd=args.project,
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout.strip()
-    resident = ResidentLean(ResidentConfig(
-        lean_binary=f"{args.toolchain}/bin/lean", lean_path=lean_path,
-        build_dir=args.out / "resident", max_children=8, queue_timeout_s=30.0, warm_exact=True,
-    ))
+    resident = ResidentLean(
+        ResidentConfig(
+            project_dir=args.project,
+            lean_binary=f"{args.toolchain}/bin/lean",
+            lean_path=lean_path,
+            build_dir=args.out / "resident",
+            max_children=8,
+            queue_timeout_s=30.0,
+            warm_exact=True,
+        )
+    )
     resident.start()
     worker = ResidentWorker(resident, scratch_dir=args.out)
     model = instrumented_model(load_key(args.env_file), Recorder(), f"gpt-6-luna:{args.effort}", {})
@@ -115,8 +128,14 @@ def main() -> None:
             )
             out = model(REPAIR_PROMPT + f"STATEMENT: {prop}\n\n{attempts}\n", SCHEMA)
             scripts = fa._scripts(out.get("tactics"))
-        row = {"id": pid, "statement": prop, "closed_by": closed, "round": round_no,
-               "seconds": round(time.monotonic() - t0, 2), "kind": m.kind}
+        row = {
+            "id": pid,
+            "statement": prop,
+            "closed_by": closed,
+            "round": round_no,
+            "seconds": round(time.monotonic() - t0, 2),
+            "kind": m.kind,
+        }
         rows.append(row)
         print(pid[:34], closed, round_no, row["seconds"], flush=True)
     (args.out / "repair.json").write_text(json.dumps(rows, ensure_ascii=False))
