@@ -51,6 +51,12 @@ def main() -> None:
     ap.add_argument("--max-output-tokens", type=int, default=12000)
     ap.add_argument("--max-repairs", type=int, default=6)
     ap.add_argument("--no-answer", action="store_true")
+    ap.add_argument(
+        "--problems-file", type=Path,
+        help="JSON {'problems': [...]} of dev_unseen items only; replaces the generation-eval-v1 tuning set",
+    )
+    ap.add_argument("--efforts", help="override the race's two efforts, e.g. none,low")
+    ap.add_argument("--pin-effort", help="pin one effort on the prove client (single candidate arms)")
     for name in ("lean", "lake", "project", "elan-home"):
         ap.add_argument(f"--{name}", required=True)
     args = ap.parse_args()
@@ -68,9 +74,24 @@ def main() -> None:
     from pals_agent.pipeline import ApiRepairSeed, ProofPipeline
     from pals_agent.usage import usage_scope
 
-    problems = run_stages.select(
-        json.loads(run_stages.DEFAULT_MANIFEST.read_text()), args.ids, args.n
-    )
+    if args.problems_file is not None:
+        problems = json.loads(args.problems_file.read_text())["problems"]
+        # The freshman-v1 held_out split is for the final check only: never loaded here.
+        if any(p["split"] != "dev_unseen" for p in problems):
+            raise SystemExit("problems-file must contain dev_unseen items only")
+        if args.ids:
+            wanted = args.ids.split(",")
+            problems = [next(p for p in problems if p["id"] == i) for i in wanted]
+        problems = problems[: args.n]
+    else:
+        problems = run_stages.select(
+            json.loads(run_stages.DEFAULT_MANIFEST.read_text()), args.ids, args.n
+        )
+    if args.efforts:
+        t2_lane.HETERO_EFFORTS = tuple(args.efforts.split(","))
+    steps_path = args.out / "steps.jsonl"
+    os.environ["PALS_STEP_TIMING_JSONL"] = str(steps_path)
+    from pals_agent import step_timing
     lean_path = subprocess.run(
         [args.lake, "env", "printenv", "LEAN_PATH"],
         cwd=args.project, capture_output=True, text=True, check=True,
@@ -101,6 +122,7 @@ def main() -> None:
         base_url=os.environ.get("PALS_OPENAI_BASE_URL", "https://api.openai.com/v1"),
         timeout_seconds=args.model_timeout,
         max_output_tokens=args.max_output_tokens,
+        reasoning_effort=args.pin_effort,
     )
     generator = HybridLeanGenerator(
         model="gpt-6.1-terra", provider="openai", client=client, use_release_role_bindings=True
@@ -134,6 +156,7 @@ def main() -> None:
             usage.append(row)
             meter.add(row)
 
+        step_offset = steps_path.stat().st_size if steps_path.exists() else 0
         base_id = f"hsim-{args.arm}-{problem['id']}"
         t0 = time.monotonic()
         load_start = os.getloadavg()[0]
@@ -214,8 +237,15 @@ def main() -> None:
             error = type(exc).__name__
             wall_s = answer_s = time.monotonic() - t0
             answer, undrained = {}, 0
+        step_timing._queue.join()  # the writer thread is asynchronous
+        steps: list[dict[str, Any]] = []
+        if steps_path.exists():
+            with steps_path.open("rb") as fh:
+                fh.seek(step_offset)
+                steps = [json.loads(x) for x in fh.read().decode().splitlines() if x.strip()]
         row = {
             "problem_id": problem["id"],
+            "steps": steps,
             "arm": args.arm,
             "verified": final is not None,
             "first_attempt_ok": bool(submits and submits[0]["ok"]),
