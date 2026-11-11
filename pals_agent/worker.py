@@ -512,6 +512,7 @@ class _AcquisitionResult:
     permit: _GenerationPermit | None
     acquired: bool = False
     acquired_state: str | None = None
+    lease_deadline: float | None = None  # self.monotonic() time the generation lease ends
 
 
 class WorkerSqsUnavailableError(RuntimeError):
@@ -1225,7 +1226,13 @@ class SqsProofWorker:
                 run_kwargs["prepared_request"] = prepared
             with usage_scope(lambda usage: self.api_client.record_usage(
                 proof_job_id=proof_job_id, claim_id=claim_id, usage=usage
-            )), latency_stage("proof_pipeline"):
+            )), latency_stage("proof_pipeline"), t2_lane.alternate_limits(
+                lease_deadline=(
+                    None if generation.lease_deadline is None
+                    else time.monotonic() + (generation.lease_deadline - self.monotonic())
+                ),
+                should_stop=self.stop_requested,
+            ):
                 run_result = pipeline.run_statement(**run_kwargs)
         except OpenMathStructuringError:
             on_status(
@@ -1430,7 +1437,10 @@ class SqsProofWorker:
         review = getattr(run_result, "speculative_review", None)
         background = getattr(run_result, "background", None)
         pending = getattr(background, "pending", None)
-        if background is not None and callable(pending) and pending() == 0:
+        if (
+            background is not None and callable(pending) and pending() == 0
+            and getattr(background, "alternate", None) is None  # a held second candidate
+        ):
             background = None
         if explanation is None and review is None and background is None:
             yield None
@@ -2343,6 +2353,7 @@ class SqsProofWorker:
             permit=None,
             acquired=True,
             acquired_state=raw_response["resource"]["state"],
+            lease_deadline=request_started_at + envelope.lease_remaining_ms / 1000.0,
         )
 
     def _write_explanation_failure(

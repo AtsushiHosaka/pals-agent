@@ -72,6 +72,9 @@ class Generator:
     model = "m"
     prove_model = "m"
 
+    def hetero_prove_efforts(self) -> tuple[str, str]:
+        return ("low", "medium")  # the real generator's resolved binding is tested separately
+
     def __init__(
         self,
         proofs: list[str],
@@ -719,7 +722,7 @@ def test_background_is_exposed_and_drainable_when_the_run_raises(
         pipeline = _pipeline(
             tmp_path, Generator([GOOD, BAD], proof_delays=[0.0, 0.3]), ScriptedVerifier({GOOD})
         )
-        pipeline.run_statement(statement=STATEMENT, proof_job_id=JOB)
+        first = pipeline.run_statement(statement=STATEMENT, proof_job_id=JOB)
         raised: BaseException | None = None
         try:
             # the same job id again: persisting the artifact fails after the race has run
@@ -732,6 +735,9 @@ def test_background_is_exposed_and_drainable_when_the_run_raises(
         background = getattr(raised, "t2_background", None)
         assert background is not None  # exposed on the exception path
         assert background.drain(5) == 0
+        # the first run's own loser reports when it ends; without waiting for it the count of
+        # reported calls depends on thread scheduling
+        assert first.background is None or first.background.drain(5) == 0
     # draft 1 + winner 10 + loser 10, for each of the two runs
     assert sorted(r["input_tokens"] for r in seen) == [1, 1, 10, 10, 10, 10]
 

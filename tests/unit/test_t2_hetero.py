@@ -172,3 +172,153 @@ def test_a_candidate_for_another_statement_is_neither_submitted_nor_held(
 
     assert result.generated.lean_code == X2_PROOF
     assert result.background.alternate.take(0.5) is None  # the misaligned one is not an alternate
+
+
+# ---- review round: worker hand-off, winner, real effort binding, bounded wait ------------------
+
+
+def test_the_held_candidate_survives_when_both_candidates_ended_before_the_carry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Worker level: both candidates are done (nothing pending), yet a failed compile of the
+    winner still reaches the repair with the held second candidate."""
+    from types import SimpleNamespace
+    from typing import cast
+
+    from pals_agent.settings import AgentSettings
+    from pals_agent.worker import SqsProofWorker
+
+    _flags(monkeypatch, **ON)
+    generator = EffortGenerator([GOOD, BAD], proof_delays=[0.0, 0.1])
+    result, _ = _run(_api_pipeline(tmp_path, generator))  # drains: no call is pending any more
+    assert result.background is not None and result.background.pending() == 0
+
+    seen: list[Any] = []
+    monkeypatch.setattr(
+        SqsProofWorker, "process_proof_job",
+        lambda self, *a, **k: seen.append(t2_lane.repair_alternate()) or True,
+    )
+    worker = SqsProofWorker(
+        settings=cast(AgentSettings, SimpleNamespace()), api_client=cast(Any, SimpleNamespace()),
+        pipeline=None, explainer=None, proof_reviewer=None, output_reviewer=None,
+    )
+    with worker._t2_carry_scope(result, proof_job_id="j", claim_id="c") as carry:
+        assert carry is not None  # held although every call ended
+        worker._resume_with_carry(
+            carry, {"state": "repairing"}, proof_job_id="j", claim_id="c", extend_visibility=None
+        )
+    assert seen == [result.background.alternate]
+    assert seen[0] is not None and seen[0].take(0.0).lean_code == BAD
+
+
+def test_the_candidate_that_took_the_race_is_submitted_when_the_rival_also_finished(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Candidate 1 takes the race, candidate 0 has finished by the time the race result is read
+    (so the result's lowest index is candidate 0): candidate 1 is still the one submitted, and
+    candidate 0 is the held alternate."""
+    _flags(monkeypatch, **ON)
+    real = t2_lane.race_candidates
+
+    def sequential(tasks, *, is_win, rank):
+        outcome: dict[int, Any] = {}
+        for index in (1, 0):  # candidate 1 finishes first, then candidate 0
+            with t2_lane.candidate_variant(index):
+                outcome[index] = tasks[index](threading.Event())
+        candidates = [t2_lane.Candidate(i, value=outcome[i], done=True) for i in (0, 1)]
+        return t2_lane.RaceResult(
+            winner=None, best=candidates[0], candidates=candidates, cancelled=0
+        )
+
+    monkeypatch.setattr(t2_lane, "race_candidates", sequential)
+
+    class ByEffort(EffortGenerator):
+        def generate_direct_proof(self, request, draft):
+            from pals_agent.models import GeneratedProof as G
+
+            code = GOOD if t2_lane.variant_effort() == "medium" else BAD
+            self.efforts.append(t2_lane.variant_effort())
+            return G(lean_code=code, model="m", raw_model_output=code)
+
+    gen = ByEffort([], [])
+    result, _ = _run(_api_pipeline(tmp_path, gen))
+    monkeypatch.setattr(t2_lane, "race_candidates", real)
+    assert result.generated.lean_code == GOOD  # the medium candidate (index 1) took the race
+    held = result.background.alternate.take(0.0)
+    assert held is not None and held.lean_code == BAD
+
+
+def _hybrid(model: str = "gpt-6.1-terra", *, bindings: bool = True, effort: str | None = None):
+    from pals_agent.generator import HybridLeanGenerator
+    from pals_agent.openai import OpenAIResponsesClient
+
+    return HybridLeanGenerator(
+        model=model, provider="openai", use_release_role_bindings=bindings,
+        client=OpenAIResponsesClient(api_key="k", reasoning_effort=effort),  # type: ignore[arg-type]
+    )
+
+
+def test_the_real_binding_gives_terra_two_different_efforts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _flags(monkeypatch, **ON)
+    assert _hybrid().hetero_prove_efforts() == ("low", "medium")
+
+
+@pytest.mark.parametrize(
+    "generator",
+    [
+        pytest.param(lambda: _hybrid(bindings=False), id="no-role-bindings"),
+        pytest.param(lambda: _hybrid("gpt-6-luna"), id="release-model-fixed-low"),
+    ],
+)
+def test_equal_efforts_do_not_run_a_race_and_say_why(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture,
+    generator: Any,
+) -> None:
+    _flags(monkeypatch, **ON)
+    efforts = generator().hetero_prove_efforts()
+    assert len(set(efforts)) < 2
+
+    class Equal(EffortGenerator):
+        def hetero_prove_efforts(self):
+            return efforts
+
+    gen = Equal([GOOD, BAD])
+    with caplog.at_level("WARNING"):
+        result, _ = _run(_api_pipeline(tmp_path, gen))
+    assert len(gen.efforts) == 1  # one candidate, not two identical ones
+    assert result.background is None or result.background.alternate is None
+    assert "t2_hetero_race_skipped" in caplog.text
+
+
+def test_a_requests_chosen_effort_makes_both_candidates_equal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from pals_agent import linked_chat
+
+    _flags(monkeypatch, **ON)
+
+    token = linked_chat._effort.set("high")
+    try:
+        assert _hybrid().hetero_prove_efforts() == ("high", "high")
+    finally:
+        linked_chat._effort.reset(token)
+
+
+def test_the_wait_for_the_alternate_is_bounded_by_the_lease_and_a_stop_request() -> None:
+    import time
+
+    slot = t2_lane.AlternateSlot(1)  # a candidate that never ends
+
+    # lease nearly over: no wait at all
+    with t2_lane.alternate_limits(lease_deadline=time.monotonic() + 10.0, should_stop=None):
+        wait, _stop = t2_lane.alternate_wait()
+    assert wait == 0.0
+    # a lease long enough leaves the default
+    with t2_lane.alternate_limits(lease_deadline=time.monotonic() + 3600.0, should_stop=None):
+        assert t2_lane.alternate_wait()[0] == t2_lane.ALTERNATE_WAIT_SECONDS
+    # a stop request ends the wait promptly
+    started = time.monotonic()
+    assert slot.take(30.0, should_stop=lambda: time.monotonic() - started > 0.3) is None
+    assert time.monotonic() - started < 3.0

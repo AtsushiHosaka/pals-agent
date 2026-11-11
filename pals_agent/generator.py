@@ -47,7 +47,9 @@ from pals_agent.proof_reuse_usage import model_role
 from pals_agent.sketch_repair import normalize_header
 from pals_agent.statement_template import TEMPLATE_INSTRUCTION, assemble
 from pals_agent.t2_lane import (
+    HETERO_EFFORTS,
     NAME_SAFETY_GUIDANCE,
+    candidate_variant,
     name_safety_enabled,
     variant_effort,
     variant_instruction,
@@ -638,6 +640,18 @@ class HybridLeanGenerator:
         model = selected_generation_model(self.prove_model or self.model)
         provider = self.prove_provider or self.provider
         return client, model, provider
+
+    def hetero_prove_efforts(self) -> tuple[str | None, ...]:
+        """The reasoning effort each heterogeneous-race candidate would really run with.
+
+        Resolved through the same binding as the call itself, so a request's fixed effort, the
+        release model's own effort, or a generator without role bindings show up as equal values.
+        """
+        efforts: list[str | None] = []
+        for index in range(len(HETERO_EFFORTS)):
+            with candidate_variant(index):
+                efforts.append(self._stage_endpoint(ModelRole.PROVE)[3])
+        return tuple(efforts)
 
     def _stage_endpoint(
         self, role: ModelRole
