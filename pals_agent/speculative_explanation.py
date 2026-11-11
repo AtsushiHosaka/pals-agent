@@ -19,6 +19,7 @@ caller adopts it after the claim is held:
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import threading
 from collections.abc import Callable
@@ -121,6 +122,18 @@ class SpeculativeExplanation:
             raise
         forward_usage(self._usage)
         return explanation
+
+    def held_usage(self) -> list[dict[str, Any]]:
+        """Usage of the call so far (only complete once it has finished), for cost accounting."""
+        return [dict(record) for record in self._usage]
+
+    def done(self) -> bool:
+        return self._future.done()
+
+    def wait(self, timeout: float | None = None) -> None:
+        """Block until the call ended (result or error); used to account for discarded work."""
+        with contextlib.suppress(BaseException):  # only waiting, never raising
+            self._future.exception(timeout=timeout)
 
     def discard(self) -> None:
         """Drop the result. The call may still finish; nothing it produced is used or reported."""

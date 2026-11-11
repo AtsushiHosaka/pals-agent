@@ -31,12 +31,25 @@ FLAG_NAMES = {
     "import": "PALS_PROMPT_FULL_MATHLIB_IMPORT_ENABLED",
     "cond": "PALS_PROMPT_CONDITIONAL_GUIDANCE_ENABLED",
     "fields": "PALS_DRAFT_STRUCTURED_FIELDS_ENABLED",
+    # T2 lane (pals_agent/t2_lane.py)
+    "nosketch": "PALS_T2_NO_SKETCH_ENABLED",
+    "race": "PALS_T2_PARALLEL_CANDIDATES_ENABLED",
+    "patch": "PALS_T2_PATCH_REPAIR_ENABLED",
+    "pexpl": "PALS_T2_PARALLEL_EXPLANATION_ENABLED",
 }
 ARM_FLAGS: dict[str, set[str]] = {
     "base": set(),
     "static": {"static"},
     "combined": {"static", "import", "cond"},
     "fields": {"fields"},
+    "t2": {"nosketch", "race", "patch", "pexpl"},
+    "nosketch": {"nosketch"},
+    "race": {"race"},
+    "patch": {"patch"},
+    "pexpl": {"pexpl"},
+    "t2_norace": {"nosketch", "patch", "pexpl"},
+    "t2_nopatch": {"nosketch", "race", "pexpl"},
+    "t2_nonosketch": {"race", "patch", "pexpl"},
 }
 DEFAULT_MANIFEST = Path(__file__).resolve().parents[2] / "testdata/generation-eval-v1/manifest.json"
 _IMPORT_ERR = re.compile(
@@ -119,6 +132,90 @@ def build(args: argparse.Namespace):
         timeout_seconds=args.lean_timeout,
     )
     return generator, verifier
+
+
+def build_answer_stage(args: argparse.Namespace):
+    """The release explainer and semantic reviewer (same models and efforts as production).
+
+    Not measured here: the explanation output review, a second call after the explanation.
+    """
+    from pals_agent.explanations import LeanProofExplainer, LeanProofSemanticReviewer
+    from pals_agent.model_roles import ModelRole, fixed_model_default
+    from pals_agent.openai import OpenAIResponsesClient
+
+    def client() -> OpenAIResponsesClient:
+        return OpenAIResponsesClient(
+            api_key=os.environ["OPENAI_API_KEY"],
+            base_url=os.environ.get("PALS_OPENAI_BASE_URL", "https://api.openai.com/v1"),
+            timeout_seconds=args.model_timeout,
+            max_output_tokens=6000,
+        )
+
+    explain = fixed_model_default(ModelRole.EXPLAIN)
+    review = fixed_model_default(ModelRole.PROOF_REVIEW)
+    explainer = LeanProofExplainer(
+        client=client(), model=explain.model, provider=explain.provider, max_attempts=3
+    )
+    reviewer = LeanProofSemanticReviewer(
+        client=client(), model=review.model, provider=review.provider, max_attempts=2
+    )
+    return explainer, reviewer
+
+
+def answer_stage(result: Any, problem: dict, explainer: Any, reviewer: Any) -> dict[str, Any]:
+    """After a verified proof: the semantic review and the explanation, timed.
+
+    With an explanation already started beside verification (``result.speculative_explanation``)
+    the review runs while it is in flight and only the remaining wait is paid; otherwise the
+    explanation starts after the review, as it does in production today.
+    """
+    from pals_agent.explanations import ExplanationGenerationError
+    from pals_agent.lean_target import extract_single_target_declaration
+
+    if not result.verification.success:
+        return {"answer_ok": False, "answer_note": "not_verified"}
+    code, statement = result.generated.lean_code, result.prompt
+    out: dict[str, Any] = {"answer_ok": True}
+    target = extract_single_target_declaration(code)
+    t = time.monotonic()
+    approved = None
+    if target is not None:
+        try:
+            review = reviewer.review_proof(
+                theorem_statement=statement,
+                formal_statement=problem.get("fixed_lean_statement"),
+                target_declaration=target,
+                lean_code=code,
+                timeout_seconds=120,
+            )
+            approved = review.decision == "approved"
+        except Exception as exc:
+            out["review_error"] = type(exc).__name__
+    out["review_s"] = round(time.monotonic() - t, 3)
+    out["review_approved"] = approved
+    t = time.monotonic()
+    handle = result.speculative_explanation
+    try:
+        explanation = None
+        if handle is not None:
+            explanation = handle.adopt(
+                theorem_statement=statement, lean_code=code, language="ja", wait_seconds=240
+            )
+        if explanation is None:
+            explanation = explainer.explain(
+                theorem_statement=statement,
+                lean_code=code,
+                verified=True,
+                language="ja",
+                timeout_seconds=120,
+            )
+        out["explain_ok"] = True
+    except ExplanationGenerationError as exc:
+        out["explain_ok"] = False
+        out["explain_error"] = type(exc).__name__
+    out["explain_wait_s"] = round(time.monotonic() - t, 3)
+    out["explained_in_parallel"] = handle is not None
+    return out
 
 
 def select(manifest: dict, ids: str | None, n: int | None) -> list[dict]:
@@ -344,6 +441,7 @@ def cmd_fields(args: argparse.Namespace, meter: Meter) -> None:
 
 
 def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
+    from pals_agent import t2_lane
     from pals_agent.artifacts import FileArtifactStore
     from pals_agent.evals.records import JsonlSink
     from pals_agent.evals.runner import (
@@ -357,6 +455,7 @@ def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
     from pals_agent.usage import usage_scope
 
     generator, verifier = build(args)
+    explainer, reviewer = build_answer_stage(args) if args.answer else (None, None)
     problems = select(json.loads(args.manifest.read_text()), args.ids, args.n)
     by_id = {p["id"]: p for p in problems}
     sink = JsonlSink(args.out / "records.jsonl", artifacts_dir=args.out / "artifacts")
@@ -365,6 +464,8 @@ def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
         generator=RecordingGenerator(generator, scope),
         verifier=RecordingVerifier(verifier, scope),
         artifact_store=FileArtifactStore(args.out / "art"),
+        max_repair_attempts=args.max_repairs,
+        explainer=explainer,
     )
     for pid, arm, rep in interleaved_schedule(
         list(by_id), args.arms.split(","), args.repeats, args.seed
@@ -374,21 +475,28 @@ def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
             break
         env = set_arm(arm)
         meter.arm = arm
-        r = run_pipeline_once(
-            by_id[pid],
-            pipeline,
-            scope,
-            arm=arm,
-            repeat=rep,
-            model="gpt-6.1-terra",
-            artifact_dir=args.out / "art",
-            usage_scope_factory=lambda cb: usage_scope(lambda x: (cb(x), meter.add(x))),
-            config={"flags": env},
+        post = (
+            (lambda res, p=by_id[pid]: answer_stage(res, p, explainer, reviewer))  # noqa: B023
+            if args.answer
+            else None
         )
+        with t2_lane.discarded_usage_scope(lambda row: (scope.on_usage(row), meter.add(row))):
+            r = run_pipeline_once(
+                by_id[pid],
+                pipeline,
+                scope,
+                arm=arm,
+                repeat=rep,
+                model="gpt-6.1-terra",
+                artifact_dir=args.out / "art",
+                usage_scope_factory=lambda cb: usage_scope(lambda x: (cb(x), meter.add(x))),  # noqa: B023
+                config={"flags": env, "max_repairs": args.max_repairs},
+                post_run=post,
+            )
         print(
             f"{pid} {arm} r{rep} ok={r['success']} first={r['first_attempt_ok']} "
-            f"repairs={r['repairs_used']} wall={r['wall_s']} run_usd={meter.run_usd:.4f} "
-            f"err={r['error']}",
+            f"repairs={r['repairs_used']} wall={r['wall_s']} answer={r.get('answer_s')} "
+            f"run_usd={meter.run_usd:.4f} err={r['error']}",
             flush=True,
         )
 
@@ -415,6 +523,12 @@ def main() -> None:
     for name in ("lean", "lake", "project", "elan-home", "scratch"):
         ap.add_argument(f"--{name}", required=True)
     ap.add_argument("--lean-timeout", type=float, default=300.0)
+    ap.add_argument("--max-repairs", type=int, default=3, help="repair cap (tier2)")
+    ap.add_argument(
+        "--answer",
+        action="store_true",
+        help="tier2: after a verified proof also run the semantic review and the explanation",
+    )
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     Path(args.scratch).mkdir(parents=True, exist_ok=True)

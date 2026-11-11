@@ -69,6 +69,8 @@ class Scope:
     repeat: int = 1
     ordinal: int = 0
     usage: list[dict[str, Any]] = field(default_factory=list)
+    # Summed elapsed_ms per stage for the run in flight (concurrent candidates add up).
+    stage_ms: dict[str, int] = field(default_factory=dict)
 
     def reset(self, problem_id: str, arm: str, repeat: int) -> None:
         self.problem_id, self.arm, self.repeat, self.ordinal, self.usage = (
@@ -78,6 +80,7 @@ class Scope:
             0,
             [],
         )
+        self.stage_ms = {}
 
     def attempt(self, stage: str, **kw: Any) -> dict[str, Any]:
         self.ordinal += 1
@@ -105,6 +108,7 @@ class Scope:
             "lean_path": None,
         }
         row.update(kw)
+        self.stage_ms[stage] = self.stage_ms.get(stage, 0) + int(row.get("elapsed_ms") or 0)
         self.sink.write(row)
         return row
 
@@ -177,7 +181,13 @@ class RecordingVerifier:
         return self._record("sketch_check", lean_code, self.inner.verify_sketch)
 
 
-_STAGE_METHODS = ("generate_draft", "generate_sketch", "generate_proof")
+_STAGE_METHODS = (
+    "generate_draft",
+    "generate_sketch",
+    "generate_proof",
+    "generate_direct_proof",
+    "generate_patch",
+)
 
 
 @dataclass(slots=True)
@@ -241,6 +251,12 @@ class RecordingGenerator:
             "prove", lambda: self.inner.generate_proof(request, draft, sketch, feedback)
         )
 
+    def generate_direct_proof(self, request: Any, draft: Any) -> Any:
+        return self._stage("prove_direct", lambda: self.inner.generate_direct_proof(request, draft))
+
+    def generate_patch(self, request: Any, feedback: Any) -> Any:
+        return self._stage("patch", lambda: self.inner.generate_patch(request, feedback))
+
     def generate(self, request: Any) -> Any:
         t_start = time.time()
         proof = self.inner.generate(request)
@@ -295,6 +311,7 @@ def _run_row(
     started: str,
     termination: str | None = None,
     error: str | None = None,
+    extra: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     totals = scope.usage_totals()
     cost = _usage_cost(scope.usage, model) if model else 0.0
@@ -318,6 +335,8 @@ def _run_row(
         "started_at": started,
         "ended_at": now_iso(),
         "error": error,
+        "stage_ms": dict(scope.stage_ms),
+        **(extra or {}),
     }
     scope.sink.write(row)
     return row
@@ -443,6 +462,7 @@ def run_pipeline_once(
     artifact_dir: Path,
     usage_scope_factory: Callable[..., Any],
     config: dict[str, Any] | None = None,
+    post_run: Callable[[Any], dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Tier 2/3: ``pipeline`` must already hold a RecordingVerifier/RecordingGenerator over
     ``scope``.
@@ -451,6 +471,9 @@ def run_pipeline_once(
     run_id = f"{scope.run_id}-{arm}-{problem['id']}-{repeat}"
     started, t0 = now_iso(), time.monotonic()
     error, state = None, "error"
+    pipeline_s: float | None = None
+    answer_s: float | None = None
+    extra: dict[str, Any] = {}
     try:
         with usage_scope_factory(scope.on_usage):
             result = pipeline.run_statement(
@@ -458,7 +481,16 @@ def run_pipeline_once(
                 formal_statement=problem.get("fixed_lean_statement"),
                 proof_job_id=run_id,
             )
-        state = result.state
+            pipeline_s = time.monotonic() - t0  # the clock stops before any bookkeeping below
+            state = result.state
+            if post_run is not None:
+                extra = post_run(result)
+                answer_s = time.monotonic() - t0
+            # Candidates cancelled by a race (and discarded explanations) bill after the clock
+            # stopped; wait for them so the usage and cost below include them.
+            from pals_agent import t2_lane
+
+            extra["undrained_background_calls"] = t2_lane.drain_background()
     except Exception as exc:
         error = type(exc).__name__
     meta: dict[str, Any] = {}
@@ -474,11 +506,12 @@ def run_pipeline_once(
         success=state == "verified",
         first_ok=first_ok,
         repairs=int(meta.get("repairs_used") or 0),
-        wall_s=time.monotonic() - t0,
+        wall_s=pipeline_s if pipeline_s is not None else time.monotonic() - t0,
         model=model,
         split=problem.get("split"),
         config=config or {},
         started=started,
         termination=meta.get("termination_reason"),
         error=error,
+        extra={"answer_s": answer_s, **extra},
     )

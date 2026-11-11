@@ -35,6 +35,51 @@ def per_problem(runs: list[dict[str, Any]], arm: str, key: str) -> dict[str, flo
     return {k: sum(v) / len(v) for k, v in acc.items()}
 
 
+def quantile(values: list[float], q: float) -> float:
+    """Linear-interpolated quantile (type 7)."""
+    xs = sorted(values)
+    if not xs:
+        return float("nan")
+    pos = (len(xs) - 1) * q
+    lo, hi = math.floor(pos), math.ceil(pos)
+    return xs[lo] + (xs[hi] - xs[lo]) * (pos - lo)
+
+
+def arm_summary(runs: list[dict[str, Any]], arm: str) -> None:
+    """Per-arm totals, p50/p90 and the mean stage breakdown (rows are runs, not problems)."""
+    rows = [r for r in runs if r["arm"] == arm and not r["error"]]
+    if not rows:
+        print(f"[{arm}] no rows")
+        return
+    n = len(rows)
+
+    def col(key: str) -> list[float]:
+        return [float(r[key]) for r in rows if r.get(key) is not None]
+
+    line = (
+        f"[{arm}] n={n} success={sum(bool(r['success']) for r in rows)}"
+        f" first_attempt_ok={sum(bool(r['first_attempt_ok']) for r in rows)}"
+        f" repairs_total={sum(int(r['repairs_used']) for r in rows)}"
+        f" cost_total=${sum(col('cost_usd')):.3f} calls_mean={st.mean(col('model_calls')):.1f}"
+    )
+    print(line)
+    for key in ("wall_s", "answer_s", "review_s", "explain_wait_s"):
+        v = col(key)
+        if v:
+            print(
+                f"    {key}: n={len(v)} mean={st.mean(v):.1f} p50={quantile(v, 0.5):.1f}"
+                f" p90={quantile(v, 0.9):.1f} max={max(v):.1f}"
+            )
+    stages: dict[str, list[float]] = defaultdict(list)
+    for r in rows:
+        for k, ms in (r.get("stage_ms") or {}).items():
+            stages[k].append(ms / 1000)
+    parts = ", ".join(
+        f"{k}={sum(v) / n:.1f}s(x{len(v)})" for k, v in sorted(stages.items())
+    )
+    print(f"    mean stage seconds per item (concurrent candidates add up): {parts}")
+
+
 def mcnemar_exact(b: int, c: int) -> float:
     n = b + c
     if n == 0:
@@ -150,6 +195,8 @@ def main() -> None:
     attempts = [r for r in rows if r.get("schema", "").endswith("attempt.v1")]
     print(f"runs={len(runs)} attempts={len(attempts)} errors={sum(1 for r in runs if r['error'])}")
     ok = [r for r in runs if not r["error"]]
+    for arm in (args.base, args.treat):
+        arm_summary(runs, arm)
     for key, label in (("first_attempt_ok", "first-attempt ok"), ("success", "success")):
         report_binary(
             label,
@@ -160,6 +207,9 @@ def main() -> None:
         "input_tokens",
         "output_tokens",
         "wall_s",
+        "answer_s",
+        "review_s",
+        "explain_wait_s",
         "cost_usd",
         "repairs_used",
         "model_calls",

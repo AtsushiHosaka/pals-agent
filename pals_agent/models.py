@@ -222,6 +222,8 @@ class ProofRunResult:
     verification: VerificationResult
     artifact: ProofArtifact
     verification_pending: bool = False
+    # T2: an explanation call started beside verification for exactly this proof, or None.
+    speculative_explanation: Any = field(default=None, compare=False, repr=False)
 
     @property
     def state(self) -> ProofJobState:

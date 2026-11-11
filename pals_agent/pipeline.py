@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import json
 import re
+import threading
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextvars import copy_context
 from dataclasses import asdict, dataclass, replace
 from typing import Any, Final, Literal, Protocol, cast
 
-from pals_agent import quality_events, step_timing
+from pals_agent import quality_events, step_timing, t2_lane
 from pals_agent.artifacts import (
     ATTEMPT_CHECKPOINT_SCHEMA_VERSION,
     ArtifactPersistenceError,
@@ -52,7 +53,12 @@ from pals_agent.models import (
     VerificationResult,
 )
 from pals_agent.natural_draft_evidence import NaturalDraftRetrievalResult
-from pals_agent.proof_fastpaths import deterministic_repair_route, splice_formal_harness
+from pals_agent.proof_fastpaths import (
+    _HARNESS_MISMATCH_CODE,
+    _MODEL_DECIDES_CODES,
+    deterministic_repair_route,
+    splice_formal_harness,
+)
 from pals_agent.proof_flow_evidence import DraftEvidence
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
 from pals_agent.runtime_latency import latency_stage
@@ -172,6 +178,12 @@ class ProofFlowRetriever(Protocol):
 
 
 @dataclass(frozen=True, slots=True)
+class _RacedCandidate:
+    generated: GeneratedProof
+    verification: VerificationResult | None
+
+
+@dataclass(frozen=True, slots=True)
 class RepairGeneration:
     generated: GeneratedProof
     route_decision: RepairRouteDecision
@@ -259,6 +271,11 @@ class ProofPipeline:
     # table defaults to the packaged one.
     lemma_alias_repair: bool = False
     lemma_alias_table: LemmaAliasTable | None = None
+    # T2 lane (pals_agent/t2_lane.py; each part has its own default-off environment switch).
+    # ``explainer`` is only used by the parallel-explanation switch: an object with the
+    # ``LeanProofExplainer.explain`` signature, called beside verification.
+    explainer: Any = None
+    explanation_language: str = "ja"
 
     def __post_init__(self) -> None:
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
@@ -395,8 +412,20 @@ class ProofPipeline:
         return self._request_for_statement(statement, formal_statement=formal_statement)
 
     def _run_request(self, **arguments: Any) -> ProofRunResult:
-        with step_timing.run_scope(arguments.get("proof_job_id")):
-            return self._run_request_steps(**arguments)
+        explain = getattr(self.explainer, "explain", None)
+        with (
+            step_timing.run_scope(arguments.get("proof_job_id")),
+            t2_lane.t2_run_scope(explain, self.explanation_language) as (_memo, explanation_run),
+        ):
+            result = self._run_request_steps(**arguments)
+            if not explanation_run.active:
+                return result
+            handle = explanation_run.finish(
+                verified=result.verification.success,
+                statement=result.prompt,
+                lean_code=result.generated.lean_code,
+            )
+            return replace(result, speculative_explanation=handle) if handle else result
 
     def _run_request_steps(
         self,
@@ -705,8 +734,15 @@ class ProofPipeline:
             verifier = self.verifier
             assert verifier is not None
             step_timing.set_attempt(attempt)
+            explanation_run = t2_lane.current_explanation_run()
+            if explanation_run is not None:
+                explanation_run.start(statement=request.prompt, lean_code=generated.lean_code)
             with latency_stage("lean_compile_local"), step_timing.step("lean_check") as timing:
-                verification = verifier.verify(generated.lean_code)
+                # A racing first attempt may already have been compiled by its own thread.
+                memoised = t2_lane.take_memoised(generated.lean_code)
+                verification = memoised if memoised is not None else verifier.verify(
+                    generated.lean_code
+                )
                 if timing is not None:
                     timing.set_lean(verification.success, verification.diagnostics)
             diagnostics = [*diagnostics, *verification.diagnostics]
@@ -928,6 +964,14 @@ class ProofPipeline:
                 sketch_mechanical_repair=self.sketch_mechanical_repair,
                 sketch_parallel=self.sketch_parallel,
                 deterministic_templates=self.deterministic_templates,
+                race=(
+                    (lambda prove_once: self._race_first_attempt(request, prove_once))
+                    if feedback is None
+                    and t2_lane.parallel_candidates_enabled()
+                    and self.verification_mode == "local"
+                    and self.verifier is not None
+                    else None
+                ),
             )
 
         _emit(
@@ -1083,6 +1127,19 @@ class ProofPipeline:
             previous_draft=generated.draft,
             previous_sketch=generated.sketch,
         )
+        if t2_lane.patch_repair_enabled():
+            patched = self._try_patch_repair(
+                request=request,
+                feedback=base_feedback,
+                cumulative_diagnostics=cumulative_diagnostics,
+                problem_id=problem_id,
+                attempt=attempt,
+                repairs_used=repairs_used,
+                attempt_evidence=attempt_evidence,
+                on_status=on_status,
+            )
+            if patched is not None:
+                return patched
         try:
             route_decision = (
                 deterministic_repair_route(request, base_feedback)
@@ -1186,6 +1243,112 @@ class ProofPipeline:
             on_status=on_status,
         )
         return RepairGeneration(generated=repaired, route_decision=route_decision)
+
+    def _try_patch_repair(
+        self,
+        *,
+        request: ProofRequest,
+        feedback: GenerationFeedback,
+        cumulative_diagnostics: list[Diagnostic],
+        problem_id: str,
+        attempt: int,
+        repairs_used: int,
+        attempt_evidence: dict[str, Any],
+        on_status: StatusCallback | None,
+    ) -> RepairGeneration | None:
+        """T2: a minimal edit of the failed source, without route selection or a handoff call.
+
+        Used for the first ``PATCH_REPAIR_MAX_ROUNDS`` repairs of plain Lean failures only.
+        Anything the model would have to route (statement/harness mismatches, preflight
+        failures, repeated failures) and any patch that cannot be applied goes through the
+        ordinary repair path, so this changes how fast a repair is made, not whether one is.
+        """
+        patcher = getattr(self.generator, "generate_patch", None)
+        if (
+            not callable(patcher)
+            or repairs_used >= t2_lane.PATCH_REPAIR_MAX_ROUNDS
+            or not feedback.previous_lean_code.strip()
+        ):
+            return None
+        errors = [d for d in feedback.diagnostics if d.severity == "error"]
+        codes = {d.code for d in errors if d.code}
+        if (
+            not errors
+            or codes & _MODEL_DECIDES_CODES
+            or _HARNESS_MISMATCH_CODE in codes
+            or any(code.startswith("pals.") for code in codes)
+        ):
+            return None
+        _emit(
+            on_status,
+            "repairing",
+            cumulative_diagnostics,
+            None,
+            feedback.previous_lean_code,
+            {
+                **_request_context(request, problem_id=problem_id),
+                "failed_attempt": attempt,
+                "repair_attempt": repairs_used + 1,
+                "repair_route": "prove",
+                "t2_patch_repair": True,
+                "attempt_evidence": attempt_evidence,
+                "max_repair_attempts": self.max_repair_attempts,
+            },
+        )
+        patched = patcher(request, feedback)
+        if patched is None or not patched.lean_code.strip():
+            return None
+        decision = RepairRouteDecision(
+            route="prove",
+            rationale="T2 patch repair from a sanitised failure summary.",
+            raw_model_output="",
+            model=patched.model,
+            provider="pals-t2-patch",
+            elapsed_ms=patched.elapsed_ms,
+        )
+        return RepairGeneration(generated=patched, route_decision=decision)
+
+    def _race_first_attempt(
+        self, request: ProofRequest, prove_once: Callable[[], GeneratedProof]
+    ) -> GeneratedProof:
+        """T2: ``CANDIDATE_COUNT`` first-attempt proofs generated and compiled concurrently.
+
+        The first candidate that passes preflight and Lean wins; the others are cancelled before
+        they compile (a model call already sent still bills, and is counted by the race). Its Lean
+        result is memoised so the main loop does not compile it again. When nobody compiles, the
+        candidate with the fewest errors is returned and repaired as an ordinary failure.
+        """
+        verifier = self.verifier
+        assert verifier is not None
+        memo = t2_lane.current_memo()
+
+        def task(cancel: threading.Event) -> _RacedCandidate:
+            generated = prove_once()
+            code = generated.lean_code
+            if not code.strip() or validate_generated_lean(request, code):
+                return _RacedCandidate(generated, None)
+            if cancel.is_set():
+                return _RacedCandidate(generated, None)
+            verification = verifier.verify(code)
+            if memo is not None:
+                memo.put(code, verification)
+            return _RacedCandidate(generated, verification)
+
+        def rank(value: _RacedCandidate) -> float:
+            if value.verification is None:
+                return 1_000.0
+            return float(sum(d.severity == "error" for d in value.verification.diagnostics))
+
+        result = t2_lane.race_candidates(
+            [task] * t2_lane.CANDIDATE_COUNT,
+            is_win=lambda value: value.verification is not None and value.verification.success,
+            rank=rank,
+        )
+        if result.best is None:
+            errors = [c.error for c in result.candidates if c.error is not None]
+            raise errors[0] if errors else RuntimeError("no first-attempt candidate finished")
+        assert result.best.value is not None
+        return result.best.value.generated
 
     def _lemma_alias_table(self) -> LemmaAliasTable:
         return self.lemma_alias_table or default_lemma_alias_table()
@@ -1711,6 +1874,7 @@ def _generate_staged_attempt(
     sketch_mechanical_repair: bool = False,
     sketch_parallel: int = 1,
     deterministic_templates: bool = False,
+    race: Callable[[Callable[[], GeneratedProof]], GeneratedProof] | None = None,
 ) -> GeneratedProof:
     draft = feedback.previous_draft if feedback is not None else None
     sketch = feedback.previous_sketch if feedback is not None else None
@@ -1728,6 +1892,35 @@ def _generate_staged_attempt(
         sketch = None
         if not draft.text.strip():
             return _failed_staged_proof(draft=draft)
+
+    direct = getattr(generator, "generate_direct_proof", None)
+    if (
+        feedback is None
+        and callable(direct)
+        and t2_lane.no_sketch_enabled()
+        and not (deterministic_templates and template_proof_for_request(request) is not None)
+    ):
+        # T2: the Sketch stage is skipped; one call writes the whole proof from the Draft.
+        _emit(
+            on_status,
+            "proving",
+            diagnostics,
+            None,
+            None,
+            {
+                **context,
+                "dsp_stage": "prove",
+                "t2_no_sketch": True,
+                "generated_draft": asdict(draft),
+                "model": getattr(generator, "prove_model", None)
+                or getattr(generator, "model", None),
+            },
+        )
+
+        def direct_once() -> GeneratedProof:
+            return cast(GeneratedProof, direct(request, draft))
+
+        return race(direct_once) if race is not None else direct_once()
 
     if (
         repair_route in {"draft", "sketch"}
@@ -1835,7 +2028,13 @@ def _generate_staged_attempt(
             or getattr(generator, "model", None),
         },
     )
-    return generator.generate_proof(request, draft, sketch, feedback)
+
+    def prove_once() -> GeneratedProof:
+        return generator.generate_proof(request, draft, sketch, feedback)
+
+    if race is not None and feedback is None:
+        return race(prove_once)
+    return prove_once()
 
 
 def _sketch_and_check(
