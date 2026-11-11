@@ -170,3 +170,24 @@ def test_a_fast_candidate_that_proves_another_statement_does_not_win_the_race(
 
     assert result.verification_pending
     assert result.generated.lean_code == X2_PROOF  # the slow but correct one is submitted
+
+
+@pytest.mark.parametrize("padding", ["", "  ", "\n\n", "\t \n"])
+def test_the_races_target_check_agrees_with_the_workers_for_any_padding_of_the_statement(
+    padding: str,
+) -> None:
+    """The race reads ``request.prompt``; the worker reads the job's ``statement``. The pipeline
+    builds the prompt as ``statement.strip()`` on every path, and the check ignores whitespace."""
+    from pals_agent.lean_target import extract_single_target_declaration
+    from pals_agent.pipeline import _aligned_with_request, _request_for_statement
+    from pals_agent.worker import _target_matches_statement
+
+    statement = padding + X2_STATEMENT + padding
+    request = _request_for_statement(statement)
+    assert request.prompt == statement.strip()
+    for code in (TRIVIAL, X2_PROOF):
+        target = extract_single_target_declaration(code)
+        assert target is not None
+        assert _aligned_with_request(request.prompt, code) == _target_matches_statement(
+            statement, target
+        )

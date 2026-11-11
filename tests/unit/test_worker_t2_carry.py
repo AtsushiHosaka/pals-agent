@@ -362,3 +362,40 @@ def test_resuming_after_the_compile_does_not_wait_for_a_race_loser(
     )
 
     assert waited == []  # the loser reports its own usage when it ends; the review is not held
+
+
+def test_the_early_explanation_uses_the_configured_timeout(
+    tmp_path: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv(t2_lane.PARALLEL_EXPLANATION_ENV, "true")
+    seen: list[Any] = []
+    worker = SqsProofWorker(
+        settings=cast(
+            AgentSettings,
+            SimpleNamespace(
+                template_fixed_explanation_enabled=False, explanation_model_timeout_seconds=300,
+            ),
+        ),
+        api_client=cast(Any, SemanticReviewApi()),
+        pipeline=None,
+        explainer=cast(Any, SimpleNamespace(explain=lambda **k: seen.append(k["timeout_seconds"]))),
+        proof_reviewer=cast(Any, RecordingSemanticReviewer()),
+        output_reviewer=cast(Any, object()),
+    )
+    explain = worker._with_t2_calls(_real_pipeline(tmp_path), "ja").explainer.explain
+    explain(
+        theorem_statement="s", lean_code="theorem t : True := by trivial", verified=True,
+        language="ja", deadline=1.0, timeout_seconds=120.0,
+    )
+
+    assert seen == [300.0]
+
+
+def test_the_review_adoption_waits_for_the_reviewers_whole_attempt_budget() -> None:
+    import re
+    from pathlib import Path
+
+    source = Path(__file__).resolve().parents[2].joinpath("pals_agent/worker.py").read_text()
+    # The adopt wait equals the visibility extension's bound (3 attempts + margin).
+    assert re.search(r"wait_seconds=3 \* math\.ceil\(timeout_seconds\) \+ 30", source)
+    assert "extend_visibility(3 * math.ceil(timeout_seconds) + 30)" in source
