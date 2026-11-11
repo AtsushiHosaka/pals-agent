@@ -272,6 +272,16 @@ VARIANT_INSTRUCTIONS = (
 )
 
 
+@contextmanager
+def candidate_variant(index: int) -> Iterator[None]:
+    """Run a block as race candidate ``index`` (what the race itself sets in each thread)."""
+    token = _variant.set(index)
+    try:
+        yield
+    finally:
+        _variant.reset(token)
+
+
 def variant_effort() -> str | None:
     """The reasoning effort of the race candidate running in this context (None outside a
     heterogeneous race): candidate 0 is the fast one, candidate 1 the strong one."""
@@ -540,14 +550,21 @@ class AlternateSlot:
             self._running -= 1
             self._cond.notify_all()
 
-    def take(self, timeout: float) -> Any:
+    def take(self, timeout: float, should_stop: Callable[[], bool] | None = None) -> Any:
+        """The held candidate, waiting up to ``timeout`` for one still being generated.
+
+        ``should_stop`` is polled while waiting (a shutdown request): a stop returns None at once
+        and leaves the candidate unclaimed.
+        """
         deadline = time.monotonic() + max(0.0, timeout)
         with self._cond:
             while self._offered is None and self._running > 0 and not self._taken:
+                if should_stop is not None and should_stop():
+                    return None
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
                     break
-                self._cond.wait(remaining)
+                self._cond.wait(min(remaining, 0.2))
             if self._taken or self._offered is None:
                 return None
             self._taken = True
@@ -558,6 +575,36 @@ class AlternateSlot:
 _repair_alternate: ContextVar[AlternateSlot | None] = ContextVar(
     "pals_t2_repair_alternate", default=None
 )
+
+
+# What bounds the alternate's wait: the end of the claim's lease (monotonic) and the worker's stop
+# request. Set by the worker around the pipeline run; unset means the fixed default only.
+_alternate_limits: ContextVar[tuple[float | None, Callable[[], bool] | None]] = ContextVar(
+    "pals_t2_alternate_limits", default=(None, None)
+)
+ALTERNATE_LEASE_MARGIN_SECONDS = 30.0
+
+
+@contextmanager
+def alternate_limits(
+    *, lease_deadline: float | None, should_stop: Callable[[], bool] | None
+) -> Iterator[None]:
+    token = _alternate_limits.set((lease_deadline, should_stop))
+    try:
+        yield
+    finally:
+        _alternate_limits.reset(token)
+
+
+def alternate_wait() -> tuple[float, Callable[[], bool] | None]:
+    """How long the held candidate may be waited for, and the stop predicate to poll."""
+    lease_deadline, should_stop = _alternate_limits.get()
+    wait = ALTERNATE_WAIT_SECONDS
+    if lease_deadline is not None:
+        wait = min(
+            wait, lease_deadline - ALTERNATE_LEASE_MARGIN_SECONDS - time.monotonic()
+        )
+    return max(0.0, wait), should_stop
 
 
 def repair_alternate() -> AlternateSlot | None:

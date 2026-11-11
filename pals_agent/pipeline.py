@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import logging
 import re
 import threading
 import time
@@ -118,6 +119,8 @@ TerminationReason = Literal[
 EARLY_STOP_REASON: Final = "repair_stopped_repeated_statement_mismatch"
 EARLY_STOP_DIAGNOSTIC_CODE: Final = "pals.repair_stopped_repeated_statement_mismatch"
 EARLY_STOP_RULE: Final = "repeated_statement_mismatch"
+
+_logger = logging.getLogger(__name__)
 
 
 class LeanGenerator(Protocol):
@@ -1388,7 +1391,8 @@ class ProofPipeline:
         ):
             return None
         started = time.monotonic()
-        held = slot.take(t2_lane.ALTERNATE_WAIT_SECONDS)
+        wait, should_stop = t2_lane.alternate_wait()
+        held = slot.take(wait, should_stop)
         if (
             held is None
             or not held.lean_code.strip()
@@ -1567,15 +1571,25 @@ class ProofPipeline:
         """
         decided = threading.Lock()
         claimed = False
+        winner: GeneratedProof | None = None
         background = t2_lane.current_background()
         slot: t2_lane.AlternateSlot | None = None
+        if t2_lane.hetero_race_enabled():
+            efforts = getattr(self.generator, "hetero_prove_efforts", lambda: None)()
+            if efforts is None or None in efforts or len(set(efforts)) < 2:
+                # Two candidates at the same effort are one candidate paid twice (a request's
+                # chosen effort, the release model's fixed one, or no role bindings): no race.
+                _logger.warning(
+                    "t2_hetero_race_skipped reason=efforts_not_distinct efforts=%s", efforts
+                )
+                return prove_once()
         if t2_lane.hetero_race_enabled() and background is not None:
             # The candidate that does not win is kept: a failed API compile submits it instead of
             # asking the model for a repair.
             slot = background.alternate = t2_lane.AlternateSlot(t2_lane.CANDIDATE_COUNT)
 
         def task(cancel: threading.Event) -> _RacedCandidate:
-            nonlocal claimed
+            nonlocal claimed, winner
             try:
                 generated = prove_once()
                 code = generated.lean_code
@@ -1594,6 +1608,7 @@ class ProofPipeline:
                                 slot.offer(generated)
                             return _RacedCandidate(generated, None, preflight_errors=0)
                         claimed = True
+                        winner = generated
                         cancel.set()
                 return _RacedCandidate(generated, None, preflight_errors=errors)
             finally:
@@ -1609,7 +1624,9 @@ class ProofPipeline:
             errors_raised = [c.error for c in result.candidates if c.error is not None]
             raise errors_raised[0] if errors_raised else RuntimeError("no candidate finished")
         assert result.best.value is not None
-        return result.best.value.generated
+        # The candidate that took the race is the one submitted, even when a rival with a lower
+        # index had finished by the time the result was read (that rival is the held alternate).
+        return winner if winner is not None else result.best.value.generated
 
     def _lemma_alias_table(self) -> LemmaAliasTable:
         return self.lemma_alias_table or default_lemma_alias_table()
