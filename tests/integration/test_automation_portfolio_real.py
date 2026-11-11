@@ -40,7 +40,9 @@ def pool() -> list[lane.PoolRecipe]:
     ],
 )
 def test_portfolio_closes_without_a_model_and_reports_the_tactic(statement, tactic, pool, runner):
-    result = ap.solve(statement, [], runner, budget_s=90)
+    result = ap.solve(
+        statement, [], runner, budget_s=90, allow_header=statement.startswith("example")
+    )
     assert result.outcome == "answered" and result.route == "portfolio"
     assert result.model_calls == 0
     names = [a.name for a in result.attempts if a.verdict is None]

@@ -138,12 +138,27 @@ _TACTIC_TEXT: Final = {
 }
 
 
-def render(language: str, formal: str, tactic: str, lemma: LemmaInfo | None = None) -> str | None:
+def render(
+    language: str,
+    formal: str,
+    tactic: str,
+    lemma: LemmaInfo | None = None,
+    *,
+    unverified_formalisation: bool = False,
+) -> str | None:
     """Template text in the request language, or ``None`` when no honest template exists."""
     if not honest(tactic, formal):
         return None
     ja = language == "ja"
-    parts = [
+    parts = []
+    if unverified_formalisation:
+        parts.append(
+            "※ 次の命題は、ご依頼から自動で作った形式化で、依頼との一致は人が確認していません。"
+            if ja
+            else "Note: the statement below is an automatic formalisation of your request; "
+            "its match with your request has not been verified by a person."
+        )
+    parts += [
         (
             "Lean(Mathlib)で次の命題を形式的に検証しました。"
             if ja

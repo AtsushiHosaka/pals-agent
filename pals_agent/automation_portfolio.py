@@ -22,22 +22,18 @@ import os
 import pty
 import re
 import select
-import signal
 import subprocess
-import tempfile
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final
 
 from pals_agent import general_recipe_lane as lane
+from pals_agent import sandbox
 from pals_agent.recipe_instantiation import InstantiationRejected
+from pals_agent.statement_grammar import StatementRejected, validate_proposition
 
 PROBE_NAME: Final = "pals_probe"
-_FORBIDDEN_WORDS = re.compile(
-    r"(?<![\w'.])(sorry|admit|axiom|native_decide|theorem|lemma|example|def|instance|open|"
-    r"namespace|section|end|import|macro|syntax|notation|attribute)(?![\w'.])|#|--|/-|-/|\"|;|@\["
-)
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,24 +95,36 @@ def split_preamble(formal: str) -> tuple[str, str]:
     return "\n".join(lines), text
 
 
-def check_formal_statement(formal: str) -> str:
-    """The closed proposition for a trusted-shape formal statement; no commands, no sorry."""
-    text = closed_statement(split_preamble(formal)[1])
-    if not text or len(text) > 4000 or "\x00" in text:
-        raise InstantiationRejected("formal statement is empty or too long")
-    has_let = re.search(r"(?<![\w'.])let(?![\w'.])", text) is not None
-    probe = text.replace(":=", "").replace(";", "") if has_let else text
-    if _FORBIDDEN_WORDS.search(probe) or ":=" in probe or (not has_let and ";" in text):
-        raise InstantiationRejected("formal statement contains command or tactic syntax")
-    depth = 0
-    for ch in text:
-        depth += ch in "([{⟨⦃"
-        depth -= ch in ")]}⟩⦄"
-        if depth < 0:
-            raise InstantiationRejected("unbalanced brackets")
-    if depth:
-        raise InstantiationRejected("unbalanced brackets")
-    return text
+def check_formal_statement(formal: str, *, allow_header: bool = False) -> str:
+    """The closed proposition for a statement, validated against the allow-list grammar.
+
+    ``allow_header`` is only for catalog cards (``example``/``theorem`` headers, a trailing
+    ``:= by …`` placeholder and an ``open``/``universe`` preamble); a model-written or learner
+    statement must already be a bare proposition.  Nothing but the grammar decides acceptance.
+    """
+    text = formal
+    if allow_header:
+        preamble, text = split_preamble(formal)
+        _check_preamble(preamble)
+        text = closed_statement(text)
+    return validate_proposition(text)
+
+
+_PREAMBLE_NAME = re.compile(r"[A-Za-z_][\w'.]*\Z")
+
+
+def _check_preamble(preamble: str) -> None:
+    """Only ``open``/``universe`` lines whose arguments are plain names outside code namespaces."""
+    for line in preamble.splitlines():
+        words = line.split()
+        if not words or words[0] not in {"open", "universe"}:
+            raise StatementRejected("preamble is not open/universe")
+        for word in words[1:]:
+            if word in {"scoped", "in"} and words[0] == "open" and word == "scoped":
+                continue
+            if _PREAMBLE_NAME.match(word) is None:
+                raise StatementRejected("preamble argument is not a plain name")
+            validate_proposition(word)  # reserved words and code namespaces are refused
 
 
 def closed_statement(formal: str) -> str:
@@ -143,32 +151,37 @@ class Attempt:
 
 
 def build_unified(
-    request: str, recipes: list[lane.PoolRecipe], portfolio: tuple[Tactic, ...] = PORTFOLIO
+    request: str,
+    recipes: list[lane.PoolRecipe],
+    portfolio: tuple[Tactic, ...] = PORTFOLIO,
+    *,
+    allow_header: bool = False,
 ) -> tuple[str, str, list[Attempt], lane.LaneSource | None]:
-    proposition = check_formal_statement(request)
-    preamble = split_preamble(request)[0]
+    proposition = check_formal_statement(request, allow_header=allow_header)
+    preamble = split_preamble(request)[0] if allow_header else ""
     if preamble:
         recipes = []  # Recipes are compiled without the card's `open`/`universe` context
     attempts: list[Attempt] = []
     parts = [
-        f"import Mathlib\n\ntheorem {PROBE_NAME} : True := trivial\n#print axioms {PROBE_NAME}\n"
+        f"import Mathlib\n\ntheorem {PROBE_NAME} : True := trivial\n#print axioms {PROBE_NAME}\n",
+        lane.AUTO_OPTIONS,
     ]
     if preamble:
         parts.append(preamble + "\n")
+    parts.append(lane.reference_probe(proposition))
     source = None
     if recipes:
         try:
             source, _ = lane.build_source(recipes, proposition)
         except InstantiationRejected:
-            source = None  # e.g. a `let` statement: never a Recipe instance, portfolio only
+            source = None  # e.g. a statement outside the Recipe grammar: portfolio only
     if source is not None:
-        body = source.source.split("\n\n", 1)[1]  # drop the import header
-        parts.append(body)
+        parts.append(source.body)
         attempts += [
             Attempt("recipe", a.recipe.recipe_id, a.instance_name) for a in source.attempts
         ]
     for k, tactic in enumerate(portfolio):
-        decl = f"pals_portfolio_{k}"
+        decl = f"_pals_portfolio_{k}"
         parts.append(
             f"set_option maxHeartbeats {tactic.heartbeats} in\n"
             f"theorem {decl} : {proposition} := by\n  {tactic.text}\n#print axioms {decl}\n"
@@ -191,22 +204,16 @@ def run_stream(
 ) -> StreamResult:
     """Run Lean on a pty (line-buffered output); ``stop(line)`` True ends the process early."""
     master, slave = pty.openpty()
-    env = {
-        "PATH": os.environ.get("PATH", ""),
-        "LEAN_PATH": runner.lean_path,
-        "HOME": os.environ.get("HOME", ""),
-    }
-    with tempfile.TemporaryDirectory(prefix="pals-pf-") as directory:
+    with sandbox.new_scratch("pals-pf-") as directory:
         path = Path(directory) / "Portfolio.lean"
         path.write_text(source)
         t0 = time.monotonic()
+        isolation = runner.isolation()
         proc = subprocess.Popen(
-            [runner.lean_binary, str(path)],
+            sandbox.command([runner.lean_binary, str(path)], isolation, directory),
             stdout=slave,
             stderr=slave,
-            env=env,
-            close_fds=True,
-            start_new_session=True,
+            **sandbox.popen_kwargs(isolation, directory, cpu_seconds=int(budget_s) + 5),
         )
         os.close(slave)
         buf, out, events, killed = b"", [], [], False
@@ -237,16 +244,15 @@ def run_stream(
             elif proc.poll() is not None:
                 break
         if killed or proc.poll() is None:
-            try:
-                os.killpg(proc.pid, signal.SIGKILL)
-            except (ProcessLookupError, PermissionError):
-                proc.kill()
+            sandbox.kill_group(proc)
         proc.wait()
         os.close(master)
     return StreamResult("\n".join(out), events, killed, time.monotonic() - t0)
 
 
-_AX = re.compile(r"'(pals_\w+)' (?:depends on axioms: \[([^\]]*)\]|does not depend on any axioms)")
+_AX = re.compile(
+    r"'(_?pals_\w+)' (?:depends on axioms: \[([^\]]*)\]|does not depend on any axioms)"
+)
 _LEMMA = re.compile(r"\[apply\] .*?exact\s+(\(?[\w.'?!]+)")
 _CALL = re.compile(r"\[apply\] (?:\(expose_names;\s*)?exact\s+(.+?)\)?\s*$", re.M)
 
@@ -287,9 +293,10 @@ def solve(
     budget_s: float = 60.0,
     stop_on_accept: bool = True,
     use_recipes: bool = True,
+    allow_header: bool = False,
 ) -> SolveResult:
     try:
-        proposition = check_formal_statement(request_formal)
+        proposition = check_formal_statement(request_formal, allow_header=allow_header)
     except InstantiationRejected as error:
         return SolveResult(
             "miss",
@@ -299,26 +306,37 @@ def solve(
         )
     ranked = lane.rank_candidates(proposition, pool)[:candidates] if use_recipes else []
     text, proposition, attempts, source = build_unified(
-        request_formal, [r for _, r in ranked], portfolio
+        request_formal, [r for _, r in ranked], portfolio, allow_header=allow_header
     )
     by_decl = {a.decl: a for a in attempts}
+    recipe_by_decl = {a.instance_name: a for a in source.attempts} if source else {}
     first_ok: list[str] = []
-
+    seen_lines: list[str] = []
     pending_error = [False]
 
     def stop(line: str) -> bool:
+        seen_lines.append(line)
         if lane._ERROR_LINE.search(line):
             pending_error[0] = True
         match = _AX.search(line)
         if not match:
             return False
         had_error, pending_error[0] = pending_error[0], False
-        if match.group(1) not in by_decl or match.group(1) == PROBE_NAME:
+        name = match.group(1)
+        if name not in by_decl or name == PROBE_NAME:
             return False
-        if not had_error and _verdict(match.group(2)) is None:
-            first_ok.append(match.group(1))
-            return stop_on_accept
-        return False
+        if had_error or _verdict(match.group(2)) is not None:
+            return False
+        # the Recipe back-check runs BEFORE stopping, so a failed back-check cannot end the run
+        # and leave the portfolio un-run
+        if (
+            name in recipe_by_decl
+            and source is not None
+            and lane.back_check(source, recipe_by_decl[name], "\n".join(seen_lines)) is not None
+        ):
+            return False
+        first_ok.append(name)
+        return stop_on_accept
 
     res = run_stream(runner, text, budget_s=budget_s, stop=stop)
     result = SolveResult(
@@ -376,7 +394,7 @@ class WarmWorker:
     """
 
     def __init__(self, runner: lane.LeanRunner, worker_source: Path) -> None:
-        self._runner, self._source = runner, worker_source
+        self._runner, self._source = runner, worker_source.resolve()
         self._start()
 
     def alive(self) -> bool:
@@ -392,25 +410,25 @@ class WarmWorker:
 
     def _start(self) -> None:
         runner, worker_source = self._runner, self._source
-        env = {
-            "PATH": os.environ.get("PATH", ""),
-            "LEAN_PATH": runner.lean_path,
-            "HOME": os.environ.get("HOME", ""),
-        }
-        t0 = time.monotonic()
+        self._dir = sandbox.new_scratch("pals-warm-")
+        isolation = sandbox.Isolation(
+            runner.lean_binary, runner.lean_path, extra_read=(str(worker_source),)
+        )
         self.proc = subprocess.Popen(
-            [runner.lean_binary, "--run", str(worker_source)],
+            sandbox.command(
+                [runner.lean_binary, "--run", str(worker_source)], isolation, self._dir.name
+            ),
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            env=env,
             bufsize=0,
+            **sandbox.popen_kwargs(isolation, self._dir.name),
         )
+        t0 = time.monotonic()
         self._buf = b""
         if self._read_line(time.monotonic() + 120.0) != "PALS_READY":
             raise RuntimeError("warm worker did not start")
         self.startup_s = time.monotonic() - t0
-        self._dir = tempfile.TemporaryDirectory(prefix="pals-warm-")
         self._counter = 0
 
     def check(self, source: str, *, timeout_s: float = 60.0) -> tuple[str, float]:
@@ -466,9 +484,7 @@ class WarmWorker:
         return raw.decode(errors="replace")
 
     def _reap(self) -> None:
-        if self.proc.poll() is None:
-            self.proc.kill()
-        self.proc.wait()
+        sandbox.kill_group(self.proc)
 
     def prewarm_search(self) -> float:
         """Build the ``exact?`` index once (seconds), so no request pays for it."""
@@ -493,6 +509,7 @@ def solve_warm(
     candidates: int = lane.DEFAULT_CANDIDATES,
     portfolio: tuple[Tactic, ...] = PORTFOLIO,
     deadline: float | None = None,
+    allow_header: bool = False,
 ) -> SolveResult:
     """Staged first-success run on a warm worker: Recipe candidates, then each tactic in turn.
 
@@ -501,15 +518,21 @@ def solve_warm(
     """
     t0 = time.monotonic()
     try:
-        proposition = check_formal_statement(request_formal)
+        proposition = check_formal_statement(request_formal, allow_header=allow_header)
     except InstantiationRejected as error:
         return SolveResult(
             "miss", code="statement_not_plain", attempts=[Attempt("none", str(error), "-")]
         )
-    preamble = split_preamble(request_formal)[0]
+    preamble = split_preamble(request_formal)[0] if allow_header else ""
     ranked = [] if preamble else lane.rank_candidates(proposition, pool)[:candidates]
-    prefix = preamble + "\n" if preamble else ""
+    prefix = lane.AUTO_OPTIONS + (preamble + "\n" if preamble else "")
     result = SolveResult("miss", proposition=proposition, code="no_attempt_succeeded")
+    # the request's statement alone must elaborate to a closed Prop (autoImplicit is off)
+    ref_out, _ = worker.check(prefix + lane.reference_probe(proposition), timeout_s=20.0)
+    if "PALS_REF_OK=true" not in ref_out or lane._ERROR_LINE.search(ref_out):
+        result.code = "statement_not_elaborated"
+        result.total_s = time.monotonic() - t0
+        return result
     source = None
     if ranked:
         try:
@@ -517,8 +540,7 @@ def solve_warm(
         except InstantiationRejected:
             source = None  # not a plain Recipe instance request (e.g. a `let` statement)
     if source is not None:
-        body = source.source.split("\n\n", 1)[1]
-        output, seconds = worker.check(body)
+        output, seconds = worker.check(source.source.split("\n\n", 1)[1])
         for recipe_attempt in source.attempts:
             attempt = Attempt(
                 "recipe", recipe_attempt.recipe.recipe_id, recipe_attempt.instance_name
@@ -540,7 +562,7 @@ def solve_warm(
         if deadline is not None and time.monotonic() >= deadline:
             result.code = "budget_exhausted"
             break
-        decl = f"pals_portfolio_{k}"
+        decl = f"_pals_portfolio_{k}"
         text = prefix + (
             f"set_option maxHeartbeats {tactic.heartbeats} in\n"
             f"theorem {decl} : {proposition} := by\n  {tactic.text}\n#print axioms {decl}\n"

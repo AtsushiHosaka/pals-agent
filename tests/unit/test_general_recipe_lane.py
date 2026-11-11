@@ -97,10 +97,18 @@ def _unit(recipe_name="pow_monotone"):
 
 
 def _output(
-    attempt, *, axioms="propext, Classical.choice, Quot.sound", term=True, recipe_axioms=None
+    attempt,
+    *,
+    axioms="propext, Classical.choice, Quot.sound",
+    term=True,
+    recipe_axioms=None,
+    ref_ok=True,
+    same=True,
 ):
     g, i = attempt.general_name, attempt.instance_name
-    text = f"'{g}' depends on axioms: [{recipe_axioms or axioms}]\n"
+    text = f"PALS_REF_OK={'true' if ref_ok else 'false'}\n"
+    text += f"'{g}' depends on axioms: [{recipe_axioms or axioms}]\n"
+    text += f"PALS_SAME_{i}={'true' if same else 'false'}\n"
     text += f"'{i}' depends on axioms: [{axioms}]\n" if axioms is not None else ""
     text += f"theorem {i} : T :=\n  fun n => {g if term else 'simp_lemma'} _ _ _ n\n"
     return text
@@ -138,10 +146,11 @@ def test_answer_with_a_fake_runner_makes_no_model_call_and_reports_timings():
         def run(self, source):
             import re
 
-            names = re.findall(r"theorem (pals_recipe_instance_\d+) :", source)
+            names = re.findall(r"theorem (_pals_recipe_instance_\d+) :", source)
             general = re.findall(r"(?m)^theorem (pow_le_pow_general)", source)
-            out = ""
+            out = "PALS_REF_OK=true\n"
             for name in names:
+                out += f"PALS_SAME_{name}=true\n"
                 out += (
                     f"'{name}' depends on axioms: [propext]\ntheorem {name} : T := {general[0]}\n"
                 )
@@ -163,3 +172,19 @@ def test_a_logged_error_vetoes_a_declaration_even_when_axioms_look_clean():
         "'inst_b' depends on axioms: [propext]\n"
     )
     assert lane.errored_declarations(output) == {"inst_a"}
+
+
+def test_a_statement_that_does_not_elaborate_alone_or_changes_type_is_refused():
+    source, attempt = _unit()
+    assert lane.back_check(source, attempt, _output(attempt, ref_ok=False)) == (
+        "statement_not_elaborated"
+    )
+    assert lane.back_check(source, attempt, _output(attempt, same=False)) == "statement_changed"
+
+
+def test_standalone_source_turns_autoimplicit_off_and_elaborates_the_request_alone():
+    source, _ = _unit()
+    assert "set_option autoImplicit false" in source.source
+    assert "set_option relaxedAutoImplicit false" in source.source
+    assert "theorem _pals_ref :" in source.source and "PALS_REF_OK" in source.source
+    assert source.source.index("autoImplicit") < source.source.index("theorem _pals_ref")

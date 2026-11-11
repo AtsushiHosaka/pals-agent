@@ -65,7 +65,12 @@ def main() -> None:
             if not formal:
                 continue
             if worker is not None:
-                res = ap.solve_warm(formal, pool if not args.no_recipes else [], worker)
+                res = ap.solve_warm(
+                    formal,
+                    pool if not args.no_recipes else [],
+                    worker,
+                    allow_header=bool(p.get("fixed_lean_statement")),
+                )
             else:
                 res = ap.solve(
                     formal,
@@ -74,6 +79,7 @@ def main() -> None:
                     budget_s=args.budget,
                     use_recipes=not args.no_recipes,
                     stop_on_accept=args.first_success,
+                    allow_header=bool(p.get("fixed_lean_statement")),
                 )
             row = {
                 "id": p["id"],

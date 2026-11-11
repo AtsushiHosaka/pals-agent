@@ -947,6 +947,58 @@
   {
    "id": "tests.integration.test_automation_portfolio_real::test_a_timed_out_warm_worker_is_replaced_and_never_leaks_output_into_the_next_request",
    "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane and automation portfolio, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_statement_injection_real::test_injection_is_refused_and_has_no_effect_in_the_sandboxed_processes[run_tac-in-term]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (and macOS sandbox-exec for the injection tests); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_statement_injection_real::test_injection_is_refused_and_has_no_effect_in_the_sandboxed_processes[let-by-suffix]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (and macOS sandbox-exec for the injection tests); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_statement_injection_real::test_injection_is_refused_and_has_no_effect_in_the_sandboxed_processes[open-in]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (and macOS sandbox-exec for the injection tests); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_statement_injection_real::test_injection_is_refused_and_has_no_effect_in_the_sandboxed_processes[set_option-in]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (and macOS sandbox-exec for the injection tests); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_statement_injection_real::test_injection_is_refused_and_has_no_effect_in_the_sandboxed_processes[unsafe]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (and macOS sandbox-exec for the injection tests); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_statement_injection_real::test_injection_is_refused_and_has_no_effect_in_the_sandboxed_processes[hash-eval]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (and macOS sandbox-exec for the injection tests); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_statement_injection_real::test_injection_is_refused_and_has_no_effect_in_the_sandboxed_processes[char-obfuscation]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (and macOS sandbox-exec for the injection tests); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_statement_injection_real::test_injection_is_refused_and_has_no_effect_in_the_sandboxed_processes[string-literal]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (and macOS sandbox-exec for the injection tests); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_statement_injection_real::test_injection_is_refused_and_has_no_effect_in_the_sandboxed_processes[exec-touch]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (and macOS sandbox-exec for the injection tests); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_statement_injection_real::test_a_secret_outside_the_allowed_roots_cannot_be_read",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (and macOS sandbox-exec for the injection tests); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_statement_injection_real::test_the_environment_is_scrubbed_of_secrets",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (and macOS sandbox-exec for the injection tests); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_statement_injection_real::test_a_runaway_process_is_killed_with_its_group_on_timeout",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (and macOS sandbox-exec for the injection tests); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_statement_injection_real::test_the_warm_worker_runs_in_its_own_session_with_the_sandbox_applied",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (and macOS sandbox-exec for the injection tests); not provided on this runner."
   }
  ],
  "allowed_unexecuted_modules": [
@@ -981,6 +1033,10 @@
   {
    "id": "tests.integration.test_automation_portfolio_real",
    "reason": "Needs the real pinned Lean workspace with built Mathlib; not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_statement_injection_real",
+   "reason": "Needs the real pinned Lean workspace and macOS sandbox-exec; not provided on this runner."
   }
  ]
 }

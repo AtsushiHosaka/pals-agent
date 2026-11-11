@@ -31,27 +31,63 @@ import math
 import os
 import re
 import subprocess
-import tempfile
 import time
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final
 
+from pals_agent import sandbox
 from pals_agent.recipe_instantiation import (
     GENERAL_NAME,
     INSTANCE_NAME,
     InstantiationRejected,
     _parse,
-    check_proposition,
     render_answer,
 )
+from pals_agent.statement_grammar import validate_proposition
 
 SCHEMA_VERSION: Final = "pals.general-recipe-lane.v1"
 DEFAULT_CANDIDATES: Final = 4
 ALLOWED_AXIOMS: Final = frozenset({"propext", "Classical.choice", "Quot.sound"})
 # Closed vocabulary for side goals that remain after the Recipe's conclusion was unified with the
 # request.  They only discharge the Recipe's hypotheses; they cannot change the declared statement.
+# The standalone file must not silently generalise a free variable (`x + 0 = x` as `∀ x`).
+AUTO_OPTIONS: Final = "set_option autoImplicit false\nset_option relaxedAutoImplicit false\n"
+REF_NAME: Final = "_pals_ref"  # leading underscore: hidden from exact?/library search
+
+
+def reference_probe(proposition: str) -> str:
+    """Elaborate the request's statement ALONE, then check it is a closed proposition.
+
+    ``PALS_REF_OK=true`` means the statement elaborated (with ``autoImplicit`` off), has no
+    metavariables or free variables, and is a ``Prop``.  The reference declaration is never an
+    answer (it uses ``sorry``); it is what each instance's type is compared with.
+    """
+    return (
+        f"set_option maxHeartbeats 100000 in\ntheorem {REF_NAME} : {proposition} := by\n  sorry\n"
+        "open Lean Elab Command in\n"
+        "#eval show CommandElabM Unit from do\n"
+        f"  let info ← getConstInfo ``{REF_NAME}\n"
+        "  let t := info.type\n"
+        "  let isProp ← liftTermElabM do\n"
+        "    let s ← Meta.inferType t\n"
+        "    return (← Meta.whnf s).isProp\n"
+        '  logInfo m!"PALS_REF_OK={!t.hasMVar && !t.hasFVar && isProp}"\n'
+    )
+
+
+def same_probe(instance: str) -> str:
+    """Compare the instance's declared type with the reference elaboration of the request."""
+    return (
+        "open Lean Elab Command in\n"
+        "#eval show CommandElabM Unit from do\n"
+        f"  let a ← getConstInfo ``{REF_NAME}\n"
+        f"  let b ← getConstInfo ``{instance}\n"
+        f'  logInfo m!"PALS_SAME_{instance}={{a.type == b.type}}"\n'
+    )
+
+
 CLOSERS: Final = ("assumption", "fun_prop", "positivity", "norm_num", "linarith", "simp")
 
 
@@ -254,11 +290,12 @@ class LaneSource:
     proposition: str
     attempts: tuple[Attempt, ...]
     source_sha256: str
+    body: str = ""  # the attempts only (no import, options or reference probe)
 
 
 def _attempt(recipe: PoolRecipe, request: str, index: int) -> Attempt:
     declaration, masked = _parse(recipe.lean_code, allow_implicit=True)
-    proposition = check_proposition(closed_proposition(request))
+    proposition = validate_proposition(closed_proposition(request))
     if re.search(rf"(?<![\w'.])({INSTANCE_NAME}|{GENERAL_NAME})(?![\w'.])", masked):
         raise InstantiationRejected("reserved declaration name already used")
     general = declaration.name or GENERAL_NAME
@@ -269,7 +306,7 @@ def _attempt(recipe: PoolRecipe, request: str, index: int) -> Attempt:
     leftover = _COMMENT_LINE.sub("", _IMPORT_LINE.sub("", masked)).strip()
     if not leftover.startswith(("theorem", "lemma", "example")):
         raise InstantiationRejected("Recipe has commands before its declaration")
-    instance = f"{INSTANCE_NAME}_{index}"
+    instance = f"_{INSTANCE_NAME}_{index}"
     arity = len(declaration.parameters)
     closers = " | ".join(CLOSERS)
     alternatives = [f"exact {general}"]
@@ -278,7 +315,9 @@ def _attempt(recipe: PoolRecipe, request: str, index: int) -> Attempt:
     body = "\n".join(f"  | {alternative}" for alternative in alternatives)
     text = (
         f"{recipe_text}\n\n#print axioms {general}\n\n"
+        f"set_option maxHeartbeats 100000 in\n"
         f"theorem {instance} : {proposition} := by\n  first\n{body}\n\n"
+        f"{same_probe(instance)}"
         f"set_option pp.proofs true in\nset_option pp.fieldNotation false in\n#print {instance}\n"
         f"#print axioms {instance}\n"  # last: a streaming reader sees the term before the verdict
     )
@@ -306,11 +345,23 @@ def build_source(
         for line in _IMPORT_LINE.findall(recipe.lean_code):
             if line.strip() not in imports:
                 imports.append(line.strip())
-    proposition = check_proposition(closed_proposition(request))
-    source = "\n".join(imports) + "\n\n" + "\n".join(a.text for a in attempts)
+    proposition = validate_proposition(closed_proposition(request))
+    attempts_text = "\n".join(a.text for a in attempts)
+    source = (
+        "\n".join(imports)
+        + "\n\n"
+        + AUTO_OPTIONS
+        + reference_probe(proposition)
+        + "\n"
+        + attempts_text
+    )
     return (
         LaneSource(
-            source, proposition, tuple(attempts), hashlib.sha256(source.encode()).hexdigest()
+            source,
+            proposition,
+            tuple(attempts),
+            hashlib.sha256(source.encode()).hexdigest(),
+            attempts_text,
         ),
         rejected,
     )
@@ -324,29 +375,31 @@ class LeanRunner:
     timeout_seconds: float = 120.0
     cwd: str | None = None
 
+    def isolation(self) -> sandbox.Isolation:
+        return sandbox.Isolation(self.lean_binary, self.lean_path)
+
     def run(self, source: str) -> tuple[int, str, float]:
+        """One Lean process in the local sandbox; a timeout kills the whole process group."""
         started = time.monotonic()
-        with tempfile.TemporaryDirectory(prefix="pals-lane-") as directory:
+        with sandbox.new_scratch("pals-lane-") as directory:
             path = Path(directory) / "Instance.lean"
             path.write_text(source)
-            env = {
-                "PATH": os.environ.get("PATH", ""),
-                "LEAN_PATH": self.lean_path,
-                "HOME": os.environ.get("HOME", ""),
-            }
+            isolation = self.isolation()
+            proc = subprocess.Popen(
+                sandbox.command([self.lean_binary, str(path)], isolation, directory),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                **sandbox.popen_kwargs(
+                    isolation, directory, cpu_seconds=int(self.timeout_seconds) + 5
+                ),
+            )
             try:
-                done = subprocess.run(
-                    [self.lean_binary, str(path)],
-                    capture_output=True,
-                    text=True,
-                    timeout=self.timeout_seconds,
-                    env=env,
-                    cwd=self.cwd,
-                    check=False,
-                )
+                out, _ = proc.communicate(timeout=self.timeout_seconds)
             except subprocess.TimeoutExpired:
+                sandbox.kill_group(proc)
                 return 124, "timeout", time.monotonic() - started
-        return done.returncode, done.stdout + done.stderr, time.monotonic() - started
+            return proc.returncode, out, time.monotonic() - started
 
     @staticmethod
     def from_workspace(workspace: Path, lake: str = "lake") -> LeanRunner:
@@ -406,6 +459,10 @@ def back_check(source: LaneSource, attempt: Attempt, output: str) -> str | None:
     declared = f"theorem {attempt.instance_name} : {attempt.proposition} := by"
     if declared not in source.source or attempt.proposition != source.proposition:
         return "statement_mismatch"
+    if "PALS_REF_OK=true" not in output:
+        return "statement_not_elaborated"  # the request's statement alone is not a closed Prop
+    if f"PALS_SAME_{attempt.instance_name}=true" not in output:
+        return "statement_changed"  # instance type differs from the reference elaboration
     errored = errored_declarations(output)
     if attempt.instance_name in errored:
         return "lean_rejected"  # an error was logged for this declaration (e.g. a timeout)
@@ -458,7 +515,7 @@ def answer(
     """Rank, compile the top candidates in ONE Lean process, accept the first that passes."""
     t0 = time.monotonic()
     try:
-        proposition = check_proposition(closed_proposition(request_formal))
+        proposition = validate_proposition(closed_proposition(request_formal))
     except InstantiationRejected as error:
         return LaneResult("miss", "request_not_a_plain_proposition", tried=[{"reason": str(error)}])
     ranked = rank_candidates(proposition, pool)[:candidates]

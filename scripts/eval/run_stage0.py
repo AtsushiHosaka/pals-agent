@@ -51,7 +51,7 @@ def main() -> None:
     worker = ap.WarmWorker(runner, ROOT / "scripts/eval/warm_worker.lean")
     pool = lane.load_fixture_recipes(ROOT / "testdata")
     model = gate.openai_model_call(load_key(args.env_file))
-    s0 = stage0.Stage0(worker, pool, model)
+    s0 = stage0.Stage0(worker, pool, model, require_flags=False)
     print("exact? index prewarm s", round(worker.prewarm_search(), 2), flush=True)
     load0 = os.getloadavg()
     print("load", load0, "worker start", round(worker.startup_s, 2), flush=True)

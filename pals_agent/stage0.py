@@ -78,15 +78,27 @@ class Stage0Result:
                 "reasons": self.gate.reasons,
                 "numerals_signal": self.gate.numerals_signal,
                 "structure": self.gate.structure,
+                "triviality": self.gate.triviality,
+                "roundtrip": self.gate.roundtrip,
             }
         return out
 
 
 class Stage0:
+    """Stage 0.  ``require_flags`` (default True) makes ``run`` inert unless BOTH
+    ``PALS_STAGE0_PORTFOLIO`` and ``PALS_GENERAL_RECIPE_LANE`` are on; measurement scripts and
+    tests pass ``require_flags=False``."""
+
     def __init__(
-        self, worker: ap.WarmWorker, pool: list[lane.PoolRecipe], model: gate.ModelCall | None
+        self,
+        worker: ap.WarmWorker,
+        pool: list[lane.PoolRecipe],
+        model: gate.ModelCall | None,
+        *,
+        require_flags: bool = True,
     ) -> None:
         self.worker, self.pool, self.model = worker, pool, model
+        self.require_flags = require_flags
 
     # -- helpers -----------------------------------------------------------------------------
     def _lemma_info(self, solved: ap.SolveResult) -> expl.LemmaInfo | None:
@@ -108,9 +120,27 @@ class Stage0:
         remaining = max(0.5, deadline - time.monotonic())
         try:
             output, _ = self.worker.check(text, timeout_s=min(20.0, remaining))
-        except TimeoutError:
+        except (TimeoutError, RuntimeError):
             return False
         return gate.equivalence_verdict(output)
+
+    def _vacuous(self, formal: str, deadline: float) -> bool:
+        """True when simple automation refutes the hypotheses (the theorem says nothing)."""
+        probe = gate.vacuity_probe(formal)
+        if probe is None:
+            return False
+        quick = tuple(t for t in ap.PORTFOLIO if t.name in {"omega", "decide", "simp", "norm_num"})
+        try:
+            solved = ap.solve_warm(
+                probe,
+                [],
+                self.worker,
+                portfolio=quick,
+                deadline=min(deadline, time.monotonic() + 3.0),
+            )
+        except (TimeoutError, RuntimeError, InstantiationRejected):
+            return False
+        return solved.outcome == "answered"
 
     # -- entry point ---------------------------------------------------------------------------
     def run(
@@ -122,6 +152,8 @@ class Stage0:
         budget_s: float | None = None,
     ) -> Stage0Result:
         t0 = time.monotonic()
+        if self.require_flags and not (stage0_enabled() and lane.lane_enabled()):
+            return Stage0Result("fallthrough", "flag_off")  # inert: no worker, no model, no Lean
         try:
             return self._run(request, language, formal, t0, budget_s)
         except Exception as error:  # noqa: BLE001 - stage 0 must never fail a request
@@ -134,49 +166,52 @@ class Stage0:
     def _run(
         self, request: str, language: str, formal: str | None, t0: float, budget: float | None
     ) -> Stage0Result:
-        given = formal is not None
+        given = formal is not None  # a catalog card's statement: reviewed, not model-written
         deadline = t0 + (
             budget if budget is not None else BUDGET_GIVEN_S if given else BUDGET_FORMALISED_S
         )
         result = Stage0Result("fallthrough", formal_source="given" if given else "formalised")
         calls = 0
-        second: str | None = None
         second_f: futures.Future[str] | None = None
-        review_future: futures.Future[tuple[bool, str]] | None = None
-        pool = futures.ThreadPoolExecutor(max_workers=3)
+        review_f: futures.Future[tuple[bool, str]] | None = None
+        trip_f: futures.Future[tuple[bool, str]] | None = None
+        pool = futures.ThreadPoolExecutor(max_workers=4)
+
+        def submit(fn: Any, *args: Any) -> Any:
+            return pool.submit(contextvars.copy_context().run, fn, *args)
+
         try:
             if not given:
                 if self.model is None:
                     result.reason = "no_model_for_formalisation"
                     return result
                 t1 = time.monotonic()
-                first_f = pool.submit(
-                    contextvars.copy_context().run, gate.formalise, self.model, request, 0
-                )
-                second_f = pool.submit(
-                    contextvars.copy_context().run, gate.formalise, self.model, request, 1
-                )
+                first_f = submit(gate.formalise, self.model, request, 0)
+                second_f = submit(gate.formalise, self.model, request, 1)
                 formal = first_f.result(timeout=max(1.0, deadline - time.monotonic()))
                 calls += 2
                 result.seconds["formalise"] = round(time.monotonic() - t1, 3)
                 if not formal:
                     result.reason = "formalisation_empty"
                     return result
-                review_future = pool.submit(
-                    contextvars.copy_context().run, gate.review, self.model, request, formal
-                )
-                calls += 1
+                review_f = submit(gate.review, self.model, request, formal)
+                trip_f = submit(gate.roundtrip, self.model, request, formal, language)
+                calls += 3  # review, back-translation, comparison
             assert formal is not None
             result.formal = formal
             try:
-                ap.check_formal_statement(formal)
+                ap.check_formal_statement(formal, allow_header=given)
             except InstantiationRejected:
                 result.reason = "statement_not_plain"
                 return result
             self._ensure_worker()
             t2 = time.monotonic()
             solved = ap.solve_warm(
-                formal, self.pool if given else [], self.worker, deadline=deadline
+                formal,
+                self.pool if given else [],
+                self.worker,
+                deadline=deadline,
+                allow_header=given,
             )
             result.seconds["portfolio"] = round(time.monotonic() - t2, 3)
             result.route, result.by, result.lemma = solved.route, solved.by, solved.lemma
@@ -184,48 +219,17 @@ class Stage0:
                 result.reason = solved.code or "not_proved"
                 return result
             if not given:
-                g = gate.GateResult(False)
-                result.gate = g
-                t3 = time.monotonic()
-                try:
-                    assert second_f is not None
-                    second = second_f.result(timeout=max(0.5, deadline - time.monotonic()))
-                except Exception:  # noqa: BLE001 - a missing second opinion is a gate failure
-                    second = None
-                g.numerals_signal = gate.numerals_signal(request, formal)
-                g.agree = (
-                    second is not None and second != "" and self._agree(formal, second, deadline)
-                )
-                g.seconds["agree"] = round(time.monotonic() - t3, 3)
-                try:
-                    assert review_future is not None
-                    g.reviewed, g.review_issue = review_future.result(
-                        timeout=max(0.5, deadline - time.monotonic())
-                    )
-                except Exception:  # noqa: BLE001 - no review in time = not reviewed
-                    g.reviewed = False
-                    g.review_issue = "review_unavailable"
-                g.structure = gate.structure_check(request, formal)
-                if g.structure:
-                    g.reasons.append("structure_mismatch")
-                if not g.agree:
-                    g.reasons.append("formalisations_disagree")
-                if not g.reviewed:
-                    g.reasons.append(
-                        "review_rejected"
-                        if g.review_issue != "review_unavailable"
-                        else "review_unavailable"
-                    )
-                g.passed = g.agree is True and g.reviewed is True and not g.structure
-                result.seconds["gate_extra"] = round(time.monotonic() - t3, 3)
-                if not g.passed:
+                self._gate(result, request, formal, second_f, review_f, trip_f, deadline)
+                if result.gate is None or not result.gate.passed:
                     result.reason = "fidelity_gate_failed"
                     return result
             info = self._lemma_info(solved) if solved.by == "exact?" else None
             if solved.route == "recipe":
                 result.outcome, result.reason = "verified_needs_explanation", "recipe_answer_text"
             else:
-                text = expl.render(language, formal, solved.by or "", info)
+                text = expl.render(
+                    language, formal, solved.by or "", info, unverified_formalisation=not given
+                )
                 if text is None:
                     result.outcome = "verified_needs_explanation"
                     result.reason = "no_honest_template"
@@ -236,3 +240,56 @@ class Stage0:
             result.model_calls = calls
             result.seconds["total"] = round(time.monotonic() - t0, 3)
             pool.shutdown(wait=False, cancel_futures=True)
+
+    def _gate(
+        self,
+        result: Stage0Result,
+        request: str,
+        formal: str,
+        second_f: futures.Future[str] | None,
+        review_f: futures.Future[tuple[bool, str]] | None,
+        trip_f: futures.Future[tuple[bool, str]] | None,
+        deadline: float,
+    ) -> None:
+        g = gate.GateResult(False)
+        result.gate = g
+        t3 = time.monotonic()
+
+        def wait(future: Any, default: Any) -> Any:
+            if future is None:
+                return default
+            try:
+                return future.result(timeout=max(0.5, deadline - time.monotonic()))
+            except Exception:  # noqa: BLE001 - a missing check is a failed check
+                return default
+
+        second = wait(second_f, None)
+        g.numerals_signal = gate.numerals_signal(request, formal)
+        g.agree = bool(second) and self._agree(formal, second, deadline)
+        g.structure = gate.structure_check(request, formal)
+        g.triviality = gate.triviality_check(formal)
+        if not g.triviality and self._vacuous(formal, deadline):
+            g.triviality.append("hypotheses_vacuous")
+        g.reviewed, g.review_issue = wait(review_f, (False, "review_unavailable"))
+        g.roundtrip, g.roundtrip_issue = wait(trip_f, (False, "roundtrip_unavailable"))
+        if not g.agree:
+            g.reasons.append("formalisations_disagree")
+        if g.structure:
+            g.reasons.append("structure_mismatch")
+        if g.triviality:
+            g.reasons.append("trivial_statement")
+        if not g.reviewed:
+            g.reasons.append(
+                "review_rejected"
+                if g.review_issue != "review_unavailable"
+                else "review_unavailable"
+            )
+        if not g.roundtrip:
+            g.reasons.append(
+                "roundtrip_mismatch"
+                if g.roundtrip_issue != "roundtrip_unavailable"
+                else "roundtrip_unavailable"
+            )
+        g.passed = not g.reasons
+        g.seconds["gate"] = round(time.monotonic() - t3, 3)
+        result.seconds["gate_extra"] = g.seconds["gate"]

@@ -10,15 +10,15 @@ from pals_agent.recipe_instantiation import InstantiationRejected
 def test_theorem_header_with_proof_placeholder_becomes_a_closed_statement():
     header = "theorem scheme_x {R : Type*} [CommRing R] (a : R) : a + 0 = a := by\n  sorry"
     assert ap.closed_statement(header) == "∀ {R : Type*} [CommRing R] (a : R), a + 0 = a"
-    assert ap.check_formal_statement("example (n : ℕ) : n + 0 = n := by\n  sorry") == (
-        "∀ (n : ℕ), n + 0 = n"
-    )
+    assert ap.check_formal_statement(
+        "example (n : ℕ) : n + 0 = n := by\n  sorry", allow_header=True
+    ) == ("∀ (n : ℕ), n + 0 = n")
 
 
-def test_let_chain_inside_a_statement_is_allowed_only_with_let():
-    assert ap.check_formal_statement("∀ n : ℕ, let m := n + 1; m > 0")
-    with pytest.raises(InstantiationRejected):
-        ap.check_formal_statement("∀ n : ℕ, n = n; n = n")
+def test_let_is_outside_the_grammar():
+    for text in ("∀ n : ℕ, let m := n + 1; m > 0", "∀ n : ℕ, n = n; n = n"):
+        with pytest.raises(InstantiationRejected):
+            ap.check_formal_statement(text)
 
 
 def test_full_file_card_keeps_only_open_and_universe_as_preamble():
@@ -28,10 +28,10 @@ def test_full_file_card_keeps_only_open_and_universe_as_preamble():
     )
     preamble, _ = ap.split_preamble(card)
     assert preamble == "open CategoryTheory Opposite\nuniverse u"
-    assert ap.check_formal_statement(card) == "∀ {X : Type u} (x : X), x = x"
+    assert ap.check_formal_statement(card, allow_header=True) == "∀ {X : Type u} (x : X), x = x"
     hostile = 'import Mathlib\nsyntax "x" : term\ntheorem t : True := by trivial'
     with pytest.raises(InstantiationRejected):
-        ap.check_formal_statement(hostile)
+        ap.check_formal_statement(hostile, allow_header=True)
 
 
 @pytest.mark.parametrize(
@@ -60,7 +60,9 @@ def test_portfolio_is_fixed_cheap_first_and_exact_search_is_last_with_a_larger_c
 
 
 def test_unified_source_has_one_import_one_declaration_per_attempt_and_the_requested_type():
-    text, proposition, attempts, _ = ap.build_unified("example (x : ℝ) : 0 ≤ x ^ 2", [])
+    text, proposition, attempts, _ = ap.build_unified(
+        "example (x : ℝ) : 0 ≤ x ^ 2", [], allow_header=True
+    )
     assert text.count("import Mathlib") == 1 and proposition == "∀ (x : ℝ), 0 ≤ x ^ 2"
     assert len(attempts) == len(ap.PORTFOLIO)
     for attempt in attempts:
@@ -86,9 +88,9 @@ def test_solve_accepts_the_first_clean_attempt_and_treats_sorryax_as_failure(mon
         "run_stream",
         _fake_stream(
             {
-                "pals_portfolio_0": "propext, sorryAx",
-                "pals_portfolio_1": clean,
-                "pals_portfolio_2": clean,
+                "_pals_portfolio_0": "propext, sorryAx",
+                "_pals_portfolio_1": clean,
+                "_pals_portfolio_2": clean,
             }
         ),
     )
@@ -103,8 +105,8 @@ def test_solve_misses_when_every_attempt_has_sorryax_or_a_nonstandard_axiom(monk
         "run_stream",
         _fake_stream(
             {
-                "pals_portfolio_0": "propext, sorryAx",
-                "pals_portfolio_1": "myAxiom",
+                "_pals_portfolio_0": "propext, sorryAx",
+                "_pals_portfolio_1": "myAxiom",
             }
         ),
     )
@@ -122,8 +124,8 @@ def test_a_timeout_error_is_not_an_accepted_portfolio_attempt(monkeypatch):
     lines = [
         "'pals_probe' does not depend on any axioms",
         "/t/P.lean:3:0: error: (deterministic) timeout at `whnf`, maximum number of heartbeats",
-        "'pals_portfolio_0' does not depend on any axioms",
-        f"'pals_portfolio_1' depends on axioms: [{clean}]",
+        "'_pals_portfolio_0' does not depend on any axioms",
+        f"'_pals_portfolio_1' depends on axioms: [{clean}]",
     ]
 
     def run(runner, source, *, budget_s, stop=None):

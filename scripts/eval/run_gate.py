@@ -94,15 +94,36 @@ def main() -> None:
                         c["request"],
                         c["faithful"],
                     )
+                    lang = "ja" if any(ord(ch) > 0x3000 for ch in c["request"]) else "en"
+                    trip_bad = pool.submit(
+                        contextvars.copy_context().run,
+                        gate.roundtrip,
+                        model,
+                        c["request"],
+                        c["bad"],
+                        lang,
+                    )
+                    trip_good = pool.submit(
+                        contextvars.copy_context().run,
+                        gate.roundtrip,
+                        model,
+                        c["request"],
+                        c["faithful"],
+                        lang,
+                    )
                     row = {
                         "id": c["id"],
                         "kind": c["kind"],
+                        "structure_bad": gate.structure_check(c["request"], c["bad"]),
+                        "triviality_bad": gate.triviality_check(c["bad"]),
                         "bad_proved_by_portfolio": prove(worker, c["bad"]),
                         "agree_bad_vs_faithful": agree(worker, c["bad"], c["faithful"]),
                         "agree_faithful_vs_itself": agree(worker, c["faithful"], c["faithful"]),
                     }
                     row["review_bad_approved"], row["review_bad_issue"] = rv_bad.result()
                     row["review_faithful_approved"], _ = rv_good.result()
+                    row["roundtrip_bad_ok"], row["roundtrip_bad_issue"] = trip_bad.result()
+                    row["roundtrip_faithful_ok"], _ = trip_good.result()
                     fh.write(json.dumps(row, ensure_ascii=False) + "\n")
                     fh.flush()
                     print(
