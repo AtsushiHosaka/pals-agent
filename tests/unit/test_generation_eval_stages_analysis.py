@@ -19,8 +19,13 @@ def test_error_totals_ignore_unselected_arms():
 
 
 def test_empty_pairing_reports_and_continues(capsys):
-    analyze.report_binary("success", {"p": 1.0}, {})
-    analyze.report_cont("wall_s", {}, {"q": 3.0})
+    def run(problem, arm, **kw):
+        return {"schema": "pals.generation-eval.run.v1", "problem_id": problem, "arm": arm,
+                "error": None, **kw}
+
+    runs = [run("p", "a", success=True, wall_s=1.0), run("q", "b", success=True, wall_s=3.0)]
+    analyze.report_metric(runs, "a", "b", "success", "success", binary=True)
+    analyze.report_metric(runs, "a", "b", "wall_s", "wall_s", binary=False)
     out = capsys.readouterr().out
     assert out.count("nothing to compare") == 2
 

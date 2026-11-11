@@ -107,6 +107,8 @@ class ProofRequest:
         default=None,
         compare=False,
     )
+    # The assessment judged this request routine (easy). Only read by PALS_T2_NO_DRAFT_ENABLED.
+    routine: bool = field(default=False, compare=False)
 
 
 @dataclass(frozen=True, slots=True)
@@ -222,6 +224,13 @@ class ProofRunResult:
     verification: VerificationResult
     artifact: ProofArtifact
     verification_pending: bool = False
+    # T2: an explanation call started beside verification for exactly this proof, or None.
+    speculative_explanation: Any = field(default=None, compare=False, repr=False)
+    # T2: a semantic review started beside verification for exactly this proof, or None.
+    speculative_review: Any = field(default=None, compare=False, repr=False)
+    # T2: calls still running when the result was returned (``.drain(timeout)`` waits for their
+    # usage to be reported). None when nothing was left running.
+    background: Any = field(default=None, compare=False, repr=False)
 
     @property
     def state(self) -> ProofJobState:

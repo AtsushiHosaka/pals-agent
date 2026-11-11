@@ -855,3 +855,43 @@ def test_import_guidance_requires_source_backed_module_selection_before_fallback
     assert "Keep every theorem assumption and substantive Draft proof step" in guidance
     assert "compiler deadline failure requires simplifying" in guidance
     assert "Mathlib.Data.Nat.GCD.Basic" not in guidance
+
+
+def test_t2_patch_uses_the_compiled_source_for_numbers_and_edits_and_guards_the_header() -> None:
+    from pals_agent.generator import HybridLeanGenerator
+    from pals_agent.models import Diagnostic, GenerationFeedback, ProofRequest
+
+    source = "\n\nimport Mathlib\n\ntheorem t (x : ℝ) : 0 < x ^ 2 + 1 := by\n  nlinarith\n"
+    # Lean numbers the compiled source (two leading blank lines): the failing line is 6.
+    diagnostic = Diagnostic(
+        severity="error", code="lean.error", line=6, column=2, message="linarith failed\n⊢ 0 < x"
+    )
+
+    class Client:
+        def __init__(self, reply: str) -> None:
+            self.reply = reply
+            self.prompts: list[str] = []
+
+        def generate(self, *, model: str, prompt: str) -> str:
+            self.prompts.append(prompt)
+            return self.reply
+
+    def patch(reply: str):
+        client = Client(reply)
+        generator = HybridLeanGenerator(model="m", provider="openai", client=client)
+        feedback = GenerationFeedback(
+            attempt=1, previous_lean_code=source, diagnostics=(diagnostic,)
+        )
+        return generator.generate_patch(ProofRequest(id="r", prompt="p"), feedback), client
+
+    good, client = patch("REPLACE 6\n  positivity\nEND")
+    assert good is not None and good.lean_code.splitlines()[5] == "  positivity"
+    assert "   6|   nlinarith" in client.prompts[0]  # the listing numbers the very same string
+    assert "line 6: error=tactic_failed tactic=nlinarith" in client.prompts[0]
+    for bad in (
+        "REPLACE 5\ntheorem t : True := by\nEND",  # the declaration line
+        "REPLACE 3\nimport Foo\nEND",  # an import line
+        "REPLACE 6\n  set_option maxHeartbeats 0 in\nEND",
+        "REPLACE 6\n  native_decide\nEND",
+    ):
+        assert patch(bad)[0] is None, bad

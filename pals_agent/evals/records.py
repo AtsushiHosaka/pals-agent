@@ -20,7 +20,17 @@ from typing import Any
 
 ATTEMPT_SCHEMA = "pals.generation-eval.attempt.v1"
 RUN_SCHEMA = "pals.generation-eval.run.v1"
-STAGES = ("draft", "sketch", "sketch_check", "prove", "lean_check", "repair", "replay_check")
+STAGES = (
+    "draft",
+    "sketch",
+    "sketch_check",
+    "prove",
+    "prove_direct",  # T2 no-Sketch full proof
+    "patch",  # T2 patch repair
+    "lean_check",
+    "repair",
+    "replay_check",
+)
 TIERS = (0, 1, 2, 3)
 
 ATTEMPT_FIELDS = {
@@ -68,6 +78,23 @@ RUN_FIELDS = {
     "started_at",
     "ended_at",
     "error",
+    # Tier 2 additions: stage breakdown and the answer stage (review + explanation).
+    "stage_ms",
+    "answer_s",
+    "answer_ok",
+    "answer_note",
+    "review_s",
+    "review_approved",
+    "review_error",
+    "explain_wait_s",
+    "explain_ok",
+    "explain_error",
+    "explained_in_parallel",
+    "review_in_parallel",
+    "undrained_background_calls",
+    "load_1m_start",
+    "load_1m_end",
+    "load_guard_timeout",
 }
 
 

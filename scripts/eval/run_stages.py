@@ -16,6 +16,7 @@ uses multiprocessing spawn.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -31,12 +32,41 @@ FLAG_NAMES = {
     "import": "PALS_PROMPT_FULL_MATHLIB_IMPORT_ENABLED",
     "cond": "PALS_PROMPT_CONDITIONAL_GUIDANCE_ENABLED",
     "fields": "PALS_DRAFT_STRUCTURED_FIELDS_ENABLED",
+    # T2 lane (pals_agent/t2_lane.py)
+    "nosketch": "PALS_T2_NO_SKETCH_ENABLED",
+    "race": "PALS_T2_PARALLEL_CANDIDATES_ENABLED",
+    "patch": "PALS_T2_PATCH_REPAIR_ENABLED",
+    "pexpl": "PALS_T2_PARALLEL_EXPLANATION_ENABLED",
+    "preview": "PALS_T2_PARALLEL_REVIEW_ENABLED",
+    "nodraft": "PALS_T2_NO_DRAFT_ENABLED",
+    "names": "PALS_T2_NAME_SAFETY_ENABLED",
 }
 ARM_FLAGS: dict[str, set[str]] = {
     "base": set(),
     "static": {"static"},
     "combined": {"static", "import", "cond"},
     "fields": {"fields"},
+    "t2": {"nosketch", "race", "patch", "pexpl"},
+    "nosketch": {"nosketch"},
+    "race": {"race"},
+    "patch": {"patch"},
+    "pexpl": {"pexpl"},
+    "nodraft": {"nodraft"},
+    "nd_k2": {"nodraft", "race"},
+    "nd_k2_names": {"nodraft", "race", "names"},
+    # nd_k2 plus the explanation and the semantic review started when a candidate enters Lean
+    "nd_k2_par": {"nodraft", "race", "pexpl", "preview"},
+    # nd_k2 with the fixed-statement template and the layout splice (see ARM_PIPELINE)
+    "nd_k2_tmpl": {"nodraft", "race"},
+    # nd_k2 with one Lean slot per job (see ARM_ENV): the race is serial at the compiler
+    "nd_k2_slot1": {"nodraft", "race"},
+    "t2_norace": {"nosketch", "patch", "pexpl"},
+    "t2_nopatch": {"nosketch", "race", "pexpl"},
+    "t2_nonosketch": {"race", "patch", "pexpl"},
+}
+# Arms that also change how the generator/pipeline are built (not env flags).
+ARM_PIPELINE: dict[str, dict[str, bool]] = {
+    "nd_k2_tmpl": {"fixed_statement_template": True, "harness_splice": True},
 }
 DEFAULT_MANIFEST = Path(__file__).resolve().parents[2] / "testdata/generation-eval-v1/manifest.json"
 _IMPORT_ERR = re.compile(
@@ -45,11 +75,18 @@ _IMPORT_ERR = re.compile(
 _UNKNOWN_ID = re.compile(r"unknown (identifier|constant|namespace)|unknown identifier", re.I)
 
 
+# Extra environment of an arm (not a boolean flag).
+ARM_ENV: dict[str, dict[str, str]] = {"nd_k2_slot1": {"PALS_T2_LEAN_SLOTS": "1"}}
+
+
 def set_arm(arm: str) -> dict[str, str]:
     on = ARM_FLAGS[arm]
     env = {name: ("true" if key in on else "false") for key, name in FLAG_NAMES.items()}
     os.environ.update(env)
-    return env
+    os.environ.pop("PALS_T2_LEAN_SLOTS", None)
+    extra = ARM_ENV.get(arm, {})
+    os.environ.update(extra)
+    return {**env, **extra}
 
 
 def classify(result: Any) -> dict[str, Any]:
@@ -60,7 +97,8 @@ def classify(result: Any) -> dict[str, Any]:
         "unknown_identifier": sum(1 for m in msgs if _UNKNOWN_ID.search(m)),
         "import_error": sum(1 for m in msgs if _IMPORT_ERR.search(m)),
         "codes": sorted({str(d.code) for d in errs if getattr(d, "code", None)}),
-        "first_messages": [m[:160] for m in msgs[:3]],
+        # Messages can quote problem terms: keep digests only.
+        "first_message_sha256": [hashlib.sha256(m.encode("utf-8")).hexdigest() for m in msgs[:3]],
     }
 
 
@@ -119,6 +157,138 @@ def build(args: argparse.Namespace):
         timeout_seconds=args.lean_timeout,
     )
     return generator, verifier
+
+
+def load_1m() -> float:
+    return os.getloadavg()[0]
+
+
+def wait_for_quiet_machine(args: argparse.Namespace, state: dict[str, Any]) -> bool:
+    """Wait until the 1-minute load is <= --max-load, polling; give up after the first timeout.
+
+    Returns True when the run proceeds under a load above the limit (the row is flagged)."""
+    if args.max_load is None or state.get("gave_up"):
+        return bool(state.get("gave_up"))
+    deadline = time.monotonic() + args.load_wait_minutes * 60
+    while load_1m() > args.max_load:
+        if time.monotonic() >= deadline:
+            state["gave_up"] = True
+            print(f"load guard: load {load_1m():.1f} > {args.max_load}; going on", flush=True)
+            return True
+        time.sleep(15)
+    return False
+
+
+PROBE_CODE = (
+    "import Mathlib\n\ntheorem pals_probe (a b : ℝ) : a ^ 2 + b ^ 2 ≥ 2 * a * b := by\n"
+    "  nlinarith [sq_nonneg (a - b)]\n"
+)
+
+
+def probe_lean(verifier: Any, out: Path, label: str, repeats: int = 3) -> None:
+    """Time a fixed small proof through the real verifier; the unloaded figure for normalising."""
+    times = []
+    for _ in range(repeats):
+        t = time.monotonic()
+        verifier.verify(PROBE_CODE)
+        times.append(round(time.monotonic() - t, 2))
+    row = {"label": label, "load_1m": round(load_1m(), 2), "seconds": times}
+    with (out / "lean_probe.jsonl").open("a") as fh:
+        fh.write(json.dumps(row) + "\n")
+    print("lean probe", row, flush=True)
+
+
+def build_answer_stage(args: argparse.Namespace):
+    """The release explainer and semantic reviewer (same models and efforts as production).
+
+    Not measured here: the explanation output review, a second call after the explanation.
+    """
+    from pals_agent.explanations import LeanProofExplainer, LeanProofSemanticReviewer
+    from pals_agent.model_roles import ModelRole, fixed_model_default
+    from pals_agent.openai import OpenAIResponsesClient
+
+    def client() -> OpenAIResponsesClient:
+        return OpenAIResponsesClient(
+            api_key=os.environ["OPENAI_API_KEY"],
+            base_url=os.environ.get("PALS_OPENAI_BASE_URL", "https://api.openai.com/v1"),
+            timeout_seconds=args.model_timeout,
+            max_output_tokens=6000,
+        )
+
+    explain = fixed_model_default(ModelRole.EXPLAIN)
+    review = fixed_model_default(ModelRole.PROOF_REVIEW)
+    explainer = LeanProofExplainer(
+        client=client(), model=explain.model, provider=explain.provider, max_attempts=3
+    )
+    reviewer = LeanProofSemanticReviewer(
+        client=client(), model=review.model, provider=review.provider, max_attempts=2
+    )
+    return explainer, reviewer
+
+
+def answer_stage(result: Any, problem: dict, explainer: Any, reviewer: Any) -> dict[str, Any]:
+    """After a verified proof: the semantic review and the explanation, timed.
+
+    With an explanation already started beside verification (``result.speculative_explanation``)
+    the review runs while it is in flight and only the remaining wait is paid; otherwise the
+    explanation starts after the review, as it does in production today.
+    """
+    from pals_agent.explanations import ExplanationGenerationError
+    from pals_agent.lean_target import extract_single_target_declaration
+
+    if not result.verification.success:
+        return {"answer_ok": False, "answer_note": "not_verified"}
+    code, statement = result.generated.lean_code, result.prompt
+    out: dict[str, Any] = {"answer_ok": True}
+    target = extract_single_target_declaration(code)
+    t = time.monotonic()
+    approved = None
+    review_handle = result.speculative_review
+    if target is not None:
+        try:
+            review = None
+            if review_handle is not None:
+                review = review_handle.adopt(
+                    theorem_statement=statement, lean_code=code, language="ja", wait_seconds=240
+                )
+            if review is None:
+                review = reviewer.review_proof(
+                    theorem_statement=statement,
+                    formal_statement=problem.get("fixed_lean_statement"),
+                    target_declaration=target,
+                    lean_code=code,
+                    timeout_seconds=120,
+                )
+            approved = review.decision == "approved"
+        except Exception as exc:
+            out["review_error"] = type(exc).__name__
+    out["review_in_parallel"] = review_handle is not None
+    out["review_s"] = round(time.monotonic() - t, 3)
+    out["review_approved"] = approved
+    t = time.monotonic()
+    handle = result.speculative_explanation
+    try:
+        explanation = None
+        if handle is not None:
+            explanation = handle.adopt(
+                theorem_statement=statement, lean_code=code, language="ja", wait_seconds=240
+            )
+        if explanation is None:
+            explanation = explainer.explain(
+                theorem_statement=statement,
+                lean_code=code,
+                verified=True,
+                language="ja",
+                deadline=time.monotonic() + 360,
+                timeout_seconds=120,
+            )
+        out["explain_ok"] = True
+    except ExplanationGenerationError as exc:
+        out["explain_ok"] = False
+        out["explain_error"] = type(exc).__name__
+    out["explain_wait_s"] = round(time.monotonic() - t, 3)
+    out["explained_in_parallel"] = handle is not None
+    return out
 
 
 def select(manifest: dict, ids: str | None, n: int | None) -> list[dict]:
@@ -344,6 +514,7 @@ def cmd_fields(args: argparse.Namespace, meter: Meter) -> None:
 
 
 def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
+    from pals_agent import t2_lane
     from pals_agent.artifacts import FileArtifactStore
     from pals_agent.evals.records import JsonlSink
     from pals_agent.evals.runner import (
@@ -357,40 +528,74 @@ def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
     from pals_agent.usage import usage_scope
 
     generator, verifier = build(args)
+    explainer, reviewer = build_answer_stage(args) if args.answer else (None, None)
     problems = select(json.loads(args.manifest.read_text()), args.ids, args.n)
     by_id = {p["id"]: p for p in problems}
     sink = JsonlSink(args.out / "records.jsonl", artifacts_dir=args.out / "artifacts")
     scope = Scope(run_id=args.out.name, sink=sink)
-    pipeline = ProofPipeline(
-        generator=RecordingGenerator(generator, scope),
-        verifier=RecordingVerifier(verifier, scope),
-        artifact_store=FileArtifactStore(args.out / "art"),
-    )
+    import dataclasses
+
+    recording_verifier = RecordingVerifier(verifier, scope)
+
+    def pipeline_for(arm: str) -> ProofPipeline:
+        options = ARM_PIPELINE.get(arm, {})
+        gen = dataclasses.replace(
+            generator, fixed_statement_template=options.get("fixed_statement_template", False)
+        )
+        return ProofPipeline(
+            generator=RecordingGenerator(gen, scope),
+            verifier=recording_verifier,
+            artifact_store=FileArtifactStore(args.out / "art"),
+            max_repair_attempts=args.max_repairs,
+            explainer=explainer,
+            reviewer=reviewer,
+            harness_splice=options.get("harness_splice", False),
+            # keep the wall clock honest; the runner drains the background after the answer stage
+            accounting_wait_seconds=0.0,
+        )
+
+    pipelines = {arm: pipeline_for(arm) for arm in args.arms.split(",")}
+    load_state: dict[str, Any] = {}
+    wait_for_quiet_machine(args, load_state)
+    probe_lean(verifier, args.out, "start")
     for pid, arm, rep in interleaved_schedule(
         list(by_id), args.arms.split(","), args.repeats, args.seed
     ):
         if meter.exhausted():
             print("budget reached; stopping", flush=True)
             break
+        wait_for_quiet_machine(args, load_state)
         env = set_arm(arm)
         meter.arm = arm
-        r = run_pipeline_once(
-            by_id[pid],
-            pipeline,
-            scope,
-            arm=arm,
-            repeat=rep,
-            model="gpt-6.1-terra",
-            artifact_dir=args.out / "art",
-            usage_scope_factory=lambda cb: usage_scope(lambda x: (cb(x), meter.add(x))),
-            config={"flags": env},
+        post = (
+            (lambda res, p=by_id[pid]: answer_stage(res, p, explainer, reviewer))  # noqa: B023
+            if args.answer
+            else None
         )
+        with t2_lane.discarded_usage_scope(lambda row: (scope.on_usage(row), meter.add(row))):
+            r = run_pipeline_once(
+                by_id[pid],
+                pipelines[arm],
+                scope,
+                arm=arm,
+                repeat=rep,
+                model="gpt-6.1-terra",
+                artifact_dir=args.out / "art",
+                usage_scope_factory=lambda cb: usage_scope(lambda x: (cb(x), meter.add(x))),  # noqa: B023
+                config={
+                    "flags": env,
+                    "max_repairs": args.max_repairs,
+                    "load_guard_gave_up": bool(load_state.get("gave_up")),
+                },
+                post_run=post,
+            )
         print(
             f"{pid} {arm} r{rep} ok={r['success']} first={r['first_attempt_ok']} "
-            f"repairs={r['repairs_used']} wall={r['wall_s']} run_usd={meter.run_usd:.4f} "
-            f"err={r['error']}",
+            f"repairs={r['repairs_used']} wall={r['wall_s']} answer={r.get('answer_s')} "
+            f"run_usd={meter.run_usd:.4f} err={r['error']}",
             flush=True,
         )
+    probe_lean(verifier, args.out, "end")
 
 
 def main() -> None:
@@ -415,6 +620,16 @@ def main() -> None:
     for name in ("lean", "lake", "project", "elan-home", "scratch"):
         ap.add_argument(f"--{name}", required=True)
     ap.add_argument("--lean-timeout", type=float, default=300.0)
+    ap.add_argument("--max-repairs", type=int, default=3, help="repair cap (tier2)")
+    ap.add_argument(
+        "--max-load", type=float, default=None, help="tier2: wait for 1-min load <= this"
+    )
+    ap.add_argument("--load-wait-minutes", type=float, default=30.0)
+    ap.add_argument(
+        "--answer",
+        action="store_true",
+        help="tier2: after a verified proof also run the semantic review and the explanation",
+    )
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     Path(args.scratch).mkdir(parents=True, exist_ok=True)

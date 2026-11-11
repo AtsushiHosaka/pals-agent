@@ -287,3 +287,19 @@ def test_run_cost_prices_each_usage_row_at_its_own_model():
         )
         is None
     )
+
+
+def test_diagnostic_message_text_is_never_written_only_its_digest():
+    import hashlib
+
+    from pals_agent.evals.runner import _diagnostic_summary
+
+    secret = "unknown identifier 'my_private_problem_term'"
+    result = type("R", (), {"diagnostics": [
+        type("D", (), {"severity": "error", "code": "lean.error", "line": 3, "message": secret})()
+    ]})()
+    codes, count, brief = _diagnostic_summary(result)
+    assert count == 1 and brief[0]["line"] == 3 and brief[0]["code"] == "lean.error"
+    assert "message" not in brief[0]
+    assert brief[0]["message_sha256"] == hashlib.sha256(secret.encode()).hexdigest()
+    assert "my_private_problem_term" not in str(brief)
