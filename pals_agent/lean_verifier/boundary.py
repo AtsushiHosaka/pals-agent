@@ -12,6 +12,10 @@ _MAX_CPU_COUNT = 2.0
 # between compiles. A broad Mathlib import needs about 7 GiB of it; at 4 GiB compiles evict each
 # other's pages and took up to 129 s instead of 8 s. Heap peaks near 1.5 GiB.
 _MAX_MEMORY_BYTES = 8 * _GIB
+# Defaults. The host may raise the ceilings through PALS_VERIFIER_CPUS and
+# PALS_VERIFIER_MEMORY_GIB, which are bounded here and read back exactly by the host.
+_CPU_COUNT_RANGE = range(2, 5)
+_MEMORY_GIB_RANGE = range(4, 25)
 _MAX_PIDS = 64
 _MAX_NOFILE = 1024
 _CREDENTIAL_ENV_RE = re.compile(
@@ -26,6 +30,24 @@ _CREDENTIAL_ENV_RE = re.compile(
 
 class BoundaryAttestationError(RuntimeError):
     """The verifier runtime cannot prove a required outer isolation property."""
+
+
+def _bounded_setting(name: str, bounds: range, default: int) -> int:
+    if name not in os.environ:
+        return default
+    value = os.environ[name]
+    if re.fullmatch(r"[1-9][0-9]*", value, flags=re.ASCII) is None or int(value) not in bounds:
+        raise BoundaryAttestationError(f"{name} is outside its reviewed bound")
+    return int(value)
+
+
+def _max_cpu_count() -> float:
+    return float(_bounded_setting("PALS_VERIFIER_CPUS", _CPU_COUNT_RANGE, int(_MAX_CPU_COUNT)))
+
+
+def _max_memory_bytes() -> int:
+    gib = _bounded_setting("PALS_VERIFIER_MEMORY_GIB", _MEMORY_GIB_RANGE, _MAX_MEMORY_BYTES // _GIB)
+    return gib * _GIB
 
 
 @dataclass(frozen=True, slots=True)
@@ -134,7 +156,7 @@ def attest_runtime_boundary(
         memory_cgroup_limited=_integer_cgroup_limited(
             "memory.max",
             "memory.limit_in_bytes",
-            maximum=_MAX_MEMORY_BYTES,
+            maximum=_max_memory_bytes(),
             controllers=("memory",),
         ),
         pids_cgroup_limited=_integer_cgroup_limited(
@@ -193,7 +215,7 @@ def attest_http_runtime_boundary(
         memory_cgroup_limited=_integer_cgroup_limited(
             "memory.max",
             "memory.limit_in_bytes",
-            maximum=_MAX_MEMORY_BYTES,
+            maximum=_max_memory_bytes(),
             controllers=("memory",),
         ),
         pids_cgroup_limited=_integer_cgroup_limited(
@@ -381,7 +403,7 @@ def _cpu_cgroup_limited() -> bool:
                 return False
             quota = int(quota_text, 10)
             period = int(period_text, 10)
-            return quota > 0 and period > 0 and quota / period <= _MAX_CPU_COUNT
+            return quota > 0 and period > 0 and quota / period <= _max_cpu_count()
         except (OSError, ValueError):
             return False
 
@@ -393,7 +415,7 @@ def _cpu_cgroup_limited() -> bool:
         period = int((root / "cpu.cfs_period_us").read_text(encoding="ascii"), 10)
     except (OSError, ValueError):
         return False
-    return quota > 0 and period > 0 and quota / period <= _MAX_CPU_COUNT
+    return quota > 0 and period > 0 and quota / period <= _max_cpu_count()
 
 
 def _integer_cgroup_limited(
