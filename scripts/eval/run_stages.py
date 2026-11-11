@@ -207,6 +207,7 @@ def answer_stage(result: Any, problem: dict, explainer: Any, reviewer: Any) -> d
                 lean_code=code,
                 verified=True,
                 language="ja",
+                deadline=time.monotonic() + 360,
                 timeout_seconds=120,
             )
         out["explain_ok"] = True
