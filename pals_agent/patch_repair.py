@@ -40,9 +40,39 @@ _FORBIDDEN_COMMAND = re.compile(
 )
 
 
-def blank_comments_and_strings(source: str) -> str:
-    """``source`` with comments and string literals replaced by spaces (newlines kept), so line
-    numbers and brackets elsewhere are unchanged. Handles nested ``/- -/`` blocks."""
+def _char_literal_end(source: str, start: int) -> int | None:
+    """Index just past a Lean char literal that begins at ``source[start] == "'"``, else None.
+
+    Forms: ``'x'`` (any one character, including a double quote), ``'\\n'``, ``'\\''``,
+    ``'\\"'``, ``'\\\\'``, ``'\\x41'``, ``'\\u{1F600}'``. A prime that continues an identifier
+    (``h'``) is not a literal; the caller checks the previous character."""
+    n = len(source)
+    i = start + 1
+    if i >= n:
+        return None
+    if source[i] == "\\":
+        i += 1
+        if i >= n:
+            return None
+        escape = source[i]
+        i += 1
+        if escape == "x":
+            i += 2
+        elif escape == "u" and i < n and source[i] == "{":
+            close = source.find("}", i)
+            if close < 0:
+                return None
+            i = close + 1
+    else:
+        i += 1
+    return i + 1 if i < n and source[i] == "'" else None
+
+
+def scan_source(source: str) -> tuple[str, bool]:
+    """``source`` with comments, string literals and char literals replaced by spaces (newlines
+    kept), plus whether the text was well formed. ``False`` means an unterminated string or block
+    comment: whatever follows cannot be trusted, so callers fail closed. Handles nested ``/- -/``
+    blocks."""
     out: list[str] = []
     i, n, depth = 0, len(source), 0
     while i < n:
@@ -67,23 +97,40 @@ def blank_comments_and_strings(source: str) -> str:
             while i < n and source[i] != "\n":
                 out.append(" ")
                 i += 1
+        elif source[i] == "'" and not (i and (source[i - 1].isalnum() or source[i - 1] in "_'.!?")):
+            end = _char_literal_end(source, i)
+            if end is None:
+                out.append(source[i])
+                i += 1
+            else:
+                out.extend("\n" if c == "\n" else " " for c in source[i:end])
+                i = end
         elif source[i] == '"':
             out.append(" ")
             i += 1
-            while i < n and source[i] != '"':
+            closed = False
+            while i < n:
                 if source[i] == "\\" and i + 1 < n:
                     out.append("  ")
                     i += 2
                     continue
+                if source[i] == '"':
+                    out.append(" ")
+                    i += 1
+                    closed = True
+                    break
                 out.append("\n" if source[i] == "\n" else " ")
                 i += 1
-            if i < n:
-                out.append(" ")
-                i += 1
+            if not closed:
+                return "".join(out), False
         else:
             out.append(source[i])
             i += 1
-    return "".join(out)
+    return "".join(out), depth == 0
+
+
+def blank_comments_and_strings(source: str) -> str:
+    return scan_source(source)[0]
 
 
 def protected_through(lean_code: str) -> int:
@@ -91,8 +138,10 @@ def protected_through(lean_code: str) -> int:
     line where its proof starts. That is the first `:=` at bracket depth 0 after the declaration
     keyword, not counting the `:=` of a `let`/`have`/`set` inside the statement. When no
     declaration is found, every line is protected."""
-    blanked = blank_comments_and_strings(lean_code)
+    blanked, well_formed = scan_source(lean_code)
     lines = blanked.splitlines()
+    if not well_formed:
+        return len(lean_code.splitlines())
     for index, line in enumerate(lines):
         if not _DECLARATION.match(line):
             continue
@@ -124,7 +173,9 @@ def protected_through(lean_code: str) -> int:
 
 
 def body_is_forbidden(body: str) -> bool:
-    blanked = blank_comments_and_strings(body)
+    blanked, well_formed = scan_source(body)
+    if not well_formed:
+        return True  # an unterminated string or comment hides the rest: fail closed
     return bool(_FORBIDDEN_WORD.search(blanked) or _FORBIDDEN_COMMAND.search(blanked))
 
 

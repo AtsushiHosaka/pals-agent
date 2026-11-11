@@ -708,3 +708,102 @@ def test_defaults_do_not_make_the_answer_wait_for_background_accounting() -> Non
 
     fields = {f.name: f.default for f in dataclasses.fields(ProofPipeline)}
     assert fields["accounting_wait_seconds"] == 0.0
+
+
+def test_background_is_exposed_and_drainable_when_the_run_raises(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(monkeypatch, **{t2_lane.NO_SKETCH_ENV: True, t2_lane.PARALLEL_CANDIDATES_ENV: True})
+    seen: list[dict[str, Any]] = []
+    with usage_scope(seen.append):
+        pipeline = _pipeline(tmp_path, Generator([GOOD, BAD], proof_delays=[0.0, 0.3]),
+                             ScriptedVerifier({GOOD}))
+        pipeline.run_statement(statement=STATEMENT, proof_job_id=JOB)
+        raised: BaseException | None = None
+        try:
+            # the same job id again: persisting the artifact fails after the race has run
+            _pipeline(
+                tmp_path, Generator([GOOD, BAD], proof_delays=[0.0, 0.3]), ScriptedVerifier({GOOD})
+            ).run_statement(statement=STATEMENT, proof_job_id=JOB)
+        except BaseException as exc:  # noqa: BLE001
+            raised = exc
+        assert raised is not None
+        background = getattr(raised, "t2_background", None)
+        assert background is not None  # exposed on the exception path
+        assert background.drain(5) == 0
+    # draft 1 + winner 10 + loser 10, for each of the two runs
+    assert sorted(r["input_tokens"] for r in seen) == [1, 1, 10, 10, 10, 10]
+
+
+class SlotCountingVerifier(ScriptedVerifier):
+    """Counts concurrent compiles over verify AND verify_sketch."""
+
+    active = 0
+    peak = 0
+    guard = threading.Lock()
+
+    def _enter(self) -> None:
+        with SlotCountingVerifier.guard:
+            SlotCountingVerifier.active += 1
+            SlotCountingVerifier.peak = max(SlotCountingVerifier.peak, SlotCountingVerifier.active)
+
+    def _leave(self) -> None:
+        with SlotCountingVerifier.guard:
+            SlotCountingVerifier.active -= 1
+
+    def verify(self, lean_code: str) -> VerificationResult:
+        self._enter()
+        try:
+            return super().verify(lean_code)
+        finally:
+            self._leave()
+
+    def verify_sketch(self, lean_code: str) -> VerificationResult:
+        self._enter()
+        try:
+            time.sleep(self.delay)
+            return super().verify_sketch(lean_code)
+        finally:
+            self._leave()
+
+
+def test_the_process_cap_covers_the_default_path_sketch_checks_included(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(monkeypatch)  # every T2 flag off: only the process cap is set
+    monkeypatch.setenv(t2_lane.LEAN_PROCESS_SLOTS_ENV, "1")
+    SlotCountingVerifier.active = SlotCountingVerifier.peak = 0
+
+    def job(index: int) -> None:
+        _pipeline(
+            tmp_path / f"j{index}", Generator([GOOD]), SlotCountingVerifier({GOOD}, delay=0.15)
+        ).run_statement(statement=STATEMENT, proof_job_id=f"{JOB}-{index}")
+
+    threads = [threading.Thread(target=job, args=(i,)) for i in range(4)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(30)
+    assert SlotCountingVerifier.peak == 1  # sketch check and final compile share the one slot
+
+
+def test_discarded_speculative_calls_are_metered_through_the_normal_reporter(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(t2_lane.PARALLEL_EXPLANATION_ENV, "true")
+    explainer = RecordingExplainer()
+    seen: list[dict[str, Any]] = []
+    with usage_scope(seen.append):
+        run = t2_lane.ExplanationRun(explainer.explain, "ja")  # no evaluation sink set
+        run.start(statement="s", lean_code="v1")
+        run.start(statement="s", lean_code="v2")
+        kept = run.finish(verified=True, statement="s", lean_code="v2")
+        assert kept is not None
+        for handle in run.discarded:
+            handle.wait(5)
+        assert t2_lane.drain_background(5) == 0
+        # v1 was started, billed by the provider, and discarded: it still reaches the reporter
+        assert [r["input_tokens"] for r in seen] == [5]
+        # an unadopted kept handle is settled explicitly, never silently lost
+        t2_lane.settle_unadopted(kept)
+    assert [r["input_tokens"] for r in seen] == [5, 5]

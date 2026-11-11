@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import json
 import re
 import threading
@@ -288,6 +289,14 @@ class ProofPipeline:
 
     def __post_init__(self) -> None:
         t2_lane.validate_flags()  # a malformed T2 switch fails here, not mid-job after spend
+        if (
+            t2_lane.lean_process_slots() > 0
+            and self.verifier is not None
+            and not isinstance(self.verifier, t2_lane.SlottedVerifier)
+        ):
+            # Every compile this pipeline makes (final, Sketch check, lemma repair, race) shares
+            # the process-wide cap; a pipeline derived with ``replace`` re-wraps a raw verifier.
+            object.__setattr__(self, "verifier", t2_lane.SlottedVerifier(self.verifier))
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
             raise ValueError("Request-linked typed retrieval must retain the natural Draft route")
         if (
@@ -448,7 +457,22 @@ class ProofPipeline:
                 explanation_run,
             ),
         ):
-            result = self._run_request_steps(**arguments)
+            try:
+                result = self._run_request_steps(**arguments)
+            except BaseException as exc:
+                # Calls this run left running (a race loser, an unused Draft, speculative
+                # explanation/review) still bill: discard the speculative ones, wait the bounded
+                # time, and hand the caller the rest so it can drain before its usage scope ends.
+                review_on_error = t2_lane.current_review_run()
+                for speculative_run in (explanation_run, review_on_error):
+                    if speculative_run is not None and speculative_run.active:
+                        speculative_run.finish(verified=False, statement="", lean_code="")
+                background = t2_lane.current_background()
+                if background is not None:
+                    background.drain(self.accounting_wait_seconds)
+                    with contextlib.suppress(Exception):
+                        exc.t2_background = background  # type: ignore[attr-defined]
+                raise
             review_run = t2_lane.current_review_run()
             explanation = review_handle = None
             for run, setter in ((explanation_run, "explanation"), (review_run, "review")):
@@ -797,8 +821,7 @@ class ProofPipeline:
                     latency_stage("lean_compile_local"),
                     step_timing.step("lean_check") as timing,
                 ):
-                    with t2_lane.process_lean_slot():  # no-op unless a process cap is set
-                        verification = verifier.verify(generated.lean_code)
+                    verification = verifier.verify(generated.lean_code)
                     if timing is not None:
                         timing.set_lean(verification.success, verification.diagnostics)
             diagnostics = [*diagnostics, *verification.diagnostics]
@@ -1389,7 +1412,7 @@ class ProofPipeline:
             code = generated.lean_code
             if not code.strip() or preflight(code) or cancel.is_set():
                 return _RacedCandidate(generated, None)
-            with slots, t2_lane.process_lean_slot():
+            with slots:
                 if cancel.is_set():
                     return _RacedCandidate(generated, None)
                 # Only a candidate that has entered Lean starts its explanation and review: one
