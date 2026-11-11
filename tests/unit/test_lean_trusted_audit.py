@@ -195,6 +195,56 @@ def test_reference_reads_lets_and_match_alternatives() -> None:
     )
 
 
+@pytest.mark.parametrize(
+    "statement",
+    [
+        "(μ m σ : ℝ) (h : 0 < σ) :\n    |μ - m| ≤ σ",
+        "(x y : ℝ) :\n    |x - y| ≤ |x| + |y|",
+        "(x y : ℝ) : x = y →\n    |x| ≤ 1 ∧\n    |y| ≤ 1",
+        "(f : ℝ → ℝ) :\n    |f (fun x => x) 1| ≤ 1",
+        "(x : ℝ) :\n    ‖x‖ ≤ 1",
+    ],
+)
+def test_reference_keeps_line_leading_absolute_value_in_the_type(statement: str) -> None:
+    assert statement_reference(f"theorem t {statement} := by\n  simp\n") == (
+        f"theorem t {statement} := sorry\n"
+    )
+    assert statement_reference(f"noncomputable def pals_audit_0 {statement} := by\n  simp\n") == (
+        f"noncomputable def pals_audit_0 {statement} := sorry\n"
+    )
+
+
+def test_reference_still_cuts_alternatives_whose_bodies_contain_assignments() -> None:
+    assert statement_reference(
+        "theorem t : ∀ n : Nat, n = n\n"
+        "  | 0 => by have h := rfl; exact h\n"
+        "  | n + 1 => by\n"
+        "    have h := rfl\n"
+        "    exact h\n"
+    ) == "theorem t : ∀ n : Nat, n = n := sorry\n"
+
+
+def test_reference_stays_fail_closed_when_a_bar_line_and_a_lambda_share_the_type() -> None:
+    # The `=>` before `:=` makes the bar read as an alternative, so the restatement is cut short
+    # and ends in a dangling `:`. It cannot elaborate, so a correct proof is rejected, never a
+    # weaker statement accepted.
+    reference = statement_reference(
+        "theorem t (f : ℝ → ℝ) :\n    |f 0| ≤ 1 ∧ f = fun x => x := by\n  simp\n"
+    )
+
+    assert reference == "theorem t (f : ℝ → ℝ) : := sorry\n"
+
+
+def test_reference_does_not_let_a_bar_weaken_the_statement() -> None:
+    # A proof author cannot hide a conjunct behind a line-leading bar: the cut reference then
+    # differs from what Lean checks, so the audit's type comparison rejects it.
+    reference = statement_reference(
+        "theorem t (x : ℝ) : x = x ∧\n  | 0 => rfl\n  False := by\n  simp\n"
+    )
+
+    assert reference == "theorem t (x : ℝ) : x = x ∧ := sorry\n"
+
+
 def test_reference_blanks_comments_and_literals() -> None:
     reference = statement_reference('/--/ " -/\nmacro\n"\ntheorem t : True := trivial\n')
 
