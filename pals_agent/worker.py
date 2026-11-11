@@ -7,9 +7,10 @@ import math
 import re
 import time
 import uuid
-from collections.abc import Callable
-from contextlib import ExitStack, suppress
-from dataclasses import dataclass
+from collections.abc import Callable, Iterator
+from contextlib import ExitStack, contextmanager, suppress
+from contextvars import ContextVar
+from dataclasses import dataclass, replace
 from datetime import datetime
 from typing import Any, Final, Literal, Protocol, cast
 
@@ -17,7 +18,7 @@ import boto3  # type: ignore[import-untyped]
 import rfc8785
 from botocore.exceptions import BotoCoreError, ClientError  # type: ignore[import-untyped]
 
-from pals_agent import quality_events, step_timing
+from pals_agent import quality_events, step_timing, t2_lane
 from pals_agent.api_client import (
     PalsApiError,
     ProofJobNotFoundError,
@@ -65,7 +66,12 @@ from pals_agent.models import (
 )
 from pals_agent.openai import OpenAIError
 from pals_agent.openmath import OpenMathStructuringError
-from pals_agent.pipeline import EARLY_STOP_REASON, ApiRepairSeed, _failure_fingerprint_set
+from pals_agent.pipeline import (
+    EARLY_STOP_REASON,
+    ApiRepairSeed,
+    ProofPipeline,
+    _failure_fingerprint_set,
+)
 from pals_agent.private_recipe_selection import RecipeSelectionUnavailableError
 from pals_agent.proof_flow_runtime import ProofFlowRetrievalError
 from pals_agent.proof_request_worker import ProofRequestProcessor
@@ -130,6 +136,36 @@ def worker_queue_url(settings: AgentSettings, lane: WorkerLane) -> str:
     return assessment_queue if lane == "assessment" else proof_queue
 
 _NON_VERIFIED_TERMINAL_STATES: Final = frozenset({"failed", "canceled"})
+
+
+@dataclass(slots=True)
+class _T2Carry:
+    """The T2 lane's calls that outlive one pipeline run inside a single delivery.
+
+    ``explanation`` and ``review`` are model calls started beside the API's compile of exactly one
+    candidate source; each is adopted only for that exact source and dropped otherwise.
+    ``background`` is the set of calls the lane left running (a race loser). Nothing is kept across
+    deliveries: a redelivered job simply generates these again.
+    """
+
+    explanation: Any = None
+    review: Any = None
+    background: Any = None
+
+    def drain(self, timeout: float = 10.0) -> None:
+        if self.background is not None:
+            with suppress(Exception):
+                self.background.drain(timeout)
+
+
+_T2_CARRY: ContextVar[_T2Carry | None] = ContextVar("pals_worker_t2_carry", default=None)
+
+
+class _EarlyExplainer:
+    """An ``explain``-shaped object for ``ProofPipeline.explainer``."""
+
+    def __init__(self, explain: Callable[..., Any]) -> None:
+        self.explain = explain
 _CLAIM_STATUSES: Final = frozenset({"acquired", "busy", "terminal", "lease_too_short", "not_ready"})
 _RESOURCE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$", re.ASCII)
 _MODEL_ARTIFACT_URI_RE = re.compile(
@@ -884,7 +920,10 @@ class SqsProofWorker:
             # write do (the API accepts them for a verified job). Start the call now and adopt it
             # after the approval is settled; every other outcome drops it. See
             # pals_agent.speculative_explanation.
-            speculative = self._start_speculative_explanation(
+            carry = _T2_CARRY.get()
+            speculative = (
+                carry.explanation if carry is not None else None
+            ) or self._start_speculative_explanation(
                 theorem_statement=statement, lean_code=lean_code, language=language,
                 claim_id=claim_id, extend_visibility=extend_visibility,
                 timeout_seconds=timeout_seconds,
@@ -892,13 +931,27 @@ class SqsProofWorker:
             try:
                 try:
                     with latency_stage("semantic_review"), latency_label("semantic_review"):
-                        review = self._required_proof_reviewer().review_proof(
-                            theorem_statement=statement,
-                            formal_statement=formal_statement,
-                            target_declaration=target_declaration,
-                            lean_code=lean_code,
-                            timeout_seconds=timeout_seconds,
+                        # T2: the review of exactly this source, started before the API's compile
+                        # finished. A different source, a second use or no handle falls through
+                        # to the ordinary call; a failed early call re-raises as a direct one.
+                        review = (
+                            carry.review.adopt(
+                                theorem_statement=statement,
+                                lean_code=lean_code,
+                                language=language,
+                                wait_seconds=timeout_seconds,
+                            )
+                            if carry is not None and carry.review is not None
+                            else None
                         )
+                        if review is None:
+                            review = self._required_proof_reviewer().review_proof(
+                                theorem_statement=statement,
+                                formal_statement=formal_statement,
+                                target_declaration=target_declaration,
+                                lean_code=lean_code,
+                                timeout_seconds=timeout_seconds,
+                            )
                 except Exception as exc:
                     failure = _semantic_review_unavailable_payload(
                         candidate_id=candidate_id, mutation_claim_id=generation_session_id,
@@ -965,6 +1018,7 @@ class SqsProofWorker:
                 return False
             if claim_id is None or extend_visibility is None:
                 return False
+            carry = _T2_CARRY.get()
             return self._ensure_summary_explanation(
                 proof_job_id=proof_job_id,
                 theorem_statement=statement,
@@ -973,6 +1027,9 @@ class SqsProofWorker:
                 extend_visibility=extend_visibility,
                 language=language,
                 draft_text=draft_text_from_proof_job(proof_job),
+                **_optional_keyword(
+                    "speculative", carry.explanation if carry is not None else None
+                ),
             )
 
         if _has_pending_api_candidate(proof_job):
@@ -1130,7 +1187,7 @@ class SqsProofWorker:
                 run_kwargs["api_repair_seed"] = api_repair_seed
             if request_linked:
                 run_kwargs["request_linked"] = True
-            pipeline = self._pipeline_for_proof()
+            pipeline = self._with_t2_calls(self._pipeline_for_proof(), language)
             if (
                 self.recipe_attempt_planner is not None
                 and not request_linked
@@ -1215,83 +1272,161 @@ class SqsProofWorker:
             )
             return True
 
-        if getattr(run_result, "verification_pending", False):
-            if not isinstance(latest_lean_code, str) or not latest_lean_code.strip():
-                return False
-            target_declaration = extract_single_target_declaration(latest_lean_code)
-            if target_declaration is None or not _target_matches_statement(
-                statement,
-                target_declaration,
-            ):
-                on_status(
-                    "failed",
-                    [
-                        _localized_failure_diagnostic(
-                            "pals.theorem_alignment_failed", language=language
-                        )
-                    ],
-                    None,
-                    None,
-                    {"stage": "theorem_alignment"},
-                )
-                return True
-            try:
-                candidate_artifact_uri = _candidate_artifact_uri(
-                    run_result=run_result,
-                    lean_code=latest_lean_code,
-                )
-            except ValueError:
-                return False
-            candidate_id = str(uuid.uuid4())
-            try:
-                self.api_client.submit_verification_candidate(
-                    proof_job_id=proof_job_id,
-                    claim_id=claim_id,
-                    candidate_id=candidate_id,
-                    lean_code=latest_lean_code,
-                    result_artifact_uri=candidate_artifact_uri,
-                )
-            except PalsApiError:
-                candidate_import_recovered = self._recover_candidate_import(
-                    proof_job_id=proof_job_id, candidate_id=candidate_id, claim_id=claim_id,
-                    lean_code=latest_lean_code, result_artifact_uri=candidate_artifact_uri,
-                    source_binding_sha256=None,
-                )
-                if not candidate_import_recovered:
+        with self._t2_carry_scope(
+            run_result, proof_job_id=proof_job_id, claim_id=claim_id
+        ) as t2_carry:
+            if getattr(run_result, "verification_pending", False):
+                if not isinstance(latest_lean_code, str) or not latest_lean_code.strip():
                     return False
-            except ValueError:
-                return False
-            candidate_submitted = True
+                target_declaration = extract_single_target_declaration(latest_lean_code)
+                if target_declaration is None or not _target_matches_statement(
+                    statement,
+                    target_declaration,
+                ):
+                    on_status(
+                        "failed",
+                        [
+                            _localized_failure_diagnostic(
+                                "pals.theorem_alignment_failed", language=language
+                            )
+                        ],
+                        None,
+                        None,
+                        {"stage": "theorem_alignment"},
+                    )
+                    return True
+                try:
+                    candidate_artifact_uri = _candidate_artifact_uri(
+                        run_result=run_result,
+                        lean_code=latest_lean_code,
+                    )
+                except ValueError:
+                    return False
+                candidate_id = str(uuid.uuid4())
+                try:
+                    self.api_client.submit_verification_candidate(
+                        proof_job_id=proof_job_id,
+                        claim_id=claim_id,
+                        candidate_id=candidate_id,
+                        lean_code=latest_lean_code,
+                        result_artifact_uri=candidate_artifact_uri,
+                    )
+                except PalsApiError:
+                    candidate_import_recovered = self._recover_candidate_import(
+                        proof_job_id=proof_job_id, candidate_id=candidate_id, claim_id=claim_id,
+                        lean_code=latest_lean_code, result_artifact_uri=candidate_artifact_uri,
+                        source_binding_sha256=None,
+                    )
+                    if not candidate_import_recovered:
+                        return False
+                except ValueError:
+                    return False
+                candidate_submitted = True
 
-        if latest_state in _NON_VERIFIED_TERMINAL_STATES:
-            return True
-        if candidate_submitted:
-            # The candidate route's 200 only proves durable import.  It is not verifier success;
-            # a read-back must observe the API-owned reconciled result before explanation work can
-            # begin.  A still-compiling result remains unacknowledged for a later queue delivery.
-            reconciled = self._wait_for_candidate_reconciliation(
-                proof_job_id=proof_job_id,
-                extend_visibility=extend_visibility,
-                refresh_visibility=candidate_import_recovered,
-            )
-            if reconciled is None:
+            if latest_state in _NON_VERIFIED_TERMINAL_STATES:
+                return True
+            if candidate_submitted:
+                # The candidate route's 200 only proves durable import.  It is not verifier
+                # success; a read-back must observe the API-owned reconciled result before
+                # explanation work can begin.  A still-compiling result remains unacknowledged
+                # for a later queue delivery.
+                reconciled = self._wait_for_candidate_reconciliation(
+                    proof_job_id=proof_job_id,
+                    extend_visibility=extend_visibility,
+                    refresh_visibility=candidate_import_recovered,
+                )
+                if reconciled is None:
+                    return False
+                if t2_carry is not None:
+                    # The API compiled meanwhile; give the T2 race's cancelled calls a short
+                    # bounded time to finish and report their usage before explanation work.
+                    t2_carry.drain()
+                    token = _T2_CARRY.set(t2_carry)
+                else:
+                    token = None
+                try:
+                    return self.process_proof_job(
+                        proof_job_id,
+                        claim_id=claim_id,
+                        extend_visibility=extend_visibility,
+                        resume_with=reconciled,
+                    )
+                finally:
+                    if token is not None:
+                        _T2_CARRY.reset(token)
+            if latest_state != "verified" or not latest_lean_code:
                 return False
-            return self.process_proof_job(
-                proof_job_id,
+            return self._ensure_summary_explanation(
+                proof_job_id=proof_job_id,
+                theorem_statement=statement,
+                lean_code=latest_lean_code,
                 claim_id=claim_id,
                 extend_visibility=extend_visibility,
-                resume_with=reconciled,
+                language=language,
             )
-        if latest_state != "verified" or not latest_lean_code:
-            return False
-        return self._ensure_summary_explanation(
-            proof_job_id=proof_job_id,
-            theorem_statement=statement,
-            lean_code=latest_lean_code,
-            claim_id=claim_id,
-            extend_visibility=extend_visibility,
-            language=language,
+
+    def _with_t2_calls(self, pipeline: Any, language: str) -> Any:
+        """The pipeline given the explainer and reviewer the T2 switches ask it to start early.
+
+        Under API reconciliation only. Every switch is off by default, so without one the
+        pipeline is returned unchanged. A source the fixed template explanation covers never
+        starts an explanation call.
+        """
+        if not isinstance(pipeline, ProofPipeline) or pipeline.verification_mode != "api_reconcile":
+            return pipeline
+        explainer = reviewer = None
+        if t2_lane.parallel_explanation_enabled() and self.explainer is not None:
+            inner = self.explainer
+            fixed_enabled = self._fixed_explanation_enabled()
+
+            def explain(*, theorem_statement: str, lean_code: str, **rest: Any) -> Any:
+                if fixed_enabled and fixed_explanation_for(lean_code, rest["language"]) is not None:
+                    raise RuntimeError("fixed_explanation_covers_this_source")
+                return inner.explain(
+                    theorem_statement=theorem_statement, lean_code=lean_code, **rest
+                )
+
+            explainer = _EarlyExplainer(explain)
+        if t2_lane.parallel_review_enabled() and self.proof_reviewer is not None:
+            reviewer = self.proof_reviewer
+        if explainer is None and reviewer is None:
+            return pipeline
+        return replace(
+            pipeline, explainer=explainer, reviewer=reviewer, explanation_language=language
         )
+
+    @contextmanager
+    def _t2_carry_scope(
+        self, run_result: Any, *, proof_job_id: str, claim_id: str | None
+    ) -> Iterator[_T2Carry | None]:
+        """Hold the pipeline's T2 handles for one delivery; settle what nobody adopted.
+
+        An unadopted explanation or review is a billed call: its usage is reported against this
+        claim rather than dropped. Never raises into the delivery.
+        """
+        explanation = getattr(run_result, "speculative_explanation", None)
+        review = getattr(run_result, "speculative_review", None)
+        background = getattr(run_result, "background", None)
+        if explanation is None and review is None and background is None:
+            yield None
+            return
+        carry = _T2Carry(explanation, review, background)
+        try:
+            yield carry
+        finally:
+            with suppress(Exception):
+                reporter = (
+                    (lambda usage: self.api_client.record_usage(
+                        proof_job_id=proof_job_id, claim_id=claim_id, usage=usage
+                    ))
+                    if claim_id is not None
+                    else None
+                )
+                with usage_scope(reporter) if reporter is not None else ExitStack():
+                    for handle in (explanation, review):
+                        if handle is not None:
+                            t2_lane.settle_unadopted(handle, timeout=10.0)
+                carry.drain(5.0)
 
     def _send_progress_preview(
         self, *, proof_job_id: str, claim_id: str, status: str,

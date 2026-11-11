@@ -182,6 +182,9 @@ class ProofFlowRetriever(Protocol):
 class _RacedCandidate:
     generated: GeneratedProof
     verification: VerificationResult | None
+    # Compile-free race (API reconciliation): how many preflight errors the candidate has.
+    # ``None`` means the candidate was cancelled before it was checked.
+    preflight_errors: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -479,7 +482,9 @@ class ProofPipeline:
                 if run is None or not run.active:
                     continue
                 handle = run.finish(
-                    verified=result.verification.success,
+                    # A candidate waiting for the API's compile is the one to keep: the worker
+                    # adopts the handle only when the API accepts exactly this source.
+                    verified=result.verification.success or result.verification_pending,
                     statement=result.prompt,
                     lean_code=result.generated.lean_code,
                 )
@@ -739,6 +744,18 @@ class ProofPipeline:
                 },
             )
             if self.verification_mode == "api_reconcile":
+                # The API compiles this candidate from here on. Its explanation and semantic
+                # review do not depend on that compile, so they start now; the worker adopts
+                # them only if the API then accepts exactly this source (a start is deduplicated
+                # per source, and ``_run_request`` drops the rest).
+                for speculative_run in (
+                    t2_lane.current_explanation_run(),
+                    t2_lane.current_review_run(),
+                ):
+                    if speculative_run is not None:
+                        speculative_run.start(
+                            statement=request.prompt, lean_code=generated.lean_code
+                        )
                 verification = VerificationResult(
                     success=False,
                     diagnostics=[],
@@ -1047,10 +1064,13 @@ class ProofPipeline:
                     (lambda prove_once: self._race_first_attempt(request, prove_once))
                     if feedback is None
                     and t2_lane.parallel_candidates_enabled()
-                    and self.verification_mode == "local"
-                    and self.verifier is not None
+                    and (
+                        (self.verification_mode == "local" and self.verifier is not None)
+                        or self.verification_mode == "api_reconcile"
+                    )
                     else None
                 ),
+                draft_beside_proof=self.verification_mode == "local",
             )
 
         _emit(
@@ -1398,11 +1418,12 @@ class ProofPipeline:
         candidate with the fewest errors is returned and repaired as an ordinary failure.
         """
         verifier = self.verifier
-        assert verifier is not None
         memo = t2_lane.current_memo()
         preflight = t2_lane.current_preflight() or (
             lambda lean_code: validate_generated_lean(request, lean_code)
         )
+        if verifier is None:
+            return self._race_without_compile(prove_once, preflight)
         # Lean capacity for racing compiles. A candidate takes a slot, then checks the cancel
         # event *after* acquiring it: a loser that was queued behind the winner never compiles.
         slots = threading.BoundedSemaphore(t2_lane.lean_slots())
@@ -1447,6 +1468,50 @@ class ProofPipeline:
         if result.best is None:
             errors = [c.error for c in result.candidates if c.error is not None]
             raise errors[0] if errors else RuntimeError("no first-attempt candidate finished")
+        assert result.best.value is not None
+        return result.best.value.generated
+
+    def _race_without_compile(
+        self,
+        prove_once: Callable[[], GeneratedProof],
+        preflight: Callable[[str], list[Diagnostic]],
+    ) -> GeneratedProof:
+        """T2 under API reconciliation: ``CANDIDATE_COUNT`` proofs generated at once, the first
+        that passes the worker's own preflight (statement/target checks) is the one submitted.
+
+        This process has no Lean, so a candidate is never ranked by a compile and the second one
+        cannot raise the chance the compile passes: what the race buys is the faster of two model
+        calls and a second chance at a preflight failure (which would otherwise cost a model
+        repair). A loser's model call is already billed; it is tracked by the run's background
+        set and its usage is forwarded when it ends. Raising the pass rate needs the API to
+        compile an alternate candidate (docs/t2-lane-followups.md).
+        """
+        decided = threading.Lock()
+        claimed = False
+
+        def task(cancel: threading.Event) -> _RacedCandidate:
+            nonlocal claimed
+            generated = prove_once()
+            code = generated.lean_code
+            if not code.strip():
+                return _RacedCandidate(generated, None, preflight_errors=1_000)
+            errors = sum(d.severity == "error" for d in preflight(code))
+            if errors == 0:
+                with decided:
+                    if claimed or cancel.is_set():
+                        return _RacedCandidate(generated, None, preflight_errors=0)
+                    claimed = True
+                    cancel.set()
+            return _RacedCandidate(generated, None, preflight_errors=errors)
+
+        result = t2_lane.race_candidates(
+            [task] * t2_lane.CANDIDATE_COUNT,
+            is_win=lambda value: value.preflight_errors == 0,
+            rank=lambda value: float(value.preflight_errors or 0),
+        )
+        if result.best is None:
+            errors_raised = [c.error for c in result.candidates if c.error is not None]
+            raise errors_raised[0] if errors_raised else RuntimeError("no candidate finished")
         assert result.best.value is not None
         return result.best.value.generated
 
@@ -2004,6 +2069,7 @@ def _generate_staged_attempt(
     sketch_parallel: int = 1,
     deterministic_templates: bool = False,
     race: Callable[[Callable[[], GeneratedProof]], GeneratedProof] | None = None,
+    draft_beside_proof: bool = True,
 ) -> GeneratedProof:
     draft = feedback.previous_draft if feedback is not None else None
     sketch = feedback.previous_sketch if feedback is not None else None
@@ -2017,9 +2083,12 @@ def _generate_staged_attempt(
     ):
         # T2 no-Draft: the proof is written from the request. A routine request never needs a
         # Draft; any other runs it beside the proof and keeps it only to seed a repair.
+        # Only where this process compiles: under API reconciliation nothing here learns the
+        # compile result, so waiting for a Draft that only a failed attempt would use would put
+        # the Draft back on the answer's path. A repair after an API failure writes one then.
         draft_call = (
             None
-            if request.routine
+            if request.routine or not draft_beside_proof
             else t2_lane.BackgroundCall(lambda: generator.generate_draft(request, None))
         )
         _emit(

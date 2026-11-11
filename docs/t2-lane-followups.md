@@ -19,13 +19,40 @@ pals-agent#107 で入れた T2 レーンは、全フラグが既定 off で、�
 - 枠の値は、実測した並列コンパイル能力から決めます（「lean-slots」セッションの測定、検証器の枠数の設定）。ここでは決めません。
 - 未実装（設計のみ）: **検証器側の取り消し**。すでにコンパイル中の敗者は、今は最後まで走ります（CPU を使い続ける）。案: 検証器の `verify` が、実行ごとの取り消しイベント（`ContextVar` で渡し、既存のラッパーの署名を変えない）を、プロセスの待機ループで確認し、立っていたらプロセスグループを終了する（既存の `_kill_process_group` を使う）。取り消された結果は成功にも失敗にも数えず、`lean.compile_interrupted` 相当の別の結果にする。`lean_verifier/http_server.py` は別のセッションの担当なので触りません。枠の測定結果が出てから、そのセッションと合わせて実装します。
 
-## 3. worker への配線（提案のみ。有効化しない）
+## 3. worker への配線（実装済み。既定はすべて off）
 
-別PRで、レビューを受けてから入れます。
+本番の経路は `verification_mode="api_reconcile"` です。worker にはコンパイラが無く、候補を API へ提出し、API の検証器が結果を返します。配線は既存の T2 フラグだけで有効になり、**フラグが立っていなければ挙動は変わりません**。
 
-| 項目 | 内容 | 注意 |
-|---|---|---|
-| drain | 答えを公開した後、使用量のスコープが終わる前に `result.background.drain(...)` | 失敗しても答えは変えない |
-| 説明の採用 | `_ensure_summary_explanation` の `pregenerated_explanation` で `result.speculative_explanation.adopt(...)` を、既存の speculative 経路と同様に試す | 採用は同じ（命題・ソース・言語）のときだけ。出力レビューと主張は従来どおり |
-| 意味レビューの採用 | `result.speculative_review.adopt(...)`。採用しても、承認の決済（settle）は従来どおり | **本番は API 側が検証する `api_reconcile` モードで、レビューは別の配信で走る**。パイプラインの結果のハンドルは、その配信へ持ち越せない。したがって配線できるのはローカル検証モードだけで、本番の分離した配信では採用できない。それを確かめてから、範囲を決める |
-| `routine` | 査定の出力に難度の項目が無い（route / rationale / extracted_statement / question、前判定、決定のスキーマを確認した）。最小の追加案: 査定のルート判定のスキーマに真偽値 `routine` を足し、フラグの背後で `run_statement(routine=...)` に渡す | 項目名は査定側の担当と決める。推測で配線しない |
+| 部品 | 動き |
+|---|---|
+| No-Draft | 証明を依頼文から直接書きます。コンパイル結果を知る手段が無いので、Draft は並走させません（失敗した試行だけが使うものを待つと、Draft が答えの経路に戻るため）。API の失敗後の修復が、必要なときに Draft を書きます。 |
+| k=2 の競争 | 2候補を同時に生成し、worker 自身の preflight（宣言・対象のチェック）を**最初に通った候補**を提出します。**コンパイルで順位を付けられない**ので、得られるのは「速いほうのモデル呼び出し」と「preflight で落ちたときの2本目」だけで、成功率は上がりません（§4）。負けた側の呼び出しは課金済みで、終了時にその使用量が報告されます。 |
+| 説明・意味レビューの先行 | 提出する1本のソースについて、API のコンパイルと並行して始めます。ソースごとに1回（重複して始めません）。 |
+| 採用 | 同じ配信の中で、API が再取得した状態が `semantic_review` / `verified` になったとき、**同じ（命題・ソース・言語）のときだけ**採用します。意味レビューは決済の前に採用します（API が受け付ける証拠の形は変わらない）。別のソース、2回目の使用、ハンドル無しは通常の呼び出しに戻ります。先行呼び出しが失敗していれば、直接呼んだ場合と同じく「利用不能」として決済します。 |
+| 使われなかった呼び出し | 配信の終わりに、請求（claim）に対して使用量を報告します（捨てません）。レースの敗者は、再取得を待つ間に最大10秒まで終了を待ちます。 |
+| 固定説明 | x² のテンプレートのように固定説明が使える源には、説明の呼び出しを始めません。 |
+
+- 持ち越しは**同じ配信の中だけ**です（`ContextVar`）。API のコンパイル待ちが2000秒を超えて配信が終わった場合は、再配信が通常どおり生成し直します（先行呼び出しの使用量は、その配信の終わりに報告済み）。以前の版のこのメモは「別の配信で走るので採用できない」としていましたが、コンパイル待ちは同じ配信の中で行われ、再取得後は同じ配信が続くため、持ち越せます。
+- 配信の再取得で API が**別の候補**を採用した場合（§4 の alternate）、先行呼び出しは使えず通常の呼び出しになります。
+- `routine`（難度の信号）: 査定の出力に項目が無い（route / rationale / extracted_statement / question、前判定、決定のスキーマを確認した）ため、worker は `routine` を渡しません。常に「非 routine」として扱うので、No-Draft の恩恵は Draft を待たないことだけです。最小の追加案: 査定のルート判定のスキーマに真偽値 `routine` を足し、フラグの背後で `run_statement(routine=...)` に渡す。項目名は査定側の担当と決める。推測で配線しません。
+- 検証器側の取り消し（§2）は依存として書くだけです。worker は API の検証器のコンパイルを取り消せません。
+
+## 4. API への最小の契約（k=2 の成功率を上げるために必要。未実装）
+
+`api_reconcile` では worker がコンパイルできないため、k=2 の2本目は**提出されない限り使われません**。ローカル測定で k=2 が効いたのは「コンパイルを通ったほうを採る」からで、preflight だけの競争にはその効果がありません。成功率に効かせるには、API が2本目を検証する必要があります。
+
+**案（後方互換）**: `POST /v1/internal/proof-jobs/{id}/verification-candidates` に省略可能な `alternates`（最大1件）を足します。
+
+```
+schema_version: pals.verification-candidate-request.v2   # v1 の worker は今のまま使える
+candidate_id, claim_id, lean_code, lean_sha256, result_artifact_uri   # 主候補（従来どおり）
+alternates: [ {candidate_id, lean_code, lean_sha256, result_artifact_uri} ]   # 0 または 1 件
+```
+
+- 各 alternate は別の `candidate_id` として、主候補と同じ claim・同じ来歴の検査（目標宣言・SHA・成果物 URI）を受けます。重複キーの拒否、409（conflict / stale）、503（commit unknown）の意味は変えません。
+- 判定規則（ジョブ単位）: **主候補を先にコンパイルし、失敗したら worker に戻さず alternate をコンパイルします**。最初に通ったものを昇格し（今と同じく `semantic_review` へ）、`verification_candidate_id` はその勝者の id にします。両方失敗したら、修復の種（repair seed）は**主候補**の失敗にします（alternate の失敗は記録するだけ）。順次実行なら、検証器の追加の同時実行は要りません。主候補が通る場合の待ち時間は今と同じで、失敗する場合は「モデルによる修復＋再配信」を丸ごと省けます。
+- 並列に両方をコンパイルする案は、検証器側の取り消し（§2）が先に必要です（敗者を止められないと CPU を二重に使うため）。
+- 勝者の選定が worker の意味レビューの束縛（`get_verification_candidate_binding`）と矛盾しないよう、レビューの対象は勝者の `candidate_id` にします。worker 側の意味レビュー・説明の先行呼び出しは主候補のソースで始めるため、alternate が勝った場合は採用されず通常の呼び出しになります（先行を alternate にも始めるかは費用との相談）。
+- 変更箇所の目安（pals-api の統合先は `claude/seq28-api-response-language` の系統）: `app/api/routes/internal.py` の `import_proof_verification_candidate` と `ProofVerificationCandidateRequest`、候補の永続化とジョブ状態の遷移、reconciler への通知（`app/release/verified_reconciler.py` は `candidate_id` を1件ずつ受けるので、alternate は主候補の失敗後に通知する）。
+- worker 側は、契約が入ってから: `submit_verification_candidate(..., alternates=[...])`、フラグ `PALS_T2_API_ALTERNATE_ENABLED`（既定 off）、パイプラインが2本目の preflight 通過候補を結果に載せる。今は載せません（使われない値を返さないため）。
+- 論点（API の担当と決める）: alternate の分をコンパイルの枠・上限に数えるか、`repair_attempt` の数え方、失敗時の公開診断に alternate を含めるか。
