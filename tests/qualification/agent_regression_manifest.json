@@ -1267,6 +1267,86 @@
   {
    "id": "tests.integration.test_statement_injection_real::test_the_profile_is_deny_default_and_says_it_is_a_development_aid",
    "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (and macOS sandbox-exec for the injection tests); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_resident_lean::test_good_proof_compiles_and_is_audited",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN and PALS_RESIDENT_LEAN_PATH (pinned Lean 4.32 + Mathlib)"
+  },
+  {
+   "id": "tests.unit.test_resident_lean::test_failing_proof_reports_the_compiler_error",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN and PALS_RESIDENT_LEAN_PATH (pinned Lean 4.32 + Mathlib)"
+  },
+  {
+   "id": "tests.unit.test_resident_lean::test_statement_check_accepts_a_plain_proposition_and_refuses_code",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN and PALS_RESIDENT_LEAN_PATH (pinned Lean 4.32 + Mathlib)"
+  },
+  {
+   "id": "tests.unit.test_resident_lean::test_other_imports_are_not_served",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN and PALS_RESIDENT_LEAN_PATH (pinned Lean 4.32 + Mathlib)"
+  },
+  {
+   "id": "tests.unit.test_resident_lean::test_a_hanging_request_is_killed_and_the_next_one_is_unaffected",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN and PALS_RESIDENT_LEAN_PATH (pinned Lean 4.32 + Mathlib)"
+  },
+  {
+   "id": "tests.unit.test_resident_lean::test_no_state_leaks_between_requests",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN and PALS_RESIDENT_LEAN_PATH (pinned Lean 4.32 + Mathlib)"
+  },
+  {
+   "id": "tests.unit.test_resident_lean::test_a_killed_zygote_is_restarted_and_inflight_work_is_an_interruption",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN and PALS_RESIDENT_LEAN_PATH (pinned Lean 4.32 + Mathlib)"
+  },
+  {
+   "id": "tests.unit.test_resident_lean::test_close_kills_running_request_children",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN and PALS_RESIDENT_LEAN_PATH (pinned Lean 4.32 + Mathlib)"
+  },
+  {
+   "id": "tests.unit.test_resident_lean::test_a_prebuilt_shim_needs_no_compiler_at_run_time",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN and PALS_RESIDENT_LEAN_PATH (pinned Lean 4.32 + Mathlib)"
+  },
+  {
+   "id": "tests.unit.test_resident_confinement::test_a_good_proof_compiles_and_is_audited_while_confined",
+   "reason": "real pinned Lean needed: needs Linux, PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH, PALS_RESIDENT_CONFINED_ROOT"
+  },
+  {
+   "id": "tests.unit.test_resident_confinement::test_a_request_cannot_read_or_overwrite_another_requests_files",
+   "reason": "real pinned Lean needed: needs Linux, PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH, PALS_RESIDENT_CONFINED_ROOT"
+  },
+  {
+   "id": "tests.unit.test_resident_confinement::test_a_request_can_write_only_its_own_directory",
+   "reason": "real pinned Lean needed: needs Linux, PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH, PALS_RESIDENT_CONFINED_ROOT"
+  },
+  {
+   "id": "tests.unit.test_resident_confinement::test_a_request_cannot_signal_the_zygote_or_start_a_process",
+   "reason": "real pinned Lean needed: needs Linux, PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH, PALS_RESIDENT_CONFINED_ROOT"
+  },
+  {
+   "id": "tests.unit.test_resident_confinement::test_oversized_output_files_end_the_child_and_the_next_request_works",
+   "reason": "real pinned Lean needed: needs Linux, PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH, PALS_RESIDENT_CONFINED_ROOT"
+  },
+  {
+   "id": "tests.unit.test_resident_confinement::test_ten_concurrent_attacks_and_good_requests_do_not_disturb_each_other",
+   "reason": "real pinned Lean needed: needs Linux, PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH, PALS_RESIDENT_CONFINED_ROOT"
+  },
+  {
+   "id": "tests.unit.test_resident_confinement::test_a_request_directory_outside_the_confined_root_is_refused",
+   "reason": "real pinned Lean needed: needs Linux, PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH, PALS_RESIDENT_CONFINED_ROOT"
+  },
+  {
+   "id": "tests.unit.test_resident_confinement::test_a_request_cannot_read_the_process_files_of_other_requests",
+   "reason": "real pinned Lean needed: needs Linux, PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH, PALS_RESIDENT_CONFINED_ROOT"
+  },
+  {
+   "id": "tests.unit.test_fast_lane::test_a_true_statement_is_closed_and_verified",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
+  },
+  {
+   "id": "tests.unit.test_fast_lane::test_a_false_statement_is_never_verified",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
+  },
+  {
+   "id": "tests.unit.test_fast_lane::test_a_statement_outside_the_grammar_is_refused_before_lean",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
   }
  ],
  "allowed_unexecuted_modules": [

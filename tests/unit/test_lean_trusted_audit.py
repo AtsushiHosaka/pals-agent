@@ -245,6 +245,67 @@ def test_reference_does_not_let_a_bar_weaken_the_statement() -> None:
     assert reference == "theorem t (x : ℝ) : x = x ∧ := sorry\n"
 
 
+@pytest.mark.parametrize(
+    ("source", "expected"),
+    [
+        (
+            "theorem t : ∀ c : Char, c = c\n  | '(' => rfl\n  | c => rfl\n",
+            "theorem t : ∀ c : Char, c = c := sorry\n",
+        ),
+        (
+            "theorem t : ∀ c : Char, c = c\n  | ')' => rfl\n  | c => rfl\n",
+            "theorem t : ∀ c : Char, c = c := sorry\n",
+        ),
+        (
+            "theorem t : ∀ c : Char, c = c\n  | '|' => rfl\n  | c => rfl\n",
+            "theorem t : ∀ c : Char, c = c := sorry\n",
+        ),
+        (
+            "theorem t : ∀ c : Char, c = c\n  | '\\'' => rfl\n  | c => rfl\n",
+            "theorem t : ∀ c : Char, c = c := sorry\n",
+        ),
+        (
+            "theorem t (c : Char) : c ≠ '(' := by\n  simp\n",
+            "theorem t (c : Char) : c ≠ '(' := sorry\n",
+        ),
+        (
+            "theorem t (c : Char) :\n    c ≠ '[' ∧ |(1 : ℝ)| = 1 := by\n  simp\n",
+            "theorem t (c : Char) :\n    c ≠ '[' ∧ |(1 : ℝ)| = 1 := sorry\n",
+        ),
+        (
+            "theorem t (h' : 1 = 1) (a' : ℝ) :\n    |a'| ≤ |a'| := by\n  simp\n",
+            "theorem t (h' : 1 = 1) (a' : ℝ) :\n    |a'| ≤ |a'| := sorry\n",
+        ),
+    ],
+)
+def test_reference_reads_character_literals_as_one_token(source: str, expected: str) -> None:
+    assert statement_reference(source) == expected
+
+
+def test_reference_scans_many_line_leading_bars_in_linear_work(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import pals_agent.lean_source_policy as policy
+
+    calls = 0
+    real = policy._LET_WORD
+
+    class _Counting:
+        def match(self, text: str, index: int) -> object:
+            nonlocal calls
+            calls += 1
+            return real.match(text, index)
+
+    monkeypatch.setattr(policy, "_LET_WORD", _Counting())
+    conclusion = " ∧\n".join("    |x| ≤ |y|" for _ in range(3000))
+    source = f"theorem t (x y : ℝ) :\n{conclusion} := by\n  simp\n"
+
+    reference = statement_reference(source)
+
+    assert reference == source.split(" := by", 1)[0] + " := sorry\n"
+    assert calls <= 2 * len(source)
+
+
 def test_reference_blanks_comments_and_literals() -> None:
     reference = statement_reference('/--/ " -/\nmacro\n"\ntheorem t : True := trivial\n')
 
