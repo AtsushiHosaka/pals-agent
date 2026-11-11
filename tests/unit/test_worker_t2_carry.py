@@ -199,3 +199,101 @@ def test_a_source_the_fixed_template_covers_never_starts_an_explanation_call(
         explain(lean_code=render_x_squared_epsilon_delta(XSquaredBindings()), **kwargs)
     explain(lean_code="theorem t : True := by trivial", **kwargs)
     assert calls == ["theorem t : True := by trivial"]
+
+
+# ---- review fixes: usage never lost, off means unchanged, repair settles early -----------------
+
+
+def test_adopting_without_a_reporter_does_not_consume_the_usage() -> None:
+    def expensive() -> Any:
+        reporter = _reporter.get()
+        assert reporter is not None
+        reporter({"input_tokens": 9, "output_tokens": 1})
+        return _review()
+
+    handle = _early(LEAN, expensive)
+    assert _reporter.get() is None
+    handle.adopt(
+        theorem_statement=STATEMENT, lean_code=LEAN, language="zh-Hans", wait_seconds=5
+    )
+    # Nobody could report it, so it is still there for whoever settles it later.
+    assert [r["input_tokens"] for r in handle.take_usage_once()] == [9]
+
+
+def test_an_empty_background_with_no_handles_holds_nothing() -> None:
+    worker = _worker(SemanticReviewApi(), RecordingSemanticReviewer())
+    result = SimpleNamespace(
+        speculative_explanation=None, speculative_review=None, background=t2_lane.RunBackground()
+    )
+    with worker._t2_carry_scope(result, proof_job_id="j", claim_id="c") as carry:
+        assert carry is None
+
+
+class _Recorder:
+    def __init__(self) -> None:
+        self.recorded: list[dict[str, Any]] = []
+
+    def record_usage(self, **kwargs: Any) -> None:
+        self.recorded.append(kwargs)
+
+
+def _billed(tokens: int) -> Any:
+    def call() -> Any:
+        reporter = _reporter.get()
+        assert reporter is not None
+        reporter({"input_tokens": tokens, "output_tokens": 1})
+        return _review()
+
+    return call
+
+
+def test_the_resumed_delivery_reports_an_adopted_calls_usage_against_the_claim(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    api = _Recorder()
+    worker = _worker(api, RecordingSemanticReviewer())
+    handle = _early(LEAN, _billed(11))
+    seen: list[Any] = []
+
+    def resume(*_a: Any, **_k: Any) -> bool:
+        # What the semantic-review branch does: adopt, which forwards to the active reporter.
+        carry = _T2_CARRY.get()
+        assert carry is not None
+        carry.review.adopt(
+            theorem_statement=STATEMENT, lean_code=LEAN, language="zh-Hans", wait_seconds=5
+        )
+        seen.append(True)
+        return True
+
+    monkeypatch.setattr(SqsProofWorker, "process_proof_job", lambda self, *a, **k: resume())
+    carry = _T2Carry(review=handle)
+    worker._resume_with_carry(
+        carry, {"state": "semantic_review"}, proof_job_id="job-1", claim_id="claim-1",
+        extend_visibility=None,
+    )
+
+    assert seen == [True]
+    assert [r["usage"]["input_tokens"] for r in api.recorded] == [11]
+
+
+def test_a_failed_compile_settles_the_carry_before_the_repair_starts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    api = _Recorder()
+    worker = _worker(api, RecordingSemanticReviewer())
+    handle = _early(LEAN, _billed(5))
+    during_repair: list[int] = []
+
+    def repair(*_a: Any, **_k: Any) -> bool:
+        during_repair.append(len(api.recorded))  # reported already, before the nested run
+        assert _T2_CARRY.get() is None  # and nothing is carried into the repair
+        return True
+
+    monkeypatch.setattr(SqsProofWorker, "process_proof_job", lambda self, *a, **k: repair())
+    worker._resume_with_carry(
+        _T2Carry(review=handle), {"state": "drafting"}, proof_job_id="job-1", claim_id="claim-1",
+        extend_visibility=None,
+    )
+
+    assert during_repair == [1]
+    assert [r["usage"]["input_tokens"] for r in api.recorded] == [5]  # exactly once

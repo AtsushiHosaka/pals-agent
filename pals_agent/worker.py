@@ -95,7 +95,7 @@ from pals_agent.runtime_latency import (
 from pals_agent.settings import AgentSettings
 from pals_agent.speculative_explanation import SpeculativeExplanation
 from pals_agent.template_explanation import fixed_explanation_for
-from pals_agent.usage import usage_scope
+from pals_agent.usage import reporter_active, usage_scope
 
 ClaimStatus = Literal[
     "acquired",
@@ -1337,23 +1337,10 @@ class SqsProofWorker:
                 )
                 if reconciled is None:
                     return False
-                if t2_carry is not None:
-                    # The API compiled meanwhile; give the T2 race's cancelled calls a short
-                    # bounded time to finish and report their usage before explanation work.
-                    t2_carry.drain()
-                    token = _T2_CARRY.set(t2_carry)
-                else:
-                    token = None
-                try:
-                    return self.process_proof_job(
-                        proof_job_id,
-                        claim_id=claim_id,
-                        extend_visibility=extend_visibility,
-                        resume_with=reconciled,
-                    )
-                finally:
-                    if token is not None:
-                        _T2_CARRY.reset(token)
+                return self._resume_with_carry(
+                    t2_carry, reconciled, proof_job_id=proof_job_id, claim_id=claim_id,
+                    extend_visibility=extend_visibility,
+                )
             if latest_state != "verified" or not latest_lean_code:
                 return False
             return self._ensure_summary_explanation(
@@ -1395,18 +1382,48 @@ class SqsProofWorker:
             pipeline, explainer=explainer, reviewer=reviewer, explanation_language=language
         )
 
+    def _claim_usage_reporter(
+        self, proof_job_id: str, claim_id: str | None
+    ) -> Callable[[dict[str, Any]], None] | None:
+        if claim_id is None:
+            return None
+        return lambda usage: self.api_client.record_usage(
+            proof_job_id=proof_job_id, claim_id=claim_id, usage=usage
+        )
+
+    def _settle_t2_carry(
+        self, carry: _T2Carry, *, proof_job_id: str, claim_id: str | None
+    ) -> None:
+        """Report what nobody adopted and wait briefly for the lane's running calls; never raises.
+
+        Idempotent: ``take_usage_once`` hands each call's usage out once. A race loser that is
+        still running after the wait reports itself when it ends (its context keeps the reporter),
+        so it is only lost if this process exits first; the wait is bounded so a slow loser never
+        holds the answer.
+        """
+        with suppress(Exception):
+            reporter = self._claim_usage_reporter(proof_job_id, claim_id)
+            with usage_scope(reporter) if reporter is not None else ExitStack():
+                for handle in (carry.explanation, carry.review):
+                    if handle is not None:
+                        t2_lane.settle_unadopted(handle, timeout=10.0)
+            carry.drain(5.0)
+
     @contextmanager
     def _t2_carry_scope(
         self, run_result: Any, *, proof_job_id: str, claim_id: str | None
     ) -> Iterator[_T2Carry | None]:
         """Hold the pipeline's T2 handles for one delivery; settle what nobody adopted.
 
-        An unadopted explanation or review is a billed call: its usage is reported against this
-        claim rather than dropped. Never raises into the delivery.
+        With every switch off the pipeline starts no handle and the run's background is empty, so
+        nothing is held and the delivery is exactly the unchanged one.
         """
         explanation = getattr(run_result, "speculative_explanation", None)
         review = getattr(run_result, "speculative_review", None)
         background = getattr(run_result, "background", None)
+        pending = getattr(background, "pending", None)
+        if background is not None and callable(pending) and pending() == 0:
+            background = None
         if explanation is None and review is None and background is None:
             yield None
             return
@@ -1414,19 +1431,40 @@ class SqsProofWorker:
         try:
             yield carry
         finally:
-            with suppress(Exception):
-                reporter = (
-                    (lambda usage: self.api_client.record_usage(
-                        proof_job_id=proof_job_id, claim_id=claim_id, usage=usage
-                    ))
-                    if claim_id is not None
-                    else None
+            self._settle_t2_carry(carry, proof_job_id=proof_job_id, claim_id=claim_id)
+
+    def _resume_with_carry(
+        self,
+        carry: _T2Carry | None,
+        reconciled: dict[str, Any],
+        *,
+        proof_job_id: str,
+        claim_id: str | None,
+        extend_visibility: VisibilityExtender | None,
+    ) -> bool:
+        """Continue this delivery with the job the API just reconciled.
+
+        Adoption forwards the held usage to the active reporter, so the resumed call runs under
+        the claim's reporter. A failed compile goes on to a repair that is a whole nested run:
+        settle the carry first so a crash during it cannot lose the calls' usage.
+        """
+        usable = carry is not None and reconciled.get("state") in ("semantic_review", "verified")
+        if carry is not None and not usable:
+            self._settle_t2_carry(carry, proof_job_id=proof_job_id, claim_id=claim_id)
+        if carry is not None and usable:
+            carry.drain()
+        reporter = self._claim_usage_reporter(proof_job_id, claim_id)
+        token = _T2_CARRY.set(carry if usable else None)
+        try:
+            with usage_scope(reporter) if reporter is not None and usable else ExitStack():
+                return self.process_proof_job(
+                    proof_job_id,
+                    claim_id=claim_id,
+                    extend_visibility=extend_visibility,
+                    resume_with=reconciled,
                 )
-                with usage_scope(reporter) if reporter is not None else ExitStack():
-                    for handle in (explanation, review):
-                        if handle is not None:
-                            t2_lane.settle_unadopted(handle, timeout=10.0)
-                carry.drain(5.0)
+        finally:
+            _T2_CARRY.reset(token)
 
     def _send_progress_preview(
         self, *, proof_job_id: str, claim_id: str, status: str,
@@ -2082,12 +2120,19 @@ class SqsProofWorker:
                         return fixed
                 if speculative is not None:
                     # Generated while the semantic review ran; used only now, with the claim held.
-                    return speculative.adopt(
-                        theorem_statement=theorem_statement,
-                        lean_code=lean_code,
-                        language=language,
-                        wait_seconds=permit.deadline - self.monotonic(),
+                    # The held usage is reported against this claim; with no reporter active
+                    # adopt() would otherwise leave it unreported.
+                    reporter = (
+                        None if reporter_active()
+                        else self._claim_usage_reporter(proof_job_id, claim_id)
                     )
+                    with usage_scope(reporter) if reporter is not None else ExitStack():
+                        return speculative.adopt(
+                            theorem_statement=theorem_statement,
+                            lean_code=lean_code,
+                            language=language,
+                            wait_seconds=permit.deadline - self.monotonic(),
+                        )
                 return None
 
             def generate_explanation(feedback: Any) -> ProofExplanation:
