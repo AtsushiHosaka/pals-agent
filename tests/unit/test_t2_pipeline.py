@@ -643,3 +643,68 @@ def test_race_lean_time_is_recorded_as_a_lean_step(
         statement=STATEMENT, proof_job_id=JOB
     )
     assert "lean_check" in steps  # the race's compile is timed, though the main loop reuses it
+
+
+def test_a_candidate_cancelled_before_entering_lean_never_starts_a_review(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(
+        monkeypatch,
+        **{
+            t2_lane.NO_SKETCH_ENV: True,
+            t2_lane.PARALLEL_CANDIDATES_ENV: True,
+            t2_lane.PARALLEL_REVIEW_ENV: True,
+        },
+    )
+    monkeypatch.setenv(t2_lane.LEAN_SLOTS_ENV, "1")
+    reviewer = RecordingReviewer()
+    result = _pipeline(
+        tmp_path,
+        Generator([GOOD, GOOD], proof_delays=[0.0, 0.0]),
+        ScriptedVerifier({GOOD}, delay=0.3),
+        reviewer=reviewer,
+    ).run_statement(statement=STATEMENT, proof_job_id=JOB)
+    assert result.state == "verified"
+    assert result.background is None or result.background.drain(5) == 0
+    assert reviewer.codes == [GOOD]  # one review, for the one candidate that entered Lean
+
+
+def test_the_process_wide_lean_limit_bounds_compiles_across_concurrent_jobs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(monkeypatch, **{t2_lane.NO_SKETCH_ENV: True, t2_lane.PARALLEL_CANDIDATES_ENV: True})
+    monkeypatch.setenv(t2_lane.LEAN_PROCESS_SLOTS_ENV, "1")
+    active = 0
+    peak = 0
+    lock = threading.Lock()
+
+    class Counting(ScriptedVerifier):
+        def verify(self, lean_code: str) -> VerificationResult:
+            nonlocal active, peak
+            with lock:
+                active += 1
+                peak = max(peak, active)
+            try:
+                return super().verify(lean_code)
+            finally:
+                with lock:
+                    active -= 1
+
+    def job(index: int) -> None:
+        _pipeline(
+            tmp_path / f"j{index}", Generator([BAD, BAD, GOOD]), Counting({GOOD}, delay=0.1)
+        ).run_statement(statement=STATEMENT, proof_job_id=f"{JOB}-{index}")
+
+    threads = [threading.Thread(target=job, args=(i,)) for i in range(3)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(30)
+    assert peak == 1
+
+
+def test_defaults_do_not_make_the_answer_wait_for_background_accounting() -> None:
+    import dataclasses
+
+    fields = {f.name: f.default for f in dataclasses.fields(ProofPipeline)}
+    assert fields["accounting_wait_seconds"] == 0.0

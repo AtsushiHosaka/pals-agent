@@ -104,8 +104,40 @@ def validate_flags() -> None:
         no_draft_enabled,
         name_safety_enabled,
         lean_slots,
+        lean_process_slots,
     ):
         check()
+
+
+LEAN_PROCESS_SLOTS_ENV = "PALS_T2_LEAN_PROCESS_SLOTS"
+_process_slots_lock = threading.Lock()
+_process_slots: dict[int, threading.BoundedSemaphore] = {}
+
+
+def lean_process_slots() -> int:
+    """Process-wide cap on compiles started by racing candidates (0 = no cap, the default).
+
+    The per-race slots bound one job; this bounds every job in the worker process, so concurrent
+    jobs cannot together exceed the compiler capacity. Size it from measured parallel-compile
+    capacity (the verifier's own slot count), not from this module."""
+    raw = os.environ.get(LEAN_PROCESS_SLOTS_ENV)
+    if raw is None:
+        return 0
+    if not raw.isdigit() or int(raw) > 64:
+        raise ValueError(f"{LEAN_PROCESS_SLOTS_ENV} must be an integer from 0 to 64")
+    return int(raw)
+
+
+@contextmanager
+def process_lean_slot() -> Iterator[None]:
+    size = lean_process_slots()
+    if size == 0:
+        yield
+        return
+    with _process_slots_lock:
+        semaphore = _process_slots.setdefault(size, threading.BoundedSemaphore(size))
+    with semaphore:
+        yield
 
 
 _preflight: ContextVar[Callable[[str], list[Any]] | None] = ContextVar(

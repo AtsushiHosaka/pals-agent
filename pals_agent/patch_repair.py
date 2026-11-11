@@ -17,27 +17,115 @@ from __future__ import annotations
 import re
 
 # A patch edits the proof, never the statement, imports or declarations around it, and may not
-# introduce anything that changes what Lean trusts or what the file declares.
-FORBIDDEN_IN_BODY = re.compile(
-    r"\b(?:axiom|set_option|native_decide|sorry|admit|import|unsafe|implemented_by|extern|macro|"
-    r"syntax|elab|notation|run_cmd|opaque|constant)\b|#|^\s*(?:theorem|lemma|def|abbrev|instance|"
-    r"structure|inductive|class)\b",
+# introduce anything that changes what Lean trusts or what the file declares. Checks run on the
+# text with comments and string literals blanked out, so a word in a comment or a string is not a
+# command and a command cannot hide in either.
+_MODIFIERS = r"(?:(?:private|protected|noncomputable|local|scoped|partial|unsafe|nonrec)\s+)*"
+_ATTRIBUTES = r"(?:@\[[^\]]*\]\s*)*"
+_DECLARATION = re.compile(
+    rf"^\s*{_ATTRIBUTES}{_MODIFIERS}(?:theorem|lemma|example)\b"
+)
+_FORBIDDEN_WORD = re.compile(
+    r"\b(?:axiom|set_option|native_decide|sorry|admit|import|unsafe|implemented_by|extern|"
+    r"run_cmd|attribute|deriving)\b"
+)
+# Commands that may only begin a line (as `#eval`, `opaque x`, `syntax ...`): an identifier that
+# merely contains one of these words is fine.
+_FORBIDDEN_COMMAND = re.compile(
+    rf"^\s*{_ATTRIBUTES}{_MODIFIERS}"
+    r"(?:theorem|lemma|def|abbrev|instance|structure|inductive|class|opaque|macro|macro_rules|"
+    r"syntax|elab|notation|infix|infixl|infixr|prefix|postfix|partial|namespace|section|"
+    r"end|universe|variable|open|export)\b|^\s*#[A-Za-z]",
     re.MULTILINE,
 )
-_DECLARATION = re.compile(r"^\s*(?:@\[[^\]]*\]\s*)?(?:theorem|lemma|example)\b")
+
+
+def blank_comments_and_strings(source: str) -> str:
+    """``source`` with comments and string literals replaced by spaces (newlines kept), so line
+    numbers and brackets elsewhere are unchanged. Handles nested ``/- -/`` blocks."""
+    out: list[str] = []
+    i, n, depth = 0, len(source), 0
+    while i < n:
+        two = source[i : i + 2]
+        if depth:
+            if two == "/-":
+                depth += 1
+                out.append("  ")
+                i += 2
+            elif two == "-/":
+                depth -= 1
+                out.append("  ")
+                i += 2
+            else:
+                out.append("\n" if source[i] == "\n" else " ")
+                i += 1
+        elif two == "/-":
+            depth = 1
+            out.append("  ")
+            i += 2
+        elif two == "--":
+            while i < n and source[i] != "\n":
+                out.append(" ")
+                i += 1
+        elif source[i] == '"':
+            out.append(" ")
+            i += 1
+            while i < n and source[i] != '"':
+                if source[i] == "\\" and i + 1 < n:
+                    out.append("  ")
+                    i += 2
+                    continue
+                out.append("\n" if source[i] == "\n" else " ")
+                i += 1
+            if i < n:
+                out.append(" ")
+                i += 1
+        else:
+            out.append(source[i])
+            i += 1
+    return "".join(out)
 
 
 def protected_through(lean_code: str) -> int:
     """Last line (1-based) a patch may not touch: imports, `open`s, the declaration header and the
-    line where its proof starts (`:=`). When no declaration is found, every line is protected."""
-    lines = lean_code.splitlines()
+    line where its proof starts. That is the first `:=` at bracket depth 0 after the declaration
+    keyword, not counting the `:=` of a `let`/`have`/`set` inside the statement. When no
+    declaration is found, every line is protected."""
+    blanked = blank_comments_and_strings(lean_code)
+    lines = blanked.splitlines()
     for index, line in enumerate(lines):
-        if _DECLARATION.match(line):
-            for end in range(index, len(lines)):
-                if ":=" in lines[end]:
-                    return end + 1
-            break
+        if not _DECLARATION.match(line):
+            continue
+        depth, binders = 0, 0
+        for end in range(index, len(lines)):
+            text = lines[end]
+            position = 0
+            while position < len(text):
+                char = text[position]
+                if char in "([{⟨":
+                    depth += 1
+                elif char in ")]}⟩":
+                    depth = max(0, depth - 1)
+                elif text.startswith(":=", position):
+                    if depth == 0:
+                        if binders:
+                            binders -= 1
+                        else:
+                            return end + 1
+                    position += 1
+                elif depth == 0:
+                    word = re.match(r"(?:let|have|set|show)\b", text[position:])
+                    if word and (position == 0 or not text[position - 1].isalnum()):
+                        binders += 1
+                        position += len(word.group(0)) - 1
+                position += 1
+        break
     return len(lines)
+
+
+def body_is_forbidden(body: str) -> bool:
+    blanked = blank_comments_and_strings(body)
+    return bool(_FORBIDDEN_WORD.search(blanked) or _FORBIDDEN_COMMAND.search(blanked))
 
 
 MAX_EDITS = 6
@@ -91,10 +179,7 @@ def apply_patch(
         protected = protected_through(lean_code)
     if any(first <= protected for first, _last, _body in edits):
         return None
-    if any(
-        FORBIDDEN_IN_BODY.search(re.sub(r"--[^\n]*", "", "\n".join(body)))
-        for _first, _last, body in edits
-    ):
+    if any(body_is_forbidden("\n".join(body)) for _first, _last, body in edits):
         return None
     lines = lean_code.splitlines()
     if sum(len("\n".join(body)) for _first, _last, body in edits) > MAX_BODY_CHARS:

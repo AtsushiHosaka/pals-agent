@@ -92,3 +92,56 @@ def test_patch_bodies_may_not_add_axioms_options_or_declarations() -> None:
     ):
         assert apply_patch(REAL, f"REPLACE {n}\n    {body}\nEND") is None, body
     assert apply_patch(REAL, f"REPLACE {n}\n    positivity -- set_option is only a comment\nEND")
+
+
+def _body_rejected(body: str) -> bool:
+    n = next(i for i, line in enumerate(REAL.splitlines(), 1) if "positivity" in line)
+    return apply_patch(REAL, f"REPLACE {n}\n{body}\nEND") is None
+
+
+def test_modifier_and_attribute_forms_of_declarations_are_rejected() -> None:
+    for body in (
+        "private def x := 1",
+        "@[simp] lemma foo : True := trivial",
+        "noncomputable def y := 2",
+        "local instance : Inhabited ℕ := ⟨0⟩",
+        "scoped notation \"ℓ\" => 1",
+        "partial def loop := 1",
+        "attribute [local simp] foo",
+        "deriving instance Repr for Foo",
+        "opaque secret : ℕ",
+        "syntax \"foo\" : term",
+        "  #check 1",
+    ):
+        assert _body_rejected(body), body
+
+
+def test_comments_strings_and_plain_identifiers_do_not_trigger_the_checks() -> None:
+    for body in (
+        "    positivity -- axiom and set_option here are only words",
+        '    have h : "axiom" = "axiom" := rfl',
+        "    /- sorry -/ positivity",
+        "    have opaque_h : (0 : ℝ) < 1 := by norm_num",
+        "    have syntax_ok : (0 : ℝ) < 1 := by norm_num",
+        "    have h2 : (#[1, 2] : Array ℕ).size = 2 := by simp",
+    ):
+        assert not _body_rejected(body), body
+    # but a command hiding after a comment or string is still seen
+    assert _body_rejected("    /- ok -/ set_option maxHeartbeats 0 in positivity")
+
+
+def test_a_define_inside_the_statement_does_not_end_the_protected_zone_early() -> None:
+    from pals_agent.patch_repair import protected_through
+
+    source = (
+        "import Mathlib\n"
+        "theorem t (f : ℕ → ℕ) (h : f = fun x => let y := x; y) :\n"
+        "    f 1 = 1 := by\n"
+        "  simp [h]\n"
+    )
+    assert protected_through(source) == 3
+    assert apply_patch(source, "REPLACE 2\n  simp\nEND") is None
+    assert apply_patch(source, "REPLACE 3\n  simp\nEND") is None
+    assert apply_patch(source, "REPLACE 4\n  simp [h]\nEND") is not None
+    # a modifier before the keyword does not hide the declaration
+    assert protected_through("import Mathlib\nprivate theorem t : True := by\n  trivial\n") == 2

@@ -280,9 +280,11 @@ class ProofPipeline:
     # ``LeanProofSemanticReviewer.review_proof`` signature.
     reviewer: Any = None
     # Seconds ``_run_request`` waits, after the result is ready, for calls the T2 lane left running
-    # (a race loser's model call, an unused Draft) so their usage is reported before the caller's
-    # usage scope ends. 0 skips the wait; the caller must then call ``result.background.drain``.
-    accounting_wait_seconds: float = 15.0
+    # (a race loser's model call, an unused Draft). Default 0: the answer must not wait for work
+    # nobody uses. The caller then MUST call ``result.background.drain(...)`` after the answer is
+    # released and before its usage scope ends; a positive value makes the pipeline wait instead
+    # (and delays the answer by up to that long).
+    accounting_wait_seconds: float = 0.0
 
     def __post_init__(self) -> None:
         t2_lane.validate_flags()  # a malformed T2 switch fails here, not mid-job after spend
@@ -795,7 +797,8 @@ class ProofPipeline:
                     latency_stage("lean_compile_local"),
                     step_timing.step("lean_check") as timing,
                 ):
-                    verification = verifier.verify(generated.lean_code)
+                    with t2_lane.process_lean_slot():  # no-op unless a process cap is set
+                        verification = verifier.verify(generated.lean_code)
                     if timing is not None:
                         timing.set_lean(verification.success, verification.diagnostics)
             diagnostics = [*diagnostics, *verification.diagnostics]
@@ -1386,16 +1389,17 @@ class ProofPipeline:
             code = generated.lean_code
             if not code.strip() or preflight(code) or cancel.is_set():
                 return _RacedCandidate(generated, None)
-            # The explanation and the review of this candidate run while Lean compiles it.
-            for speculative_run in (
-                t2_lane.current_explanation_run(),
-                t2_lane.current_review_run(),
-            ):
-                if speculative_run is not None:
-                    speculative_run.start(statement=request.prompt, lean_code=code)
-            with slots:
+            with slots, t2_lane.process_lean_slot():
                 if cancel.is_set():
                     return _RacedCandidate(generated, None)
+                # Only a candidate that has entered Lean starts its explanation and review: one
+                # queued behind the winner and cancelled never costs a call.
+                for speculative_run in (
+                    t2_lane.current_explanation_run(),
+                    t2_lane.current_review_run(),
+                ):
+                    if speculative_run is not None:
+                        speculative_run.start(statement=request.prompt, lean_code=code)
                 with step_timing.step("lean_check") as timing:
                     verification = verifier.verify(code)
                     if timing is not None:
