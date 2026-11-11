@@ -17,6 +17,7 @@ from pals_agent.artifacts import (
     ArtifactStore,
 )
 from pals_agent.draft_catalog import DraftCatalog, DraftSearchResult
+from pals_agent.explanations import target_matches_statement
 from pals_agent.lean_profiles import LibraryProfileNotEnabled, ProfileRoutedVerifier
 from pals_agent.lean_source_policy import (
     strip_lean_comments_and_strings as _strip_lean_comments_and_strings,
@@ -1423,7 +1424,7 @@ class ProofPipeline:
             lambda lean_code: validate_generated_lean(request, lean_code)
         )
         if verifier is None:
-            return self._race_without_compile(prove_once, preflight)
+            return self._race_without_compile(request, prove_once, preflight)
         # Lean capacity for racing compiles. A candidate takes a slot, then checks the cancel
         # event *after* acquiring it: a loser that was queued behind the winner never compiles.
         slots = threading.BoundedSemaphore(t2_lane.lean_slots())
@@ -1473,6 +1474,7 @@ class ProofPipeline:
 
     def _race_without_compile(
         self,
+        request: ProofRequest,
         prove_once: Callable[[], GeneratedProof],
         preflight: Callable[[str], list[Diagnostic]],
     ) -> GeneratedProof:
@@ -1496,6 +1498,10 @@ class ProofPipeline:
             if not code.strip():
                 return _RacedCandidate(generated, None, preflight_errors=1_000)
             errors = sum(d.severity == "error" for d in preflight(code))
+            if errors == 0 and not _aligned_with_request(request.prompt, code):
+                # A statement the worker would reject after the API compile (for example `True` for
+                # an x²-continuity request) is a loser, so a correct rival can still win.
+                errors = 1
             if errors == 0:
                 with decided:
                     if claimed or cancel.is_set():
@@ -2486,6 +2492,12 @@ def _validate_api_repair_seed(
         for diagnostic in seed.verification.diagnostics
     ):
         raise ValueError("API repair seed requires verifier_compile_failed evidence")
+
+
+def _aligned_with_request(statement: str, lean_code: str) -> bool:
+    """The deterministic target check the worker applies before it submits a candidate."""
+    target = extract_single_target_declaration(lean_code)
+    return target is not None and target_matches_statement(statement, target)
 
 
 def _select_repair_route(

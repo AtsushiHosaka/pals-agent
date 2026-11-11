@@ -138,3 +138,35 @@ def test_the_speculative_calls_are_dropped_when_the_loop_changes_the_source(
     assert result.speculative_explanation is not None
     assert result.speculative_explanation.lean_code == GOOD
     assert [call["lean_code"] for call in recorder.calls] == [GOOD]
+
+
+# A request about the continuity of x squared, and a source whose target is `True`.
+X2_STATEMENT = "実数全体で x^2 が連続であることを示してください。"
+TRIVIAL = "import Mathlib\n\ntheorem trivial_target : True := by\n  trivial\n"
+X2_PROOF = (
+    "import Mathlib\n\ntheorem x_sq_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n"
+    "  exact continuous_pow 2\n"
+)
+
+
+def test_a_fast_candidate_that_proves_another_statement_does_not_win_the_race(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from pals_agent.lean_target import extract_single_target_declaration
+    from pals_agent.worker import _target_matches_statement  # the worker's own later check
+
+    _flags(monkeypatch, **{t2_lane.NO_DRAFT_ENV: True, t2_lane.PARALLEL_CANDIDATES_ENV: True})
+    target = extract_single_target_declaration(TRIVIAL)
+    assert target is not None and not _target_matches_statement(X2_STATEMENT, target)
+
+    generator = Generator([TRIVIAL, X2_PROOF], proof_delays=[0.0, 0.2])
+    pipeline = _api_pipeline(tmp_path, generator)
+    with usage_scope(lambda _u: None):
+        result = pipeline.run_statement(
+            statement=X2_STATEMENT, proof_job_id="job-x2", on_status=lambda *_a: None
+        )
+        if result.background is not None:
+            result.background.drain(5.0)
+
+    assert result.verification_pending
+    assert result.generated.lean_code == X2_PROOF  # the slow but correct one is submitted
