@@ -145,3 +145,46 @@ def test_a_define_inside_the_statement_does_not_end_the_protected_zone_early() -
     assert apply_patch(source, "REPLACE 4\n  simp [h]\nEND") is not None
     # a modifier before the keyword does not hide the declaration
     assert protected_through("import Mathlib\nprivate theorem t : True := by\n  trivial\n") == 2
+
+
+def test_char_literals_do_not_open_a_string_and_hide_what_follows() -> None:
+    payload = "    have c := '\"'\n    axiom bad : False\n    exact (rfl : ('\"' : Char) = '\"')"
+    assert _body_rejected(payload)
+    assert _body_rejected("    have c := '\\\"'\n    axiom bad : False")
+    assert _body_rejected("    have c := '\\''\n    axiom bad : False")
+    assert _body_rejected("    have c := '\\\\'\n    axiom bad : False")
+    assert _body_rejected("    example : Char := '\"'\n    sorry")
+
+
+def test_primes_in_identifiers_and_plain_char_literals_are_still_fine() -> None:
+    assert not _body_rejected("    have h' : (0 : ℝ) < 1 := by norm_num\n    exact h'")
+    assert not _body_rejected("    have c : Char := 'a'\n    positivity")
+    assert not _body_rejected("    have c : Char := '\"'\n    positivity")
+
+
+def test_an_unterminated_string_or_comment_fails_closed() -> None:
+    from pals_agent.patch_repair import protected_through
+
+    assert _body_rejected('    have s := "abc\n    positivity')
+    assert _body_rejected("    /- never closed\n    positivity")
+    # and a source with such a state protects every line
+    source = 'import Mathlib\ntheorem t : True := by\n  have s := "abc\n  trivial\n'
+    assert protected_through(source) == len(source.splitlines())
+
+
+def test_raw_strings_have_no_escapes_and_cannot_hide_what_follows() -> None:
+    # r"a\" is a complete raw string; the old scanner read \" as an escape and swallowed the rest
+    assert _body_rejected('    have s := r"a\\"\n    axiom bad : False\n    have t := r"b"')
+    assert _body_rejected('    have s := r#"a"b\\"#\n    axiom bad : False\n    have t := r#"c"#')
+    assert not _body_rejected('    have s : String := r#"a"b"#\n    positivity')
+    assert not _body_rejected('    have s : String := r"a\\"\n    positivity')
+    # a raw string that never closes fails closed
+    assert _body_rejected('    have s := r#"never closed"\n    positivity')
+
+
+def test_interpolated_strings_with_a_hole_fail_closed_plain_ones_do_not() -> None:
+    assert _body_rejected('    have s := s!"a{sorry}b"\n    positivity')
+    assert _body_rejected('    have s := s!"a{"q"}b"\n    positivity')
+    assert not _body_rejected('    have s : String := s!"plain text"\n    positivity')
+    # an identifier ending in r before a string is not a raw string opener
+    assert not _body_rejected('    have s : String := foo_r "x"\n    positivity')

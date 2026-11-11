@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import contextlib
 import hashlib
+import logging
 import os
 import threading
 import time
@@ -32,7 +33,9 @@ from contextvars import ContextVar, copy_context
 from dataclasses import dataclass, field
 from typing import Any, Generic, TypeVar
 
-from pals_agent.usage import forward_usage, hold_usage
+from pals_agent.usage import forward_usage, forward_usage_strict, hold_usage
+
+logger = logging.getLogger(__name__)
 
 NO_SKETCH_ENV = "PALS_T2_NO_SKETCH_ENABLED"
 PARALLEL_CANDIDATES_ENV = "PALS_T2_PARALLEL_CANDIDATES_ENABLED"
@@ -111,15 +114,19 @@ def validate_flags() -> None:
 
 LEAN_PROCESS_SLOTS_ENV = "PALS_T2_LEAN_PROCESS_SLOTS"
 _process_slots_lock = threading.Lock()
-_process_slots: dict[int, threading.BoundedSemaphore] = {}
+_process_slots: dict[int, threading.BoundedSemaphore] = {}  # one semaphore per size, per process
 
 
 def lean_process_slots() -> int:
-    """Process-wide cap on compiles started by racing candidates (0 = no cap, the default).
+    """Process-wide cap on Lean compiles of every pipeline (0 = no cap, the default).
 
-    The per-race slots bound one job; this bounds every job in the worker process, so concurrent
-    jobs cannot together exceed the compiler capacity. Size it from measured parallel-compile
-    capacity (the verifier's own slot count), not from this module."""
+    Every verifier call a ``ProofPipeline`` makes (final compile, Sketch check, lemma repair, a
+    race candidate's compile) goes through ``SlottedVerifier`` when this is set at pipeline
+    construction, so the default path is capped too: setting only this variable, with every T2
+    flag off, bounds the worker's concurrent compiles. The per-race slots (``PALS_T2_LEAN_SLOTS``)
+    bound one job's racing candidates; this bounds all jobs together. Size it from measured
+    parallel-compile capacity (the verifier's own slot count), not from this module. It is read
+    when a pipeline is constructed and on each call."""
     raw = os.environ.get(LEAN_PROCESS_SLOTS_ENV)
     if raw is None:
         return 0
@@ -138,6 +145,44 @@ def process_lean_slot() -> Iterator[None]:
         semaphore = _process_slots.setdefault(size, threading.BoundedSemaphore(size))
     with semaphore:
         yield
+
+
+_lost_lock = threading.Lock()
+_lost_reports = 0
+
+
+def _note_lost_usage_report() -> None:
+    global _lost_reports
+    with _lost_lock:
+        _lost_reports += 1
+    logger.warning("t2_usage_report_failed")  # closed code: no content
+
+
+def lost_usage_reports() -> int:
+    """How many speculative-call usage records could not be reported (process lifetime)."""
+    with _lost_lock:
+        return _lost_reports
+
+
+class SlottedVerifier:
+    """A verifier whose every compile holds a process-wide Lean slot (no-op without a cap).
+
+    Wraps any verifier object: ``verify``, ``verify_sketch`` and any other attribute are
+    delegated, so every call site of the pipeline (including ones added later) shares the cap."""
+
+    def __init__(self, inner: Any) -> None:
+        self.inner = inner
+
+    def __getattr__(self, name: str) -> Any:
+        attribute = getattr(self.inner, name)
+        if name not in {"verify", "verify_sketch"} or not callable(attribute):
+            return attribute
+
+        def slotted(*args: Any, **kwargs: Any) -> Any:
+            with process_lean_slot():
+                return attribute(*args, **kwargs)
+
+        return slotted
 
 
 _preflight: ContextVar[Callable[[str], list[Any]] | None] = ContextVar(
@@ -279,16 +324,28 @@ _discarded_sink: ContextVar[Callable[[dict[str, Any]], None] | None] = ContextVa
 
 @contextmanager
 def discarded_usage_scope(sink: Callable[[dict[str, Any]], None]) -> Iterator[None]:
-    """Receive the usage of explanation calls that were started and then discarded.
+    """Receive the usage of explanation/review calls that were started and then discarded.
 
-    A discarded call is infrastructure cost, not learner work, so it never reaches the ordinary
-    usage reporter (quota); an evaluation sets this scope to count it as spend.
+    Without this scope a discarded call is metered through the ordinary usage reporter, so no
+    spend is lost. An evaluation sets it to count discarded work separately (and itself adds it
+    to the spend).
     """
     token = _discarded_sink.set(sink)
     try:
         yield
     finally:
         _discarded_sink.reset(token)
+
+
+def settle_unadopted(handle: Any, timeout: float = 120.0) -> None:
+    """Report the usage of a speculative call the caller chose not to adopt.
+
+    A kept handle's usage is forwarded only when it is adopted. A caller that releases an answer
+    without adopting it (or drops the result) must settle it here, so provider spend is never
+    silently lost. Waits up to ``timeout`` for the call to end, then reports what it used."""
+    handle.discard()
+    handle.wait(timeout)
+    forward_usage(handle.take_usage_once())
 
 
 def _account_discarded(handle: Any, sink: Callable[[dict[str, Any]], None]) -> None:
@@ -298,9 +355,11 @@ def _account_discarded(handle: Any, sink: Callable[[dict[str, Any]], None]) -> N
     def work() -> None:
         try:
             handle.wait()
-            for record in handle.held_usage():
-                with contextlib.suppress(Exception):
+            for record in handle.take_usage_once():
+                try:
                     sink(record)
+                except Exception:  # noqa: BLE001 -- counted and logged, never silent
+                    _note_lost_usage_report()
         finally:
             future.set_result(None)
 
@@ -313,8 +372,8 @@ class ExplanationRun:
     ``start`` is called with every candidate that goes to verification (a race starts one per
     candidate); each distinct (statement, source) gets one call. ``finish`` returns the call that
     belongs to the proof actually returned and verified, and discards all others: a discarded
-    call is billed work nobody uses, so its usage goes to the ``discarded_usage_scope`` sink (an
-    evaluation counts it as spend) and never to the learner's usage reporter.
+    call is billed work nobody uses; its usage goes to the ``discarded_usage_scope`` sink when an
+    evaluation set one, and otherwise to the ordinary usage reporter of this context.
     """
 
     def __init__(
@@ -329,13 +388,19 @@ class ExplanationRun:
         self._handles: dict[tuple[str, str], Any] = {}
         self._lock = threading.Lock()
         self.discarded: list[Any] = []
-        self._sink = _discarded_sink.get()
+        # An evaluation may set its own sink; otherwise a discarded call is metered through the
+        # ordinary usage reporter of this context, so production spend is never under-reported.
+        parent = copy_context()
+        # Each report runs in its own copy: ``Context.run`` cannot be entered by two threads at
+        # once, and two discarded calls can finish together.
+        self._sink = _discarded_sink.get() or (
+            lambda record: parent.copy().run(forward_usage_strict, [record])
+        )
 
     def _drop(self, handle: Any) -> None:
         handle.discard()
         self.discarded.append(handle)
-        if self._sink is not None:
-            _account_discarded(handle, self._sink)
+        _account_discarded(handle, self._sink)
 
     @property
     def active(self) -> bool:

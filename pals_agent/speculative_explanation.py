@@ -47,6 +47,7 @@ class SpeculativeExplanation:
     _usage: list[dict[str, Any]] = field(default_factory=list, repr=False)
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
     _closed: bool = False
+    _forwarded: bool = False
 
     @classmethod
     def start(
@@ -118,10 +119,19 @@ class SpeculativeExplanation:
             ) from None
         except BaseException:
             # A direct call that raised would also have used (and reported) its tokens.
-            forward_usage(self._usage)
+            forward_usage(self.take_usage_once())
             raise
-        forward_usage(self._usage)
+        forward_usage(self.take_usage_once())
         return explanation
+
+    def take_usage_once(self) -> list[dict[str, Any]]:
+        """The call's usage, handed out exactly once: adopt, settle and discard accounting all
+        take it here, so no order of them reports it twice (later takers get an empty list)."""
+        with self._lock:
+            if self._forwarded:
+                return []
+            self._forwarded = True
+            return [dict(record) for record in self._usage]
 
     def held_usage(self) -> list[dict[str, Any]]:
         """Usage of the call so far (only complete once it has finished), for cost accounting."""
