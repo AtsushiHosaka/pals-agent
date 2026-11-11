@@ -3,7 +3,7 @@
 bypassed the sandboxed processes still cannot act.
 
 For every payload the test (1) checks the shared validator refuses the statement form, (2) runs the
-attack as a Lean source WITHOUT the sandbox (``PALS_LEAN_SANDBOX=off``) to show the attack really
+attack as a Lean source WITHOUT the sandbox (``sandbox.test_only_unsandboxed()``) to show the attack really
 does something on this machine, and (3) runs the same source in the cold runner and in the warm
 worker with the sandbox on and asserts it had no effect.
 
@@ -132,10 +132,9 @@ def test_injection_is_refused_and_has_no_effect_in_the_sandboxed_processes(
 
     # (2) unsandboxed: the attack source really acts on this machine
     marker_open = _fresh_marker(tmp_path, name + "-open")
-    monkeypatch.setenv("PALS_LEAN_SANDBOX", "off")
-    runner.run("import Mathlib\n" + payloads(marker_open)[name][1])
+    with sandbox.test_only_unsandboxed():
+        runner.run("import Mathlib\n" + payloads(marker_open)[name][1])
     assert Path(marker_open).exists(), "the attack must work without the sandbox"
-    monkeypatch.delenv("PALS_LEAN_SANDBOX")
 
     # (3a) sandboxed cold runner
     marker_cold = _fresh_marker(tmp_path, name + "-cold")
@@ -250,6 +249,11 @@ LEAN_REFUSED = [
     "∀ n : ℕ, n = n := by simp",
     "(show 1 = 1 from rfl)",
     "∀ x : ℕ, ⟨x, x⟩ = ⟨x, x⟩",
+    # review 3: field access on a bound variable selects Nat.forM / List.mapM (refused by name)
+    "∀ n : ℕ, n.forM (fun i => pure ()) = pure ()",
+    "∀ n : ℕ, (n + 1).forM (fun i => pure ()) = pure ()",
+    "∀ l : List ℕ, l.mapM (fun i => pure i) = pure l",
+    "∀ n : ℕ, (n.succ).forM (fun i => pure ()) = pure ()",
 ]
 LEAN_ACCEPTED = [
     "∀ x : ℝ, 0 ≤ x ^ 2",
@@ -257,6 +261,10 @@ LEAN_ACCEPTED = [
     "Real.sqrt 16 = 4",
     "∫ x in (0:ℝ)..1, x ^ 2 = 1 / 3",
     "Nat.choose 5 2 = 10",
+    "∀ f g : ℝ → ℝ, (f.comp g) = f ∘ g",
+    "∀ l : List ℕ, l.map id = l",
+    "∀ s : Finset ℕ, s.card = s.card",
+    "∀ n : ℕ, n.succ = n + 1",
     "Nat.gcd 12 18 = 6",  # `Nat.gcd` is @[extern]: refused by the first review-2 e2e, a legitimate loss
     "Continuous fun x : ℝ => x ^ 2 + 1",
     "∀ x y : ℝ, x * y = y * x",
@@ -361,3 +369,51 @@ def test_the_clean_verifier_rejects_a_proof_that_does_not_close_the_statement(ru
         assert ok
     finally:
         verifier.close()
+
+
+# --- review 3, item 8: `(deny default)` with explicit allows (a development aid, not a boundary) -
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/etc/hosts",
+        "/private/var/tmp",
+        "/opt",
+        "/Library/Keychains",
+        "/private/etc/passwd",
+        "/Users",
+    ],
+)
+def test_the_sandbox_denies_reads_and_listings_outside_the_allowed_roots(runner, path):
+    source = (
+        f'#eval do\n  try IO.println s!"READ:{{(← IO.FS.readFile "{path}").take 20}}"\n'
+        '  catch e => IO.println s!"DENIED:{e}"\n'
+        f'  try IO.println s!"LIST:{{(← System.FilePath.readDir "{path}").size}}"\n'
+        '  catch e => IO.println s!"DENIED:{e}"\n'
+    )
+    code, out, _ = runner.run("import Mathlib\n" + source)
+    assert "READ:" not in out and "LIST:" not in out, out
+    assert "DENIED" in out
+
+
+def test_the_sandbox_cannot_signal_the_parent_or_open_a_network_socket(runner):
+    parent = os.getpid()
+    signal_attempt = (
+        "#eval do\n"
+        f'  let r ← IO.Process.output {{ cmd := "/bin/kill", args := #["-0", "{parent}"] }}\n'
+        '  IO.println s!"KILL:{r.exitCode}"\n'
+    )
+    _, out, _ = runner.run("import Mathlib\n" + signal_attempt)
+    assert "KILL:0" not in out  # exec of /bin/kill is itself refused
+    net = (
+        '#eval do\n  let r ← IO.Process.output { cmd := "/usr/bin/curl", args := #["-s", "http://127.0.0.1:1"] }\n'
+        '  IO.println s!"NET:{r.exitCode}"\n'
+    )
+    _, out, _ = runner.run("import Mathlib\n" + net)
+    assert "NET:0" not in out  # the exec is refused: the child exits non-zero
+
+
+def test_the_profile_is_deny_default_and_says_it_is_a_development_aid():
+    text = sandbox.profile(sandbox.Isolation("/x/bin/lean", "/x/lib"), "/tmp/scratch")
+    assert text.splitlines()[1] == "(deny default)" and "(allow default)" not in text
+    assert "(deny " not in text.replace("(deny default)", "")
+    assert "development aid" in (sandbox.profile.__doc__ or "")

@@ -28,7 +28,7 @@ import signal
 import subprocess
 import sys
 import tempfile
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
@@ -39,16 +39,61 @@ MAX_OPEN_FILES: Final = 1024
 MAX_ADDRESS_SPACE: Final = 96 * 1024**3  # Lean maps Mathlib (tens of GB of virtual memory)
 
 
-def enabled() -> bool:
-    return os.environ.get("PALS_LEAN_SANDBOX", "").strip().lower() not in {"off", "0", "false"}
+class ContainmentUnavailable(RuntimeError):
+    """No OS containment backend is active: nothing may launch Lean on untrusted text."""
+
+
+# In-process, test-only switch.  It is deliberately NOT read from the environment: production
+# code paths cannot turn containment off by configuration.  ``None`` | "unsandboxed" (run bare,
+# to demonstrate an attack) | "contained" (fakes only: lets code be built, never launches).
+_TEST_MODE: str | None = None
+
+
+@contextlib.contextmanager
+def test_only_unsandboxed() -> Iterator[None]:
+    global _TEST_MODE
+    previous, _TEST_MODE = _TEST_MODE, "unsandboxed"
+    try:
+        yield
+    finally:
+        _TEST_MODE = previous
+
+
+@contextlib.contextmanager
+def test_only_assume_contained() -> Iterator[None]:
+    global _TEST_MODE
+    previous, _TEST_MODE = _TEST_MODE, "contained"
+    try:
+        yield
+    finally:
+        _TEST_MODE = previous
 
 
 def available() -> bool:
-    return enabled() and sys.platform == "darwin" and Path(SANDBOX_EXEC).exists()
+    """A real backend is active: macOS ``sandbox-exec`` (a development aid, not a boundary).
+
+    Linux has none here: the production verifier's Landlock/seccomp/cgroups is the containment.
+    ``PALS_LEAN_SANDBOX=off`` does not disable it any more; it makes this False (fail closed).
+    """
+    if os.environ.get("PALS_LEAN_SANDBOX", "").strip().lower() in {"off", "0", "false"}:
+        return False
+    return sys.platform == "darwin" and Path(SANDBOX_EXEC).exists()
+
+
+def require_containment() -> None:
+    """Raise unless a containment backend is active (or a test-only switch is set)."""
+    if available() or _TEST_MODE in {"unsandboxed", "contained"}:
+        return
+    raise ContainmentUnavailable(
+        "no containment backend (macOS sandbox-exec) is active; refusing to run Lean on "
+        "untrusted statements without it"
+    )
 
 
 def describe() -> str:
     parts = ["scrubbed-env", "scratch-cwd", "rlimits", "process-group-kill"]
+    if _TEST_MODE == "unsandboxed":
+        parts.append("UNSANDBOXED(test-only)")
     if available():
         parts.append("sandbox-exec(no-network,no-exec,scoped-read-write)")
     return "+".join(parts)
@@ -82,21 +127,37 @@ class Isolation:
         return sorted(roots)
 
 
+_SYSTEM_READ: Final = (
+    "/usr/lib",
+    "/usr/share",
+    "/System",
+    "/Library/Apple",
+    "/private/var/db/dyld",
+    "/private/var/db/timezone",
+    "/private/etc/localtime",
+    "/dev/null",
+    "/dev/zero",
+    "/dev/random",
+    "/dev/urandom",
+)
+
+
 def profile(isolation: Isolation, scratch: str) -> str:
+    """``(deny default)`` with explicit allows (a development aid, not a boundary)."""
     scratch_real = _real(scratch)
     reads = " ".join(f"(subpath {_sbpl_string(root)})" for root in isolation.read_roots())
+    system = " ".join(f"(subpath {_sbpl_string(path)})" for path in _SYSTEM_READ)
     lean = _sbpl_string(_real(isolation.lean_binary))
     return (
-        "(version 1)\n(allow default)\n"
-        "(deny network*)\n"
-        "(deny process-exec*)\n"
+        "(version 1)\n(deny default)\n"
         f"(allow process-exec (literal {lean}))\n"
-        "(deny file-write*)\n"
+        "(allow process-fork)\n"  # `lean --run` re-invokes lean
+        "(allow signal (target self))\n"  # never the parent or any other process
+        "(allow sysctl-read)\n"
+        f"(allow file-read* (literal \"/\") (subpath {_sbpl_string(scratch_real)}) {reads} {system})\n"
+        f"(allow file-map-executable {reads} {system})\n"
         f'(allow file-write* (subpath {_sbpl_string(scratch_real)}) (literal "/dev/null")'
         ' (regex #"^/dev/(tty|pty|ttys)[^/]*$"))\n'
-        '(deny file-read* (subpath "/Users") (subpath "/private/tmp")'
-        ' (subpath "/private/var/folders") (subpath "/private/var/root") (subpath "/Volumes"))\n'
-        f"(allow file-read* (subpath {_sbpl_string(scratch_real)}) {reads})\n"
         "(allow file-read-metadata)\n"  # stat/realpath of parent directories, never contents
     )
 
@@ -129,9 +190,11 @@ def _rlimits(cpu_seconds: int | None) -> Callable[[], None]:
 
 
 def command(cmd: list[str], isolation: Isolation, scratch: str) -> list[str]:
-    """Wrap ``cmd`` in the sandbox profile when it is available."""
-    if not available():
+    """Wrap ``cmd`` in the sandbox profile.  Fails closed when no backend is active."""
+    if _TEST_MODE == "unsandboxed":
         return cmd
+    if not available():
+        raise ContainmentUnavailable("no containment backend is active")
     return [SANDBOX_EXEC, "-p", profile(isolation, scratch), *cmd]
 
 
@@ -191,14 +254,22 @@ def default_worker_cpu_seconds() -> float:
 
 
 def _parse_cputime(text: str) -> float:
-    """``ps`` cputime: ``M:SS.cc`` or ``H:MM:SS``."""
-    parts = text.strip().split(":")
+    """``ps`` cputime: ``M:SS.cc``, ``H:MM:SS``, ``D-HH:MM:SS`` or ``D-HH:MM``."""
+    text = text.strip()
+    days = 0
     try:
+        if "-" in text:
+            day_text, text = text.split("-", 1)
+            days = int(day_text)
+            parts = text.split(":")
+            if len(parts) == 2:  # D-HH:MM
+                return days * 86400 + int(parts[0]) * 3600 + int(parts[1]) * 60.0
+        parts = text.split(":")
         if len(parts) == 3:
-            return int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
+            return days * 86400 + int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
         if len(parts) == 2:
-            return int(parts[0]) * 60 + float(parts[1])
-        return float(parts[0])
+            return days * 86400 + int(parts[0]) * 60 + float(parts[1])
+        return days * 86400 + float(parts[0])
     except ValueError:
         return 0.0
 

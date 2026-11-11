@@ -152,8 +152,30 @@ def constOk (env : Environment) (n : Name) : Bool :=
     !(nameIsBad n) && !ci.isUnsafe && !ci.isPartial
       && !(ci.type.getUsedConstants.any nameIsBad)
 
-partial def checkSyntax (env : Environment) (opens : List OpenDecl) (stx : Syntax) :
-    Except String Unit :=
+/-- Namespaces of the core data types a bound variable of an allowed statement can have. -/
+def fieldNamespaces : List Name :=
+  [`Nat, `Int, `List, `Array, `Option, `String, `Fin, `Prod, `Sum, `Subtype, `Set, `Finset,
+   `Multiset, `Rat, `Real, `Complex, `Function]
+
+/-- Field names that, applied to a bound variable of one of those types (`n.forM`, `l.mapM`),
+would select a declaration refused by its full name (`Nat.forM`): unsafe, partial, or a type that
+mentions a bad namespace.  Only these core namespaces are scanned: types of other structures are
+unknown without elaboration, and a name-based list over all of Mathlib refuses ordinary fields
+(`f.comp g`, `.map`).  So this is a narrow, name-based check, NOT type resolution: a field of a
+bound variable whose type is in another namespace is not checked.  Computed once per process. -/
+def badFieldNames (env : Environment) : Std.HashSet String :=
+  env.constants.fold (init := {}) fun acc n ci =>
+    match n with
+    | .str pre s =>
+      if fieldNamespaces.any (· == pre) && !n.isInternal &&
+          (ci.isUnsafe || ci.isPartial ||
+            ci.type.getUsedConstants.any (fun c => nameIsBad c && !c.isInternal)) then
+        acc.insert s
+      else acc
+    | _ => acc
+
+partial def checkSyntax (env : Environment) (badFields : Std.HashSet String)
+    (opens : List OpenDecl) (stx : Syntax) : Except String Unit :=
   match stx with
   | .missing => throw "missing syntax"
   | .atom _ val =>
@@ -164,13 +186,29 @@ partial def checkSyntax (env : Environment) (opens : List OpenDecl) (stx : Synta
     if id.getRoot == `_root_ then throw "_root_ prefix"
     else
       let candidates := ResolveName.resolveGlobalName env {} Name.anonymous opens id
-      -- unresolved: a bound variable (autoImplicit is off, an unknown name fails elaboration)
-      match candidates.find? (fun (c, _) => !(constOk env c)) with
-      | some (c, _) => throw s!"identifier {id} resolves to excluded constant {c}"
-      | none => pure ()
+      match candidates.find? (fun (c, fields) =>
+          !(constOk env c) || fields.any badFields.contains) with
+      | some (c, _) => throw s!"identifier {id} resolves to excluded constant or field of {c}"
+      | none =>
+        -- not a global name: a bound variable with field access `n.forM`
+        if candidates.isEmpty then
+          match id.components.drop 1 |>.find? (fun c => match c with
+              | .str _ s => badFields.contains s | _ => false) with
+          | some c => throw s!"field {c} of a bound variable selects an excluded declaration"
+          | none => pure ()
+        else pure ()
   | .node _ kind args =>
     if !(allowedKinds.contains kind) then throw s!"syntax kind {kind}"
-    else args.forM (checkSyntax env opens)
+    else
+      if kind == `Lean.Parser.Term.proj then
+        match args.back? with
+        | some (.ident _ _ f _) =>
+          if f.components.any (fun c => match c with
+              | .str _ s => badFields.contains s | _ => false) then
+            throw s!"field {f} selects an excluded declaration"
+          else args.forM (checkSyntax env badFields opens)
+        | _ => args.forM (checkSyntax env badFields opens)
+      else args.forM (checkSyntax env badFields opens)
 
 partial def collectKinds (stx : Syntax) (acc : Array Name) : Array Name :=
   match stx with
@@ -184,6 +222,7 @@ unsafe def run : IO Unit := do
   enableInitializersExecution
   initSearchPath (← findSysroot)
   let env ← importModules #[{ module := `Mathlib }] {} 0 (loadExts := true)
+  let badFields ← IO.mkRef (none : Option (Std.HashSet String))
   let stdin ← IO.getStdin
   let stdout ← IO.getStdout
   stdout.putStrLn "PALS_READY"
@@ -204,7 +243,13 @@ unsafe def run : IO Unit := do
         if request.startsWith "KINDS " then
           for k in collectKinds stx #[] do stdout.putStrLn s!"KIND {k}"
         else
-          match checkSyntax env opens stx with
+          let fields ← match (← badFields.get) with
+            | some f => pure f
+            | none => do
+              let f := badFieldNames env
+              badFields.set (some f)
+              pure f
+          match checkSyntax env fields opens stx with
           | .ok _ => stdout.putStrLn "PALS_CHECK_OK"
           | .error e => stdout.putStrLn s!"PALS_CHECK_REFUSED {e}"
       stdout.putStrLn s!"PALS_DONE {path}"

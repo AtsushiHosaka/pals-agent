@@ -23,6 +23,7 @@ import pty
 import re
 import select
 import subprocess
+import threading
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -192,6 +193,11 @@ def build_unified(
     return text, proposition, attempts, source
 
 
+# A worker or stream that prints more than this in one request is killed (a statement or a
+# tactic must not be able to fill memory or disk through the output pipe).
+MAX_OUTPUT_BYTES: Final = 8 * 1024 * 1024
+
+
 @dataclass(slots=True)
 class StreamResult:
     output: str
@@ -221,7 +227,7 @@ def run_stream(
         dog = sandbox.Watchdog(
             proc, rss_bytes=sandbox.default_rss_bytes(), cpu_seconds=budget_s + 5
         )
-        buf, out, events, killed = b"", [], [], False
+        buf, out, events, killed, total = b"", [], [], False, 0
         while True:
             remaining = budget_s - (time.monotonic() - t0)
             if remaining <= 0:
@@ -234,6 +240,10 @@ def run_stream(
                 except OSError:
                     break
                 if not data:
+                    break
+                total += len(data)
+                if total > MAX_OUTPUT_BYTES:
+                    killed = True  # flooding: killed below, output so far is what is kept
                     break
                 buf += data
                 while b"\n" in buf:
@@ -402,6 +412,7 @@ class WarmWorker:
 
     def __init__(self, runner: lane.LeanRunner, worker_source: Path) -> None:
         self._runner, self._source = runner, worker_source.resolve()
+        self._lock = threading.RLock()  # one request at a time on the process
         self._start()
 
     def alive(self) -> bool:
@@ -433,6 +444,7 @@ class WarmWorker:
         )
         t0 = time.monotonic()
         self._buf = b""
+        self._req_bytes = 0
         self._dog = sandbox.Watchdog(
             self.proc,
             rss_bytes=sandbox.default_rss_bytes(),
@@ -470,6 +482,10 @@ class WarmWorker:
         reason = next((ln for ln in out.splitlines() if "PALS_CHECK_REFUSED" in ln), "no verdict")
         return False, reason.replace("PALS_CHECK_REFUSED", "").strip()
 
+    def prime_checker(self) -> None:
+        """Pay the one-off scan of the environment done by the first statement check."""
+        self.check_statement("True")
+
     def _write(self, text: str, suffix: str) -> Path:
         self._counter += 1
         path = Path(self._dir.name) / f"req{self._counter}.{suffix}"
@@ -477,7 +493,12 @@ class WarmWorker:
         return path
 
     def _request(self, line: str, path: Path, timeout_s: float) -> tuple[str, float]:
+        with self._lock:
+            return self._request_locked(line, path, timeout_s)
+
+    def _request_locked(self, line: str, path: Path, timeout_s: float) -> tuple[str, float]:
         assert self.proc.stdin is not None
+        self._req_bytes = 0
         t0 = time.monotonic()
         try:
             self.proc.stdin.write((line + "\n").encode())
@@ -516,6 +537,10 @@ class WarmWorker:
             if not data:
                 self._reap()
                 raise RuntimeError(f"warm worker exited ({self._dog.reason or 'died'})")
+            self._req_bytes += len(data)
+            if self._req_bytes > MAX_OUTPUT_BYTES:
+                self._reap()
+                raise RuntimeError("warm worker output too large")
             self._buf += data
         raw, self._buf = self._buf.split(b"\n", 1)
         return raw.decode(errors="replace")

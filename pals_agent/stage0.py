@@ -24,6 +24,7 @@ import contextvars
 import hashlib
 import os
 import re
+import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -33,6 +34,7 @@ from pals_agent import automation_portfolio as ap
 from pals_agent import fidelity_gate as gate
 from pals_agent import general_recipe_lane as lane
 from pals_agent import portfolio_explanation as expl
+from pals_agent import sandbox
 from pals_agent.recipe_instantiation import InstantiationRejected
 from pals_agent.statement_normalise import equivalence_source, hoist_lets
 
@@ -98,6 +100,17 @@ class Stage0Result:
         return out
 
 
+@dataclass(slots=True)
+class _Req:
+    """The workers ONE request uses.  Per-request state lives here, never on the Stage0."""
+
+    search: ap.WarmWorker
+    verify: ap.WarmWorker
+
+
+MAX_CONCURRENT_DEFAULT: Final = 2
+
+
 class Stage0:
     """Stage 0.  ``require_flags`` (default True) makes ``run`` inert unless BOTH
     ``PALS_STAGE0_PORTFOLIO`` and ``PALS_GENERAL_RECIPE_LANE`` are on; measurement scripts and
@@ -115,38 +128,43 @@ class Stage0:
         worker_factory: Callable[[], ap.WarmWorker] | None = None,
         exact_in_fresh_search: bool = False,
         prefetch: bool = True,
+        max_concurrent: int = MAX_CONCURRENT_DEFAULT,
     ) -> None:
+        sandbox.require_containment()  # fail closed: no backend, no stage 0
         self.worker, self.pool, self.model = worker, pool, model
         # With a factory, every model- or learner-written statement gets TWO fresh sandboxed
         # workers started while the formalisation is still running: a search worker and a clean
         # verifier that re-checks the answer.  Without one (tests), both are `worker`.
         self.worker_factory = worker_factory
         self.exact_in_fresh_search = exact_in_fresh_search
-        self._search: ap.WarmWorker = worker
-        self._verify: ap.WarmWorker = worker
         # Start-up (the Mathlib import) is paid off the request path: the next request's pair is
         # started right after a request ends.  Each pair serves exactly ONE request, then dies.
         self.prefetch = prefetch and worker_factory is not None
         self._ready: list[Any] = []
+        self._lock = threading.Lock()  # guards `_ready`
         self._starter = futures.ThreadPoolExecutor(max_workers=2)
+        # Admission: a model-written request holds TWO fresh Mathlib processes (7-9 GiB each) and
+        # one more pair may be prefetched, so processes <= 2 * max_concurrent + 2 (+1 shared).
+        self._admission = threading.BoundedSemaphore(max(1, max_concurrent))
         self.require_flags = require_flags
         self.bound_recipes = bound_recipes  # many-alternative Recipe closers (off: costly)
         self.roundtrip_mode = roundtrip_mode  # "two_calls" (blind paraphrase) | "single"
 
     # -- helpers -----------------------------------------------------------------------------
-    def _lemma_info(self, solved: ap.SolveResult) -> expl.LemmaInfo | None:
+    def _lemma_info(self, req: _Req, solved: ap.SolveResult) -> expl.LemmaInfo | None:
         if not solved.lemma:
             return None
         try:
-            output, _ = self._verify.check(expl.lemma_probe_source(solved.lemma), timeout_s=10.0)
+            output, _ = req.verify.check(expl.lemma_probe_source(solved.lemma), timeout_s=10.0)
         except (TimeoutError, ValueError):
             return expl.LemmaInfo(solved.lemma, call=solved.call or "")
         return expl.parse_lemma_probe(solved.lemma, output, solved.call or "")
 
     def _ensure_worker(self) -> None:
-        if not self.worker.alive():
-            self.worker.restart()
-            self.worker.prewarm_search()
+        with self._lock:  # concurrent catalog requests must not both restart the shared worker
+            if not self.worker.alive():
+                self.worker.restart()
+                self.worker.prewarm_search()
 
     def _portfolio(self) -> tuple[ap.Tactic, ...]:
         """``exact?`` needs a ~12-15 s index build: not in a fresh per-request worker by default."""
@@ -155,14 +173,16 @@ class Stage0:
         return ap.PORTFOLIO
 
     def _take_pair(self, submit: Any) -> list[Any]:
-        if self._ready:
+        with self._lock:
             pair, self._ready = self._ready, []
+        if pair:
             return pair
         return [submit(self._spawn_search), submit(self._spawn_verify)]
 
     def close(self) -> None:
         """Close any prefetched, unused workers."""
-        pair, self._ready = self._ready, []
+        with self._lock:
+            pair, self._ready = self._ready, []
         self._release_futures(pair)
         self._starter.shutdown(wait=True)
 
@@ -175,9 +195,11 @@ class Stage0:
 
     def _spawn_verify(self) -> ap.WarmWorker:
         assert self.worker_factory is not None
-        return self.worker_factory()
+        verifier = self.worker_factory()
+        verifier.prime_checker()  # off the request path
+        return verifier
 
-    def _refused_by_lean(self, *terms: str | None) -> str | None:
+    def _refused_by_lean(self, req: _Req, *terms: str | None) -> str | None:
         """Parse-only allow-list check of every model/user-written term, in the CLEAN worker.
 
         Nothing the model wrote is elaborated anywhere before this returns True; the Python
@@ -186,24 +208,28 @@ class Stage0:
         for term in terms:
             if not term:
                 continue
+            try:  # layer 0 FIRST (length and token limits, characters): Lean never sees more
+                text = ap.check_formal_statement(term)
+            except InstantiationRejected:
+                return "statement_not_plain"
             try:
-                ok, reason = self._verify.check_statement(" ".join(term.split()))
+                ok, reason = req.verify.check_statement(" ".join(text.split()))
             except (TimeoutError, RuntimeError, ValueError):
                 return "lean_check_unavailable"
             if not ok:
                 return f"statement_refused_by_lean_check: {reason}"[:160]
         return None
 
-    def _agree(self, first: str, second: str, deadline: float) -> bool:
+    def _agree(self, req: _Req, first: str, second: str, deadline: float) -> bool:
         text, _ = gate.equivalence_source(first, second)
         remaining = max(0.5, deadline - time.monotonic())
         try:
-            output, _ = self._search.check(text, timeout_s=min(20.0, remaining))
+            output, _ = req.search.check(text, timeout_s=min(20.0, remaining))
         except (TimeoutError, RuntimeError):
             return False
         return gate.equivalence_verdict(output)
 
-    def _vacuous(self, formal: str, deadline: float) -> bool:
+    def _vacuous(self, req: _Req, formal: str, deadline: float) -> bool:
         """True when simple automation refutes the hypotheses (the theorem says nothing)."""
         probe = gate.vacuity_probe(formal)
         if probe is None:
@@ -213,7 +239,7 @@ class Stage0:
             solved = ap.solve_warm(
                 probe,
                 [],
-                self._search,
+                req.search,
                 portfolio=quick,
                 deadline=min(deadline, time.monotonic() + 3.0),
             )
@@ -252,6 +278,7 @@ class Stage0:
         result = Stage0Result("fallthrough", formal_source="given" if given else "formalised")
         calls = 0
         spawned: list[Any] = []
+        admitted = False
         pool = futures.ThreadPoolExecutor(max_workers=7)
 
         def submit(fn: Any, *args: Any) -> Any:
@@ -264,9 +291,15 @@ class Stage0:
             if self.model is None:
                 result.reason = "no_model_for_formalisation"
                 return result
+            if self.worker_factory is None:  # never the shared persistent worker for model text
+                result.reason = "no_fresh_worker_factory"
+                return result
+            if not self._admission.acquire(blocking=False):
+                result.reason = "busy"  # stage 0 never queues: the normal pipeline continues
+                return result
+            admitted = True
             t1 = time.monotonic()
-            if self.worker_factory is not None:  # concurrent with the formalisation call
-                spawned.extend(self._take_pair(submit))
+            spawned.extend(self._take_pair(submit))  # concurrent with the formalisation call
             first_f = submit(gate.formalise_typed, self.model, request, 0)
             second_f = submit(gate.formalise_typed, self.model, request, 1)
             first = first_f.result(timeout=max(1.0, deadline - time.monotonic()))
@@ -278,20 +311,16 @@ class Stage0:
                     "explain_request" if first.kind == "explain" else "formalisation_empty"
                 )
                 return result
-            if spawned:
-                try:
-                    self._search = spawned[0].result(timeout=180.0)
-                    self._verify = spawned[1].result(timeout=180.0)
-                except Exception:  # noqa: BLE001
-                    result.reason = "worker_unavailable"
-                    return result
-            if self.worker_factory is None:  # fresh workers need no shared one
-                self._ensure_worker()
-            refused = self._refused_by_lean(first.formal, first.expression)
+            try:
+                req = _Req(spawned[0].result(timeout=180.0), spawned[1].result(timeout=180.0))
+            except Exception:  # noqa: BLE001
+                result.reason = "worker_unavailable"
+                return result
+            refused = self._refused_by_lean(req, first.formal, first.expression)
             if refused is not None:
                 result.reason = refused
                 return result
-            statement = self._statement(result, first, deadline)
+            statement = self._statement(req, result, first, deadline)
             if statement is None:
                 return result
             result.formal = statement
@@ -306,20 +335,22 @@ class Stage0:
             ]
             calls += 1 + (1 if self.roundtrip_mode == "single" else 2)
             t2 = time.monotonic()
-            proved = self._prove(result, first.kind, statement, deadline)
+            proved = self._prove(req, result, first.kind, statement, deadline)
             result.seconds["portfolio"] = round(time.monotonic() - t2, 3)
             if proved is None:
                 return result
-            if not self._recheck(result, proved):
+            if not self._recheck(req, result, proved):
                 return result
-            self._gate(result, request, first, second_f, checks, deadline)
+            self._gate(req, result, request, first, second_f, checks, deadline)
             if result.gate is None or not result.gate.passed:
                 result.reason = "fidelity_gate_failed"
                 return result
-            self._explain(result, language, proved, unverified=True)
+            self._explain(result, language, proved, unverified=True, req=req)
             return result
         finally:
             self._release_fresh(spawned)
+            if admitted:
+                self._admission.release()
             result.model_calls = calls
             result.seconds["total"] = round(time.monotonic() - t0, 3)
             pool.shutdown(wait=False, cancel_futures=True)
@@ -330,18 +361,20 @@ class Stage0:
             worker.close()
         except Exception:  # noqa: BLE001 - killing is best effort
             with contextlib.suppress(Exception):
-                worker.proc.kill()
-                worker.proc.wait(timeout=5)
+                sandbox.kill_group(worker.proc)
+            with contextlib.suppress(Exception):
+                worker._dir.cleanup()  # the scratch directory goes with the process
 
     def _release_fresh(self, spawned: list[Any]) -> None:
         """Close every per-request worker, including ones whose start-up is still running."""
         self._release_futures(spawned)
-        self._search = self._verify = self.worker
-        if self.prefetch and not self._ready:
-            self._ready = [
-                self._starter.submit(self._spawn_search),
-                self._starter.submit(self._spawn_verify),
-            ]
+        if self.prefetch:
+            with self._lock:
+                if not self._ready:
+                    self._ready = [
+                        self._starter.submit(self._spawn_search),
+                        self._starter.submit(self._spawn_verify),
+                    ]
 
     def _release_futures(self, spawned: list[Any]) -> None:
         for future in spawned:
@@ -355,10 +388,21 @@ class Stage0:
                     lambda f: self._close(f.result()) if not f.exception() else None
                 )
 
-    def _recheck(self, result: Stage0Result, solved: ap.SolveResult) -> bool:
+    def _recheck(self, req: _Req, result: Stage0Result, solved: ap.SolveResult) -> bool:
         """Re-prove the accepted answer in the clean verifier worker; the verdict is THIS one."""
         statement = result.formal_proved or ""
-        ok, reason = ap.recheck(self._verify, statement, solved)
+        if solved.by == "exact?":  # the search worker's text: both layers before the verifier
+            try:
+                tactic = ap.replay_tactic(solved) or ""
+                call = tactic.rsplit("exact ", 1)[-1]
+            except InstantiationRejected:
+                result.reason, result.outcome = "recheck_failed:exact_call_not_plain", "fallthrough"
+                return False
+            refused = self._refused_by_lean(req, call)
+            if refused is not None:
+                result.reason, result.outcome = f"recheck_failed:{refused}", "fallthrough"
+                return False
+        ok, reason = ap.recheck(req.verify, statement, solved)
         if not ok:
             result.reason = f"recheck_failed:{reason}"
             result.outcome = "fallthrough"
@@ -374,13 +418,13 @@ class Stage0:
         return fn(self.model, request, statement, language, intent)
 
     def _statement(
-        self, result: Stage0Result, first: gate.TypedFormal, deadline: float
+        self, req: _Req, result: Stage0Result, first: gate.TypedFormal, deadline: float
     ) -> str | None:
         """The statement the gate and the proof are about (None: no statement, fall through)."""
         if first.kind != "compute":
             return first.formal
         try:
-            value = ap.derive_value(self._search, first.expression, first.type, deadline=deadline)
+            value = ap.derive_value(req.search, first.expression, first.type, deadline=deadline)
             if value is None:
                 result.reason = "value_not_derived"
                 return None
@@ -391,17 +435,17 @@ class Stage0:
             return None
 
     def _prove(
-        self, result: Stage0Result, kind: str, statement: str, deadline: float
+        self, req: _Req, result: Stage0Result, kind: str, statement: str, deadline: float
     ) -> ap.SolveResult | None:
         """Prove the statement; for a question, attempt P and not-P, exactly one may be proved."""
         solved = ap.solve_warm(
-            statement, [], self._search, deadline=deadline, portfolio=self._portfolio()
+            statement, [], req.search, deadline=deadline, portfolio=self._portfolio()
         )
         if kind == "decide":
             negated = ap.solve_warm(
                 f"¬ ({statement})",
                 [],
-                self._search,
+                req.search,
                 deadline=min(deadline, time.monotonic() + 4.0),
                 portfolio=tuple(t for t in self._portfolio() if t.name != "exact?"),
             )
@@ -476,13 +520,20 @@ class Stage0:
         return (preamble + "\n" if preamble else "") + hoisted
 
     def _explain(
-        self, result: Stage0Result, language: str, solved: ap.SolveResult, *, unverified: bool
+        self,
+        result: Stage0Result,
+        language: str,
+        solved: ap.SolveResult,
+        *,
+        unverified: bool,
+        req: _Req | None = None,
     ) -> None:
+        req = req or _Req(self.worker, self.worker)  # catalog statements: the shared worker
         if solved.route == "recipe":
             result.outcome, result.reason = "verified_needs_explanation", "recipe_answer_text"
             return
         proved = result.formal_proved or result.formal or ""
-        info = self._lemma_info(solved) if solved.by == "exact?" else None
+        info = self._lemma_info(req, solved) if solved.by == "exact?" else None
         if result.kind == "compute" and result.expression and result.value:
             text: str | None = expl.render_compute(
                 language, result.expression, result.value, unverified_formalisation=unverified
@@ -507,6 +558,7 @@ class Stage0:
 
     def _gate(
         self,
+        req: _Req,
         result: Stage0Result,
         request: str,
         first: gate.TypedFormal,
@@ -529,13 +581,13 @@ class Stage0:
                 return default
 
         second = wait(second_f, None)
-        if second is not None and self._refused_by_lean(second.formal, second.expression):
+        if second is not None and self._refused_by_lean(req, second.formal, second.expression):
             second = None  # the second formalisation is model text too: refused, so no agreement
         g.numerals_signal = gate.numerals_signal(request, statement)
-        g.agree = self._agrees(first, second, result.value, deadline)
+        g.agree = self._agrees(req, first, second, result.value, deadline)
         g.structure = gate.structure_check(request, statement)
         g.triviality = gate.triviality_check(statement)
-        if first.kind != "compute" and not g.triviality and self._vacuous(statement, deadline):
+        if first.kind != "compute" and not g.triviality and self._vacuous(req, statement, deadline):
             g.triviality.append("hypotheses_vacuous")
         g.reviewed, g.review_issue = wait(checks[0], (False, "review_unavailable"))
         g.roundtrip, g.roundtrip_issue = wait(checks[1], (False, "roundtrip_unavailable"))
@@ -563,6 +615,7 @@ class Stage0:
 
     def _agrees(
         self,
+        req: _Req,
         first: gate.TypedFormal,
         second: gate.TypedFormal | None,
         own_value: str | None,
@@ -573,7 +626,7 @@ class Stage0:
         if first.kind == "compute":
             try:
                 other = ap.derive_value(
-                    self._search, second.expression, second.type, deadline=deadline
+                    req.search, second.expression, second.type, deadline=deadline
                 )
             except InstantiationRejected:
                 return False
@@ -582,4 +635,4 @@ class Stage0:
                 and "".join(other.split()) == "".join((own_value or "").split())
                 and second.type == first.type
             )
-        return bool(second.formal) and self._agree(first.formal, second.formal, deadline)
+        return bool(second.formal) and self._agree(req, first.formal, second.formal, deadline)

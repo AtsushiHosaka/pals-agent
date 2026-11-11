@@ -1,5 +1,8 @@
 # 独立レビュー(2回目)への対応と再測定 (2026-11-11)
 
+> **訂正(3回目のレビュー後、[stage0-review3-fixes](stage0-review3-fixes-2026-11-11.md))**: 層 1 は「`unsafe`・`partial`・型に不適切な定数を**常に**拒否する」ものではない。拒否するのは、解決できた識別子の定数(型の1段まで)と、限定した名前空間のフィールド名である。推移的な型の検査と、解決できない名前、他の名前空間の型の束縛変数へのフィールド参照は検査しない。また Mac のサンドボックスは境界でなく開発用の補助で、段階0は封じ込めの backend がなければ起動しない。
+
+
 前: [stage0-coverage-2026-11-11.md](stage0-coverage-2026-11-11.md)。フラグ既定 off、デプロイなし、カタログ追加なし。本番経路から到達できるものはない(`ProofReuseRuntime.stage0_input` の1か所だけ。既定では何も import せず何も評価しない)。
 
 **CI の緑は実 Lean のテストを動かさない**(`tests/qualification/agent_regression_manifest.json` の skip 一覧)。CI が守るのは Python 側の文法と段階0の制御だけで、Lean 側の許可リストとサンドボックスは、この PR の実 Lean テスト(ローカル、macOS)でしか確かめていない。

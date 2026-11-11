@@ -2,13 +2,22 @@
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 from pals_agent import automation_portfolio as ap
 from pals_agent import fidelity_gate as gate
 from pals_agent import portfolio_explanation as expl
-from pals_agent import stage0
+from pals_agent import sandbox, stage0
+
+
+@pytest.fixture(autouse=True)
+def _contained():
+    """The fakes never launch a process; Stage0 refuses to be built without a backend (review 3)."""
+    with sandbox.test_only_assume_contained():
+        yield
+
 
 CASES = json.loads(
     (
@@ -41,6 +50,9 @@ class FakeWorker:
         if any(bad in term for bad in self.refuse):
             return False, "PALS_CHECK_REFUSED syntax kind by_elab"
         return True, ""
+
+    def prime_checker(self):
+        pass
 
     def close(self):
         self.closed = True
@@ -109,7 +121,10 @@ def model_factory(formal_a, formal_b, faithful=True, roundtrip=True):
 
 
 def make(worker, pool, model):
-    return stage0.Stage0(worker, pool, model, require_flags=False)
+    # model-written statements need a fresh-worker factory: the fake serves as every worker
+    return stage0.Stage0(
+        worker, pool, model, require_flags=False, worker_factory=lambda: worker, prefetch=False
+    )
 
 
 def test_flag_default_off():
@@ -621,3 +636,155 @@ def test_prefetched_workers_serve_exactly_one_request_and_unused_ones_are_closed
     stage.close()  # the pair prefetched after the second request is closed unused
     assert len(made) == 6 and all(w.closed for w in made)
     assert len({id(w) for w in made}) == 6  # no worker object served two requests
+
+
+# --- review 3, item 2: reentrancy, mandatory fresh workers, admission cap ----------------------
+import threading  # noqa: E402
+
+
+def blocking_model(inner, started: list, release: threading.Event):
+    def model(prompt, schema):
+        if "kind" in schema["properties"]:
+            started.append(1)
+            release.wait(timeout=20)
+        return inner(prompt, schema)
+
+    return model
+
+
+def test_a_model_statement_never_falls_back_to_the_shared_worker():
+    shared = FakeWorker()
+    stage = stage0.Stage0(shared, [], model_factory(S, S), require_flags=False)  # no factory
+    result = stage.run("x", "en")
+    assert result.outcome == "fallthrough" and result.reason == "no_fresh_worker_factory"
+    assert shared.texts == [] and shared.checked == []
+
+
+def test_concurrent_runs_keep_their_own_workers_and_do_not_close_each_others():
+    made: list[FakeWorker] = []
+    lock = threading.Lock()
+
+    def factory():
+        worker = FakeWorker()
+        with lock:
+            made.append(worker)
+        return worker
+
+    shared, started, release = FakeWorker(), [], threading.Event()
+    stage = stage0.Stage0(
+        shared,
+        [],
+        blocking_model(model_factory(S, S), started, release),
+        require_flags=False,
+        worker_factory=factory,
+        prefetch=False,
+        max_concurrent=2,
+    )
+    results: list = []
+    threads = [threading.Thread(target=lambda: results.append(stage.run("x", "en"))) for _ in "ab"]
+    for t in threads:
+        t.start()
+    for _ in range(200):  # both runs are inside their formalisation call
+        if len(started) >= 4:
+            break
+        threading.Event().wait(0.05)
+    release.set()
+    for t in threads:
+        t.join(timeout=30)
+    assert [r.outcome for r in results] == ["answered", "answered"]
+    assert shared.texts == [] and shared.checked == [], "the shared worker is never used"
+    assert len(made) == 4 and len({id(w) for w in made}) == 4 and all(w.closed for w in made)
+    # each pair served one run: the search worker saw the proof, the verifier the re-check
+    assert sum(1 for w in made if any("_pals_final" in t for t in w.texts)) == 2
+
+
+def test_admission_cap_turns_the_excess_request_away_without_starting_workers():
+    made: list[FakeWorker] = []
+
+    def factory():
+        made.append(FakeWorker())
+        return made[-1]
+
+    started, release = [], threading.Event()
+    stage = stage0.Stage0(
+        FakeWorker(),
+        [],
+        blocking_model(model_factory(S, S), started, release),
+        require_flags=False,
+        worker_factory=factory,
+        prefetch=False,
+        max_concurrent=1,
+    )
+    first: list = []
+    t = threading.Thread(target=lambda: first.append(stage.run("x", "en")))
+    t.start()
+    for _ in range(200):
+        if started:
+            break
+        threading.Event().wait(0.05)
+    before = len(made)
+    busy = stage.run("x", "en")
+    assert busy.outcome == "fallthrough" and busy.reason == "busy" and len(made) == before
+    release.set()
+    t.join(timeout=30)
+    assert first[0].outcome == "answered"
+    assert stage.run("x", "en").outcome == "answered"  # the slot is released afterwards
+
+
+def test_a_worker_that_cannot_close_is_killed_and_its_scratch_directory_removed(tmp_path):
+    import subprocess
+
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    (scratch / "req1.lean").write_text("x")
+
+    class Stuck:
+        proc = subprocess.Popen(["/bin/sleep", "60"], start_new_session=True)
+        _dir = SimpleNamespace(cleanup=lambda: __import__("shutil").rmtree(scratch))
+
+        def close(self):
+            raise RuntimeError("close failed")
+
+    stage0.Stage0._close(Stuck())
+    assert Stuck.proc.poll() is not None and not scratch.exists()
+
+
+# --- review 3, items 5 and 6: layer 0 before layer 1 everywhere ---------------------------------
+def test_an_oversized_statement_is_stopped_in_python_before_lean_sees_it():
+    """20000 nested parentheses aborted the Lean worker with a stack overflow."""
+    deep = "(" * 20000 + "1" + ")" * 20000 + " = 1"
+    made: list[FakeWorker] = []
+    stage = fresh_stage0(model_factory(deep, deep), made)
+    result = stage.run("x", "en")
+    assert result.outcome == "fallthrough" and result.reason == "statement_not_plain"
+    assert all(w.checked == [] and w.texts == [] for w in made)
+
+
+def test_the_second_formalisation_goes_through_layer_zero_before_the_lean_check():
+    payload = "∀ x : ℕ, x = by_elab (pure x)"
+    made: list[FakeWorker] = []
+    stage = fresh_stage0(model_factory(S, payload), made)
+    result = stage.run("x", "en")
+    assert result.outcome == "fallthrough" and "formalisations_disagree" in result.gate.reasons
+    assert all(payload not in c for w in made for c in w.checked), "never sent to Lean"
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        "by_elab (pure x)",
+        "_root_.IO.FS.writeFile x y",
+        "(by simp)",
+        "foo\nbar",
+    ],
+)
+def test_an_exact_call_from_the_search_worker_passes_both_layers_before_the_verifier(call):
+    made: list[FakeWorker] = []
+    stage = fresh_stage0(model_factory(S, S), made)
+    result = stage0.Stage0Result("fallthrough", formal_proved=S)
+    solved = ap.SolveResult(outcome="answered", route="portfolio", by="exact?", call=call)
+    req = stage0._Req(FakeWorker(), FakeWorker(refuse=("by_elab", "_root_", "by simp")))
+    assert not stage._recheck(req, result, solved)
+    assert result.reason.startswith("recheck_failed")
+    assert not any("_pals_final" in t for t in req.verify.texts), "never elaborated"
+    stage.close()
