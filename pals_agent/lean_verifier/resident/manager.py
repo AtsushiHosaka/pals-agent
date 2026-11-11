@@ -228,8 +228,8 @@ class ResidentLean:
     def _confinement_self_test(self) -> None:
         """Prove, with a real child, that confinement holds before anything is served.
 
-        One request directory may be written, a second one (another request's) may not.  Both
-        outcomes are read from the file system, not from a flag.
+        One request directory may be written, a second one (another request's) may not (Landlock,
+        read from the file system), and a child may not start a process (seccomp, EPERM).
         """
         root = self.config.request_root
         assert root is not None
@@ -242,7 +242,9 @@ class ResidentLean:
             source.write_text(
                 "import Mathlib\n"
                 f'#eval show IO Unit from IO.FS.writeFile "{own}/ok" "x"\n'
-                f'#eval show IO Unit from IO.FS.writeFile "{other}/no" "x"\n',
+                f'#eval show IO Unit from IO.FS.writeFile "{other}/no" "x"\n'
+                # seccomp: starting a process (exec) must be refused with EPERM
+                '#eval show IO Unit from do discard <| IO.Process.output {cmd := "/bin/true"}\n',
                 encoding="utf-8",
             )
             outcome = self.compile(source, workdir=own, olean=None, timeout_s=60)
@@ -250,7 +252,8 @@ class ResidentLean:
                 not outcome.aborted
                 and (own / "ok").is_file()
                 and not (other / "no").exists()
-                and "permission denied" in outcome.stdout
+                and "permission denied" in outcome.stdout  # Landlock
+                and "not permitted" in outcome.stdout  # seccomp
             )
         finally:
             shutil.rmtree(own, ignore_errors=True)

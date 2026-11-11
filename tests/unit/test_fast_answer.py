@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -107,7 +108,11 @@ def fake_model(script: dict):  # type: ignore[no-untyped-def]
         if prompt.startswith("Classify the request, translate"):
             return script["merged"]
         if prompt.startswith("Write the explanation"):
-            return {"explanation": "Because n + 0 = n by definition."}
+            return {
+                "overview": "Take $n$.",
+                "sections": ["Then $n + 0 = n$ by definition of addition."],
+                "conclusion": "So the claim holds.",
+            }
         if "paraphrase" in str(schema.get("properties", {})):
             return {"paraphrase": "p", "differences": "none", "faithful": True}
         return {"faithful": script.get("faithful", True), "issue": ""}
@@ -176,3 +181,58 @@ def test_a_question_is_answered_no_by_proving_the_negation(fast) -> None:  # typ
     result = answer.run("Is x ↦ x² injective on the reals?", "en")
     assert result.outcome == "answered" and result.answer == "no"
     assert result.proved is not None and result.proved.startswith("¬")
+
+
+# ------------------------------------------------------------------ fallback race (no Lean needed)
+class _FakeFast:
+    def __init__(self, outcome: str, seconds: float, usage: int = 1) -> None:
+        self.outcome, self.seconds, self.usage = outcome, seconds, usage
+
+    def run(self, request: str, language: str):  # type: ignore[no-untyped-def]
+        from pals_agent.usage import forward_usage
+
+        time.sleep(self.seconds)
+        forward_usage([{"model": "fast", "input_tokens": 10, "output_tokens": 5}] * self.usage)
+        return fa.FastAnswerResult(self.outcome, None if self.outcome == "answered" else "x")
+
+
+def _normal(duration: float, stops: list[bool]):  # type: ignore[no-untyped-def]
+    def run(cancel, deadline):  # type: ignore[no-untyped-def]
+        from pals_agent.usage import forward_usage
+
+        forward_usage([{"model": "normal", "input_tokens": 100, "output_tokens": 50}])
+        end = time.monotonic() + duration
+        while time.monotonic() < min(end, deadline):
+            if cancel.is_set():
+                stops.append(True)
+                return None
+            time.sleep(0.01)
+        return "normal answer" if time.monotonic() < deadline else None  # out of time: no answer
+
+    return run
+
+
+def test_a_verified_fast_answer_cancels_the_normal_path_and_both_spends_are_counted() -> None:
+    stops: list[bool] = []
+    outcome = fa.run_with_fallback(
+        _FakeFast("answered", 0.1), "q", "en", _normal(5.0, stops), deadline_s=10.0
+    )
+    assert outcome.winner == "fast" and stops == [True] and outcome.seconds["total"] < 2.0
+    assert sorted(r["model"] for r in outcome.usage) == ["fast", "normal"]
+
+
+def test_a_fast_failure_costs_nothing_extra_because_the_normal_path_already_runs() -> None:
+    outcome = fa.run_with_fallback(
+        _FakeFast("fallthrough", 0.2), "q", "en", _normal(0.5, []), deadline_s=10.0
+    )
+    # total = the normal path alone (0.5 s), not 0.2 s of fast work plus a 0.5 s start afterwards
+    assert outcome.winner == "fallback" and outcome.fallback_result == "normal answer"
+    assert outcome.seconds["total"] < 0.7
+
+
+def test_the_shared_deadline_ends_both_paths() -> None:
+    stops: list[bool] = []
+    outcome = fa.run_with_fallback(
+        _FakeFast("fallthrough", 0.1), "q", "en", _normal(30.0, stops), deadline_s=0.5
+    )
+    assert outcome.winner == "none" and outcome.seconds["total"] < 2.0

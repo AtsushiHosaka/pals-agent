@@ -67,14 +67,18 @@ class Recorder:
         self.t0 = time.monotonic()
         self.events: list[dict[str, Any]] = []
         self.lock = threading.Lock()
+        self.generation = 0
 
     def reset(self) -> None:
+        """Start the next item: calls that began earlier no longer write into its record."""
         with self.lock:
             self.t0 = time.monotonic()
             self.events = []
+            self.generation += 1
 
 
 def instrumented_model(key: str, recorder: Recorder, default: str, overrides: dict[str, str]):
+    from pals_agent import usage as usage_module  # noqa: PLC0415
     from pals_agent.model_roles import ModelRole, fixed_model_default  # noqa: PLC0415
     from pals_agent.openai import OpenAIResponsesClient  # noqa: PLC0415
     from pals_agent.usage import usage_scope  # noqa: PLC0415
@@ -93,6 +97,9 @@ def instrumented_model(key: str, recorder: Recorder, default: str, overrides: di
         model, effort = parse(overrides.get(label, default))
         client = dataclasses.replace(base, reasoning_effort=effort)  # type: ignore[arg-type]
         rows: list[dict[str, Any]] = []
+        outer = usage_module._reporter.get()  # the budget reporter of the caller, if any
+        with recorder.lock:
+            generation, t_zero = recorder.generation, recorder.t0
         start = time.monotonic()
         error = None
         try:
@@ -109,21 +116,26 @@ def instrumented_model(key: str, recorder: Recorder, default: str, overrides: di
             raise
         finally:
             end = time.monotonic()
+            if outer is not None:
+                for row in rows:  # the nested scope above hid them from the budget
+                    outer(dict(row))
             with recorder.lock:
-                recorder.events.append(
-                    {
-                        "label": label,
-                        "model": model,
-                        "effort": effort,
-                        "prompt_chars": len(prompt),
-                        "input_tokens": sum(r.get("input_tokens", 0) for r in rows),
-                        "output_tokens": sum(r.get("output_tokens", 0) for r in rows),
-                        "start": round(start - recorder.t0, 3),
-                        "end": round(end - recorder.t0, 3),
-                        "seconds": round(end - start, 3),
-                        "error": error,
-                    }
-                )
+                # a late call of an earlier item: its spend counts, its record does not
+                if recorder.generation == generation:
+                    recorder.events.append(
+                        {
+                            "label": label,
+                            "model": model,
+                            "effort": effort,
+                            "prompt_chars": len(prompt),
+                            "input_tokens": sum(r.get("input_tokens", 0) for r in rows),
+                            "output_tokens": sum(r.get("output_tokens", 0) for r in rows),
+                            "start": round(start - t_zero, 3),
+                            "end": round(end - t_zero, 3),
+                            "seconds": round(end - start, 3),
+                            "error": error,
+                        }
+                    )
 
     return call
 

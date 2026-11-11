@@ -43,6 +43,13 @@ def main() -> None:
     parser.add_argument("--no-speculative-gate", action="store_true")
     parser.add_argument("--no-explain", action="store_true")
     parser.add_argument("--repeats", type=int, default=1)
+    parser.add_argument("--ids", help="comma-separated id prefixes (overrides --items)")
+    parser.add_argument("--max-usd", type=float, default=0.9)
+    parser.add_argument(
+        "--review-explanation",
+        action="store_true",
+        help="pass the explanation through the existing explanation review (explanations.py)",
+    )
     parser.add_argument(
         "--toolchain", default=str(Path.home() / ".elan/toolchains/leanprover--lean4---v4.32.0-rc1")
     )
@@ -85,7 +92,22 @@ def main() -> None:
         resident=resident,
     )
     recorder = Recorder()
-    model = instrumented_model(load_key(args.env_file), recorder, args.default, overrides)
+    key = load_key(args.env_file)
+    model = instrumented_model(key, recorder, args.default, overrides)
+    reviewer = None
+    if args.review_explanation:
+        import dataclasses  # noqa: PLC0415
+
+        from pals_agent.fast_answer import existing_explanation_reviewer  # noqa: PLC0415
+        from pals_agent.model_roles import ModelRole, fixed_model_default  # noqa: PLC0415
+        from pals_agent.openai import OpenAIResponsesClient  # noqa: PLC0415
+
+        binding = fixed_model_default(ModelRole.EXPLAIN)
+        client = dataclasses.replace(
+            OpenAIResponsesClient(api_key=key, timeout_seconds=60.0, max_output_tokens=3000),
+            reasoning_effort=binding.reasoning_effort,
+        )
+        reviewer = existing_explanation_reviewer(client)
     fast = FastAnswer(
         resident,
         verifier,
@@ -97,20 +119,40 @@ def main() -> None:
         gate_mode=args.gate_mode,
         speculative_gate=not args.no_speculative_gate,
         race_budget_s=args.race_budget,
+        explanation_reviewer=reviewer,
     )
+    from pals_agent.evals.runner import estimate_usd  # noqa: PLC0415
+    from pals_agent.usage import usage_scope  # noqa: PLC0415
+
+    spent = [0.0]
+    item_rows: list[dict] = []
+    lock = __import__("threading").Lock()
+
+    def add(row: dict) -> None:
+        usd = estimate_usd(row["model"], row["input_tokens"], row["output_tokens"]) or 0.0
+        with lock:
+            spent[0] += usd
+            item_rows.append(row)
+
     problems = json.loads((ROOT / "testdata/generation-eval-v1/manifest.json").read_text())[
         "problems"
     ]
-    with (args.out / f"{args.name}.jsonl").open("a") as fh:
+    ids = args.ids.split(",") if args.ids else SETS[args.items]
+    with usage_scope(add), (args.out / f"{args.name}.jsonl").open("a") as fh:
         for repeat in range(args.repeats):
-            for pid in SETS[args.items]:
+            for pid in ids:
+                if spent[0] >= args.max_usd:
+                    print("budget reached", round(spent[0], 4), flush=True)
+                    break
                 p = next(x for x in problems if x["id"].startswith(pid))
                 if p.get("fixed_lean_statement"):
                     continue  # catalog statements take the FastLane path, not this one
                 if p["split"] != "tuning":
                     continue  # held_out is opened only for a final comparison with a stated reason
                 recorder.reset()
+                item_start = spent[0]
                 r = fast.run(p["statement"], p["language"])
+                time.sleep(0.5)  # let late calls of this item report before the next one starts
                 row = {
                     "variant": args.name,
                     "id": pid,
@@ -130,6 +172,9 @@ def main() -> None:
                     "explanation": r.explanation,
                     "request": p["statement"],
                     "seconds": r.seconds,
+                    "explanation_approved": r.explanation_approved,
+                    "explanation_issue": r.explanation_issue,
+                    "item_usd": round(spent[0] - item_start, 6),
                     "statements": r.statements,
                     "gate": None
                     if r.gate is None
@@ -148,7 +193,7 @@ def main() -> None:
                 fh.flush()
                 print(pid[:34], r.outcome, r.kind, r.tactic, r.reason, r.seconds, flush=True)
                 time.sleep(0.2)
-    print("load", os.getloadavg(), flush=True)
+    print("load", os.getloadavg(), f"spend_est_usd={spent[0]:.4f}", flush=True)
     resident.close()
 
 
