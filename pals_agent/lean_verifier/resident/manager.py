@@ -108,6 +108,10 @@ class ResidentConfig:
     read_roots: tuple[str, ...] = ()
     project_dir: Path | None = None  # the verifier binds to this (see LeanVerifier)
     request_root: Path | None = None  # the tree the request directories live under
+    # Linux only: let an UNCONFINED resident exist.  The default refuses to construct one,
+    # because its children would run untrusted tactics without Landlock/seccomp.  For development
+    # and for tests that do not exercise confinement.
+    allow_unconfined: bool = False
     prebuilt_shim: Path | None = None
     allow_shim_compile: bool = True
     fsize_bytes: int = 16 << 20  # RLIMIT_FSIZE of a child, like the cold path's 16 MiB
@@ -166,6 +170,11 @@ class _Pending:
 
 class ResidentLean:
     def __init__(self, config: ResidentConfig) -> None:
+        if sys.platform.startswith("linux") and not config.confine and not config.allow_unconfined:
+            raise ValueError(
+                "on Linux the resident Lean must be confined (confine=True); "
+                "allow_unconfined=True is for development only"
+            )
         self.config = config
         self._lock = threading.Lock()  # guards _proc/_pending/_children and stdin writes
         self._slots = threading.BoundedSemaphore(config.max_children)
@@ -190,6 +199,10 @@ class ResidentLean:
         started = time.monotonic()
         build = self.config.build_dir
         build.mkdir(parents=True, exist_ok=True)
+        if self.config.confine:
+            ok, reason = confinement_available()
+            if not ok:
+                raise ResidentUnavailable(f"confinement is not available: {reason}")
         self._dylib = self._build_shim()
         worker = build / "worker.lean"
         text = render_worker_source()
@@ -203,12 +216,48 @@ class ResidentLean:
         deadline = time.monotonic() + self.config.startup_timeout_s * MAX_RESTART_ATTEMPTS
         while time.monotonic() < deadline:
             if self._first_ready.wait(0.2):
+                if self.config.confine:
+                    self._confinement_self_test()  # closes and raises if a child is not confined
                 self.startup_s = time.monotonic() - started
                 return self.startup_s
             if self._given_up:
                 break
         self.close()
         raise ResidentUnavailable("resident Lean did not become ready")
+
+    def _confinement_self_test(self) -> None:
+        """Prove, with a real child, that confinement holds before anything is served.
+
+        One request directory may be written, a second one (another request's) may not.  Both
+        outcomes are read from the file system, not from a flag.
+        """
+        root = self.config.request_root
+        assert root is not None
+        own = root / f"pals-selftest-{secrets.token_hex(4)}"
+        other = root / f"pals-selftest-{secrets.token_hex(4)}"
+        own.mkdir(mode=0o700)
+        other.mkdir(mode=0o700)
+        try:
+            source = own / "Main.lean"
+            source.write_text(
+                "import Mathlib\n"
+                f'#eval show IO Unit from IO.FS.writeFile "{own}/ok" "x"\n'
+                f'#eval show IO Unit from IO.FS.writeFile "{other}/no" "x"\n',
+                encoding="utf-8",
+            )
+            outcome = self.compile(source, workdir=own, olean=None, timeout_s=60)
+            confined = (
+                not outcome.aborted
+                and (own / "ok").is_file()
+                and not (other / "no").exists()
+                and "permission denied" in outcome.stdout
+            )
+        finally:
+            shutil.rmtree(own, ignore_errors=True)
+            shutil.rmtree(other, ignore_errors=True)
+        if not confined:
+            self.close()
+            raise ResidentUnavailable("the resident children are not confined")
 
     def _build_shim(self) -> Path:
         cfg = self.config
@@ -614,3 +663,25 @@ def default_read_roots(lean_binary: str, lean_path: str) -> tuple[str, ...]:
     roots += ["/lib", "/lib64", "/usr/lib", "/usr/lib64", "/etc/ld.so.cache"]
     roots += ["/proc", "/sys/devices"]
     return tuple(dict.fromkeys(roots))
+
+
+def confinement_available() -> tuple[bool, str]:
+    """Can this host confine children (Linux with Landlock and libseccomp)?  ``(ok, reason)``.
+
+    A deployment keeps the resident flag off when this is false; ``ResidentLean.start`` also
+    checks it, and then proves confinement with a real child (``_confinement_self_test``).
+    """
+    if not sys.platform.startswith("linux"):
+        return False, "confinement needs Linux"
+    import ctypes
+
+    libc = ctypes.CDLL(None, use_errno=True)
+    libc.syscall.restype = ctypes.c_long
+    abi = libc.syscall(444, ctypes.c_void_p(), ctypes.c_size_t(0), ctypes.c_uint(1))
+    if abi < 1:
+        return False, "Landlock is not available in this kernel or sandbox"
+    try:
+        ctypes.CDLL("libseccomp.so.2")
+    except OSError:
+        return False, "libseccomp.so.2 is not installed"
+    return True, f"Landlock ABI {abi}, libseccomp present"

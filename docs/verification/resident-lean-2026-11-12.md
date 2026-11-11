@@ -138,6 +138,11 @@ verifier = LeanVerifier(..., resident=resident)      # proof-job 用のみ。adm
 
 **cold と常駐の判定比較(Linux、検証器イメージ、confine あり、40 件)**: 通る 29 件と拒否 11 件(誤った主張、未解決のゴール、`sorry`・`axiom`・`native_decide` の方針拒否、後続定理のエラー、`variable`/`include`、記法の再定義、heartbeat 超過、別 import、型の不一致、未知の補題など)を `LeanVerifier.verify` に通した。**判定(成功の可否と error の診断コード)は 40 件すべて cold と一致**。10 並行の 39 件も、同じ件の単独の判定と全件一致(不一致 0)。常駐が処理した数は 126、中断・タイムアウト 0、`unsupported` 2(別 import は cold へ落ちる設計)。検証 1 回は単独 p50 0.43 秒(p90 0.53 秒、`exact?` の索引つき)、10 並行 p50 0.96 秒(最大 2.2 秒)。cold は単独 p50 8.4 秒(p90 9.1 秒、最大 28 秒)。生データ: `bench_resident.py` の出力(共有ノート `resident-lean/bench-linux-40cases-confined.json`)。
 
+**残る危険(隔離)**
+- **seccomp は拒否リスト方式**: 既定で許可し、列挙した syscall(socket 系、signal 系、ptrace、`process_vm_*`、fork/clone/exec/setsid、`fcntl` の所有者設定)だけを拒否する。列挙漏れの syscall や、新しい kernel の新しい syscall は子から使える。Landlock(ファイルの読み書きの許可リスト)が主な境界で、seccomp は「プロセスを作れない」「信号を送れない」を補う。**許可リスト方式(必要な syscall だけ通す)への移行は未実施**で、移行するまでは、この層が破られうるものとして扱う。
+- Landlock と seccomp は呼び出したスレッドにだけ掛かる。zygote の他のスレッド(Lean のタスク管理)は掛かっていないが、依頼の文面は実行しない。
+- `ResidentLean` は Linux では `confine=True` でなければ作れない(`allow_unconfined=True` は開発専用)。`start()` は Landlock と libseccomp が使えるかを `confinement_available()` で確かめ、起動後に**実際の子で「自分のディレクトリには書け、別依頼のディレクトリには書けない」ことを確かめる**(失敗すれば起動しない)。デプロイは `confinement_available()` が false のとき常駐のフラグを無効のままにする。
+
 **有効化の前に残る条件**(この PR は既定 off のまま):
 1. 本番の実際の境界(ECS/Fargate の seccomp、x86_64)での確認。この PR の検証は aarch64 のローカルイメージと Mac。
 2. 本番 `LeanVerifier` を通した攻撃の再現(ここでは常駐に直接ソースを渡した。本番では方針検査が先に拒否する)。
