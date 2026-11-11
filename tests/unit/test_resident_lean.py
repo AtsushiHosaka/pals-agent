@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 import secrets
 import subprocess
+import sys
 import threading
 import time
 from pathlib import Path
@@ -204,7 +205,8 @@ class _AliveStub:
         from types import SimpleNamespace
 
         self.config = SimpleNamespace(
-            lean_binary=lean_binary, project_dir=project_dir, output_limit_bytes=limit
+            lean_binary=lean_binary, project_dir=project_dir, output_limit_bytes=limit,
+            confine=True,
         )
 
     def alive(self) -> bool:
@@ -241,6 +243,11 @@ def test_the_verifier_uses_the_resident_only_in_its_own_environment(tmp_path: Pa
     looser = LeanVerifier(lean_binary=str(lean), project_dir=project, resident=loose)
     assert looser._resident_usable() is None  # noqa: SLF001
     assert LeanVerifier()._resident_usable() is None  # noqa: SLF001
+    if sys.platform.startswith("linux"):
+        unconfined = _AliveStub(str(lean), project, limit)
+        unconfined.config.confine = False
+        bare = LeanVerifier(lean_binary=str(lean), project_dir=project, resident=unconfined)
+        assert bare._resident_usable() is None  # noqa: SLF001
 
 
 @REAL

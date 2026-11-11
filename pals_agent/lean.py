@@ -536,6 +536,8 @@ class LeanVerifier:
         # A resident verdict is only this verifier's verdict if it ran in this verifier's
         # environment: same Lean binary, same project, and no looser output limit.
         config = resident.config
+        if sys.platform.startswith("linux") and not config.confine:
+            return None  # untrusted source must not run in an unconfined resident child
         project = None if self.project_dir is None else self.project_dir.resolve()
         bound_project = None if config.project_dir is None else Path(config.project_dir).resolve()
         found = shutil.which(self.lean_binary)
@@ -806,8 +808,10 @@ class LeanVerifier:
             str(olean_file),
             str(reference_file),
         ]
+        # the audit child reads the candidate's .olean (in the request directory) and the
+        # reference (in audit_dir) and may write only under the request directory it is given
         audited = self._resident_audit(
-            olean_file, reference_file, nonce, audit_dir, deadline - time.monotonic()
+            olean_file, reference_file, nonce, temporary_dir, deadline - time.monotonic()
         )
         if audited is None:
             audited = run(

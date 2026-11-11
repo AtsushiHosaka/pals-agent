@@ -136,6 +136,8 @@ verifier = LeanVerifier(..., resident=resident)      # proof-job 用のみ。adm
 - 起動時の C コンパイル: `python -m pals_agent.lean_verifier.resident.build --lean <lean> --out <path>` をイメージのビルド時に実行し、`ResidentConfig(prebuilt_shim=<path>, allow_shim_compile=False)` で使うと、本番に C コンパイラも書き込み可能なディレクトリ(shim 用)も要らない。
 - 監査を常駐でやる前提: 監査に渡す `.olean` は子が書く。常駐の子は `writeModule` で書くが、cold のコンパイルが書く `.olean` との同一性(imports の列、定数の列)は 16 件の判定一致で確認しただけで、バイト列の一致は見ていない。
 
+**cold と常駐の判定比較(Linux、検証器イメージ、confine あり、40 件)**: 通る 29 件と拒否 11 件(誤った主張、未解決のゴール、`sorry`・`axiom`・`native_decide` の方針拒否、後続定理のエラー、`variable`/`include`、記法の再定義、heartbeat 超過、別 import、型の不一致、未知の補題など)を `LeanVerifier.verify` に通した。**判定(成功の可否と error の診断コード)は 40 件すべて cold と一致**。10 並行の 39 件も、同じ件の単独の判定と全件一致(不一致 0)。常駐が処理した数は 126、中断・タイムアウト 0、`unsupported` 2(別 import は cold へ落ちる設計)。検証 1 回は単独 p50 0.43 秒(p90 0.53 秒、`exact?` の索引つき)、10 並行 p50 0.96 秒(最大 2.2 秒)。cold は単独 p50 8.4 秒(p90 9.1 秒、最大 28 秒)。生データ: `bench_resident.py` の出力(共有ノート `resident-lean/bench-linux-40cases-confined.json`)。
+
 **有効化の前に残る条件**(この PR は既定 off のまま):
 1. 本番の実際の境界(ECS/Fargate の seccomp、x86_64)での確認。この PR の検証は aarch64 のローカルイメージと Mac。
 2. 本番 `LeanVerifier` を通した攻撃の再現(ここでは常駐に直接ソースを渡した。本番では方針検査が先に拒否する)。

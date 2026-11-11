@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 import pytest
@@ -16,6 +17,7 @@ from pals_agent.fast_lane import (
 )
 from pals_agent.lean import LeanVerifier
 from pals_agent.lean_verifier.resident import ResidentConfig, ResidentLean
+from pals_agent.lean_verifier.resident.manager import default_read_roots
 
 REAL = pytest.mark.skipif(
     not (
@@ -58,6 +60,9 @@ def lane(tmp_path_factory: pytest.TempPathFactory):  # type: ignore[no-untyped-d
             build_dir=scratch / "b",
             project_dir=Path(os.environ["PALS_RESIDENT_LEAN_PROJECT"]),
             max_children=4,
+            confine=sys.platform.startswith("linux"),
+            request_root=scratch,
+            read_roots=default_read_roots(lean, os.environ["PALS_RESIDENT_LEAN_PATH"]),
         )
     )
     resident.start()
