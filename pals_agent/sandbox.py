@@ -43,8 +43,8 @@ class ContainmentUnavailable(RuntimeError):
     """No OS containment backend is active: nothing may launch Lean on untrusted text."""
 
 
-# In-process, test-only switch.  It is deliberately NOT read from the environment: production
-# code paths cannot turn containment off by configuration.  ``None`` | "unsandboxed" (run bare,
+# In-process, test-only switch.  It is deliberately NOT read from the process environment, so
+# real code paths cannot turn containment off by configuration.  ``None`` | "unsandboxed" (run bare,
 # to demonstrate an attack) | "contained" (fakes only: lets code be built, never launches).
 _TEST_MODE: str | None = None
 
