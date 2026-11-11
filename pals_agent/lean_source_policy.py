@@ -271,26 +271,45 @@ def _restated_declaration(text: str) -> str | None:
     return f"{title}{signature} := sorry"
 
 
+_CHAR_LITERAL = re.compile(r"(?<![\w'!?.])'(?:\\(?:x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|.)|[^\\'\n])'")
+
+
 def _signature(text: str, start: int) -> str | None:
-    """Return binders and type up to the top-level ``:=`` or first pattern-matching alternative."""
+    """Return binders and type up to the top-level ``:=`` or first pattern-matching alternative.
+
+    A line-leading ``|`` is an alternative only when a top-level ``=>`` precedes the ``:=`` that
+    would end the signature from that bar; otherwise it is an absolute value of the type. One pass
+    decides every bar: bars wait, keyed by the pending-``let`` level they were met at, until a
+    ``:=`` closes that level (not an alternative) or a ``=>`` arrives (the earliest waiting bar is
+    the first alternative). A bar that cannot be classified ends in ``None`` or a statement that
+    fails to elaborate, never a weaker one.
+    """
     depth = 0
     pending_lets = 0
     has_type = False
+    waiting: dict[int, list[int]] = {}
     index = start
     while index < len(text):
         character = text[index]
+        if character == "'" and (literal := _CHAR_LITERAL.match(text, index)):
+            index = literal.end()
+            continue
         if character in _SIGNATURE_OPENING:
             depth += 1
         elif character in _SIGNATURE_CLOSING:
             depth -= 1
         elif depth == 0:
             if text.startswith(":=", index):
+                waiting.pop(pending_lets, None)
                 if pending_lets == 0:
                     return text[start:index].rstrip() if has_type else None
                 pending_lets -= 1
                 index += 2
                 continue
-            if character == ":":
+            if text.startswith("=>", index):
+                if waiting:
+                    return text[start : min(bars[0] for bars in waiting.values())].rstrip()
+            elif character == ":":
                 has_type = True
             elif _LET_WORD.match(text, index):
                 pending_lets += 1
@@ -298,42 +317,10 @@ def _signature(text: str, start: int) -> str | None:
                 character == "|"
                 and has_type
                 and not text[text.rfind("\n", start, index) + 1 : index].strip()
-                and _alternative_arrow_before_assignment(text, index + 1)
             ):
-                return text[start:index].rstrip()
+                waiting.setdefault(pending_lets, []).append(index)
         index += 1
     return None
-
-
-def _alternative_arrow_before_assignment(text: str, start: int) -> bool:
-    """Tell a pattern-matching ``|`` from an absolute value that begins a line of the type.
-
-    An alternative always reaches a top-level ``=>`` before any signature-ending ``:=``; a bar of
-    the type does not. A ``=>`` that only a later lambda supplies still reads as an alternative, so
-    the restatement is cut short, cannot elaborate and the audit rejects it (fail closed).
-    """
-    depth = 0
-    pending_lets = 0
-    index = start
-    while index < len(text):
-        character = text[index]
-        if character in _SIGNATURE_OPENING:
-            depth += 1
-        elif character in _SIGNATURE_CLOSING:
-            depth -= 1
-        elif depth == 0:
-            if text.startswith(":=", index):
-                if pending_lets == 0:
-                    return False
-                pending_lets -= 1
-                index += 2
-                continue
-            if text.startswith("=>", index):
-                return True
-            if _LET_WORD.match(text, index):
-                pending_lets += 1
-        index += 1
-    return False
 
 
 def mask_lean_comments_and_strings(source: str) -> str:
