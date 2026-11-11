@@ -7,6 +7,7 @@ and the final write stay behind the approval, and every other outcome drops the 
 
 from __future__ import annotations
 
+import contextlib
 import threading
 import uuid
 from types import SimpleNamespace
@@ -153,6 +154,7 @@ def _run(
     claim: bool = True,
     with_output_reviewer: bool = True,
     wait_for_explainer: bool = True,
+    outer_scope: bool = True,
 ) -> tuple[bool | None, Trace, TracedApi, TracedReviewer, TracedExplainer, list[dict[str, Any]],
            TracedOutputReviewer]:
     trace = Trace()
@@ -185,7 +187,7 @@ def _run(
     )
     held: list[dict[str, Any]] = []
     visibility: list[int] = []
-    with usage_scope(held.append):
+    with usage_scope(held.append) if outer_scope else contextlib.nullcontext():
         acknowledged = worker.process_proof_job(
             "job-semantic",
             claim_id="55555555-5555-4555-8555-555555555555" if claim else None,
@@ -237,6 +239,17 @@ def test_usage_of_an_adopted_call_reaches_the_active_reporter_once() -> None:
     _, _, _, _, _, held, _ = _run()
 
     assert [record["call_id"] for record in held] == ["99999999-9999-4999-8999-999999999999"]
+
+
+def test_an_adopted_calls_usage_is_recorded_against_the_claim_with_no_outer_reporter() -> None:
+    """The production delivery has no ambient reporter: adoption must report to the claim itself."""
+    _, _, api, _, _, held, _ = _run(outer_scope=False)
+
+    assert held == []
+    assert [r["usage"]["call_id"] for r in api.usage_records] == [
+        "99999999-9999-4999-8999-999999999999"
+    ]
+    assert api.usage_records[0]["claim_id"] == "55555555-5555-4555-8555-555555555555"
 
 
 def test_a_rejected_review_leaves_no_explanation_no_claim_and_no_usage() -> None:
