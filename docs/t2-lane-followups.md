@@ -37,22 +37,53 @@ pals-agent#107 で入れた T2 レーンは、全フラグが既定 off で、�
 - `routine`（難度の信号）: 査定の出力に項目が無い（route / rationale / extracted_statement / question、前判定、決定のスキーマを確認した）ため、worker は `routine` を渡しません。常に「非 routine」として扱うので、No-Draft の恩恵は Draft を待たないことだけです。最小の追加案: 査定のルート判定のスキーマに真偽値 `routine` を足し、フラグの背後で `run_statement(routine=...)` に渡す。項目名は査定側の担当と決める。推測で配線しません。
 - 検証器側の取り消し（§2）は依存として書くだけです。worker は API の検証器のコンパイルを取り消せません。
 
-## 4. API への最小の契約（k=2 の成功率を上げるために必要。未実装）
+### 使用量の計上（レビュー指摘後の修正）
 
-`api_reconcile` では worker がコンパイルできないため、k=2 の2本目は**提出されない限り使われません**。ローカル測定で k=2 が効いたのは「コンパイルを通ったほうを採る」からで、preflight だけの競争にはその効果がありません。成功率に効かせるには、API が2本目を検証する必要があります。
+- 採用した先行呼び出しの使用量: 再開した配信は請求（claim）の reporter の下で実行する（`_resume_with_carry`）。`adopt()` は reporter が無いときは使用量を取り出さない（取り出すと「転送済み」になり、後の settle でも回収できず失われるため）。通常の投機的説明（`_ensure_summary_explanation`）の採用箇所も同じ reporter の下に置いた。
+- フラグがすべて off のとき: 解説・審査のハンドルも、動いている背景呼び出しも無ければ `_t2_carry_scope` は何も保持せず（None）、`drain` も reporter 設定も走らない。
+- 修復: compile が失敗して修復の入れ子の実行に入る前に、carry をその場で精算する（`_settle_t2_carry`。冪等）。入れ子の最中に落ちても先行呼び出しの使用量は失われない。
+- 残る限界: レースの負け側の呼び出しが精算の待ち（10 秒＋5 秒）より遅く終わった場合、その使用量は終了時に（コンテキストを引き継いだ reporter で）報告される。プロセスがそれより先に終われば（SIGTERM・クラッシュ）失われる。上限は負け側1本分のトークン費用（1題あたり数セント未満）。待ちを延ばすと答えが遅れるので延ばさない。
 
-**案（後方互換）**: `POST /v1/internal/proof-jobs/{id}/verification-candidates` に省略可能な `alternates`（最大1件）を足します。
+## 4. API が失敗後の追加候補を受け付けるか（pals-api `claude/seq28-api-response-language` のコードで確認）
 
-```
-schema_version: pals.verification-candidate-request.v2   # v1 の worker は今のまま使える
-candidate_id, claim_id, lean_code, lean_sha256, result_artifact_uri   # 主候補（従来どおり）
-alternates: [ {candidate_id, lean_code, lean_sha256, result_artifact_uri} ]   # 0 または 1 件
-```
+**受け付ける。API の変更は要らない。** `import_verification_candidate`（`app/infrastructure/repositories/postgres.py`）は、同じ proof job に既存の候補があると原則 409（CONFLICT）にするが、`model_repair_candidate_can_replace`（`app/domain/models/proof_job.py`）が次を全て満たすときだけ失敗した候補を置き換える。
 
-- 各 alternate は別の `candidate_id` として、主候補と同じ claim・同じ来歴の検査（目標宣言・SHA・成果物 URI）を受けます。重複キーの拒否、409（conflict / stale）、503（commit unknown）の意味は変えません。
-- 判定規則（ジョブ単位）: **主候補を先にコンパイルし、失敗したら worker に戻さず alternate をコンパイルします**。最初に通ったものを昇格し（今と同じく `semantic_review` へ）、`verification_candidate_id` はその勝者の id にします。両方失敗したら、修復の種（repair seed）は**主候補**の失敗にします（alternate の失敗は記録するだけ）。順次実行なら、検証器の追加の同時実行は要りません。主候補が通る場合の待ち時間は今と同じで、失敗する場合は「モデルによる修復＋再配信」を丸ごと省けます。
-- 並列に両方をコンパイルする案は、検証器側の取り消し（§2）が先に必要です（敗者を止められないと CPU を二重に使うため）。
-- 勝者の選定が worker の意味レビューの束縛（`get_verification_candidate_binding`）と矛盾しないよう、レビューの対象は勝者の `candidate_id` にします。worker 側の意味レビュー・説明の先行呼び出しは主候補のソースで始めるため、alternate が勝った場合は採用されず通常の呼び出しになります（先行を alternate にも始めるかは費用との相談）。
-- 変更箇所の目安（pals-api の統合先は `claude/seq28-api-response-language` の系統）: `app/api/routes/internal.py` の `import_proof_verification_candidate` と `ProofVerificationCandidateRequest`、候補の永続化とジョブ状態の遷移、reconciler への通知（`app/release/verified_reconciler.py` は `candidate_id` を1件ずつ受けるので、alternate は主候補の失敗後に通知する）。
-- worker 側は、契約が入ってから: `submit_verification_candidate(..., alternates=[...])`、フラグ `PALS_T2_API_ALTERNATE_ENABLED`（既定 off）、パイプラインが2本目の preflight 通過候補を結果に載せる。今は載せません（使われない値を返さないため）。
-- 論点（API の担当と決める）: alternate の分をコンパイルの枠・上限に数えるか、`repair_attempt` の数え方、失敗時の公開診断に alternate を含めるか。
+- 既存の候補が v1 のモデル候補で、状態が `VERIFICATION_FAILED`・`failure_code == "verifier_compile_failed"`（API 自身のコンパイル失敗）。
+- ジョブが `COMPILING`、請求（claim）が提出時の claim と一致し、未失効。
+- `status_context.repairs_used`（1 以上）と `max_repair_attempts` が整数で、`attempt_evidence.attempt == repairs_used + 1`（API が失敗を記録した時点で書く値）。
+
+つまり、**API のコンパイルが失敗した後に、worker が同じ配信の中で、モデルの修復の代わりに別の候補を提出すれば、今の契約のまま次の試行として受理される**。数え方と課金:
+
+- 修復は1回に数える。`repairs_used` は API が失敗を記録した時点で増えており、置き換え後の候補は `attempt = repairs_used + 1` の試行になる。上限（`max_repair_attempts`）も共有する。
+- 課金: 負け側の候補は競争の時点で既に生成・課金済み（使用量は精算済み）。修復用のモデル呼び出しが1回要らなくなる分だけ、費用は下がる。API 側のコンパイルは失敗1回分＋置換候補の1回分で、今の「失敗→修復→コンパイル」と同じ数。
+- 同時に2本は提出できない（1ジョブ1候補）。したがって、**並列にコンパイルさせる方式は今の契約では不可能**で、順に試す方式だけが実現できる。以前この文書で提案した `alternates` は、2本目の生成を待ってから提出するため速度の利点を消す上、API の変更が要るので取り下げる。
+
+### 未実装（次の一歩）
+
+負け側の候補を保持して、失敗後に使う実装は、この PR には含めていない。必要な部品:
+
+1. `_race_without_compile` が、勝者だけでなく負け側の `GeneratedProof`（preflight 通過済みのもの）を、終わり次第取り出せる future として返す（`race_candidates` は負け側の値を `Candidate.value` に持つ）。
+2. その future を `_T2Carry` に持たせ、compile 失敗の再開（`_resume_with_carry` の `usable == False` の経路）で、精算せずに修復の入れ子の実行へ渡す。
+3. `pipeline._run_request` の seed 経路（`api_repair_seed` から `_repair_after_failure` を呼ぶ箇所）で、渡された候補が seed のソースと違い、preflight を通るなら、モデルの修復を呼ばずにそれを次の候補にする。通らなければ今のモデル修復に戻る。
+4. テスト: 失敗後に負け側が提出され `attempt` が1進むこと、同一ソースなら使わないこと、保持した候補の使用量が二重に数えられないこと。
+
+効果は「初回が失敗する題（今回の測定では14題中2題）」の尾の時間にだけ出る。初回で通る題の p50 は変わらない。
+
+## 5. 常駐 Lean を前提にした本番の所要時間の見積もり（コード上の待ち時間の積み上げ。worker 経路の実測ではない）
+
+前提: 検証サーバーに常駐 Lean（pals-agent#120、既定 off）が入り、1回の検証が 0.4〜1 s。
+
+提出から結果を読むまでに入る固定の待ち（`worker.py`）:
+
+| 区間 | 値 | 出所 |
+|---|---|---|
+| 提出の HTTP | 約0.3 s（新規プロセス1回） | `_CANDIDATE_RECONCILIATION_*` のコメント |
+| API の通知 | 候補ごとの通知（ポーリングではない） | `ProofJobService._notify_candidate` |
+| 検証 | 0.4〜1 s（常駐）／3〜15 s（通常） | #120／今回の測定 |
+| worker のポーリング | 固定 1.0 s ＋ 取得 約0.3 s | `_CANDIDATE_RECONCILIATION_POLL_SECONDS` |
+
+- ポーリングの平均待ちは約0.5 s（0〜1 s の一様）＋取得0.3 s。**常駐 Lean ありで、提出から結果までは合計およそ 2〜3 s**。高速ポーリング（`PALS_FAST_CANDIDATE_POLL_ENABLED`）を有効にしても節約は 0.75 s 未満で、API が1リクエストごとにデータベース接続を開くので、今は効果より負荷の害が大きい。ポーリング間隔は削る対象にしない。
+- 直接証明の1回は、今回の測定で1候補あたり約25 s（2候補の合計 49.9 s／14題）。**律速はモデル呼び出し**で、API の待ちとポーリングは合計でも1割未満。
+- 順に試す方式: 初回が通れば「モデル呼び出し＋提出から結果までの 2〜3 s」。失敗すれば、保持した負け側を使う場合、追加は「提出から結果まで約 2〜3 s」だけ（モデルの修復1回 15〜25 s を省く）。保持しない場合は修復のモデル呼び出しが加わる。
+- 並列に試す方式（2本を同時にコンパイル）は、今の契約（1ジョブ1候補）では実現できない。検証器の側で同時に走らせても、結果を採用できるのは1本だけ。
+- したがって、本番の p50 の見積もりは「直接証明のうち速いほう（約20〜25 s）＋2〜3 s」で、no-draft・先行呼び出しの効果を含む手元の測定（40 s、負荷下）より、常駐 Lean と低負荷でさらに短くなる見込み。ただしこれはコード上の積み上げで、worker 経路（`api_reconcile`）の実測ではない。
