@@ -386,10 +386,8 @@ class LeanVerifier:
                     command, child_environment, lean_binary=lean_binary,
                     lake_binary=lake_binary, temporary_dir=temporary_dir, deadline=deadline,
                 )
-                remaining = (
-                    budget if self.lake_environment_cache is None
-                    else deadline - time.monotonic()
-                )
+                # one deadline for the request: time spent in a declined resident attempt is gone
+                remaining = deadline - time.monotonic()
                 compile_started = time.monotonic()
             if completed is not None:
                 pass
@@ -534,6 +532,19 @@ class LeanVerifier:
         ):
             return None
         if resident is None or self.literal_admission_command or not resident.alive():
+            return None
+        # A resident verdict is only this verifier's verdict if it ran in this verifier's
+        # environment: same Lean binary, same project, and no looser output limit.
+        config = resident.config
+        project = None if self.project_dir is None else self.project_dir.resolve()
+        bound_project = None if config.project_dir is None else Path(config.project_dir).resolve()
+        found = shutil.which(self.lean_binary)
+        if (
+            found is None
+            or Path(found).resolve() != Path(config.lean_binary).resolve()
+            or project != bound_project
+            or config.output_limit_bytes > self.output_limit_bytes
+        ):
             return None
         return resident
 

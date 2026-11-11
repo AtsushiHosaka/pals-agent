@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 import secrets
 import subprocess
+import threading
 import time
 from pathlib import Path
 
@@ -199,19 +200,109 @@ _ = (ResidentBusy, subprocess)
 
 
 class _AliveStub:
+    def __init__(self, lean_binary: str, project_dir: Path | None, limit: int) -> None:
+        from types import SimpleNamespace
+
+        self.config = SimpleNamespace(
+            lean_binary=lean_binary, project_dir=project_dir, output_limit_bytes=limit
+        )
+
     def alive(self) -> bool:
         return True
 
 
-def test_the_verifier_uses_the_resident_only_for_the_default_profile_and_a_plain_compile() -> None:
+def test_the_verifier_uses_the_resident_only_in_its_own_environment(tmp_path: Path) -> None:
     from pals_agent.lean import LeanVerifier
     from pals_agent.lean_profiles import resolve_profile
 
-    stub = _AliveStub()
-    plain = LeanVerifier(resident=stub)  # type: ignore[arg-type]
-    assert plain._resident_usable() is stub  # noqa: SLF001
-    default_profile = LeanVerifier(resident=stub, library_profile=resolve_profile())  # type: ignore[arg-type]
-    assert default_profile._resident_usable() is stub  # noqa: SLF001
-    admission = LeanVerifier(resident=stub, literal_admission_command=True)  # type: ignore[arg-type]
-    assert admission._resident_usable() is None  # noqa: SLF001
+    lean = tmp_path / "lean"
+    lean.write_text("#!/bin/sh\n")
+    lean.chmod(0o755)
+    other = tmp_path / "other"
+    other.write_text("#!/bin/sh\n")
+    other.chmod(0o755)
+    project = tmp_path / "ws"
+    project.mkdir()
+    limit = LeanVerifier().output_limit_bytes
+    stub = _AliveStub(str(lean), project, limit)
+
+    def verifier(**kwargs):  # type: ignore[no-untyped-def]
+        return LeanVerifier(lean_binary=str(lean), project_dir=project, resident=stub, **kwargs)
+
+    assert verifier()._resident_usable() is stub  # noqa: SLF001
+    assert verifier(library_profile=resolve_profile())._resident_usable() is stub  # noqa: SLF001
+    assert verifier(literal_admission_command=True)._resident_usable() is None  # noqa: SLF001
+    # another toolchain, another project, or a looser output limit than the verifier's own
+    foreign_lean = LeanVerifier(lean_binary=str(other), project_dir=project, resident=stub)
+    assert foreign_lean._resident_usable() is None  # noqa: SLF001
+    foreign_project = LeanVerifier(lean_binary=str(lean), project_dir=tmp_path, resident=stub)
+    assert foreign_project._resident_usable() is None  # noqa: SLF001
+    loose = _AliveStub(str(lean), project, limit * 2)
+    looser = LeanVerifier(lean_binary=str(lean), project_dir=project, resident=loose)
+    assert looser._resident_usable() is None  # noqa: SLF001
     assert LeanVerifier()._resident_usable() is None  # noqa: SLF001
+
+
+@REAL
+def test_close_kills_running_request_children(tmp_path: Path) -> None:
+    config = ResidentConfig(
+        lean_binary=os.environ["PALS_RESIDENT_LEAN"],
+        lean_path=os.environ["PALS_RESIDENT_LEAN_PATH"],
+        build_dir=tmp_path / "b",
+        startup_timeout_s=180,
+    )
+    instance = ResidentLean(config)
+    instance.start()
+    loop = _write(
+        tmp_path,
+        "Loop.lean",
+        "import Mathlib\nset_option maxHeartbeats 0 in\n"
+        "theorem t : True := by\n  repeat (first | skip)\n",
+    )
+    outcomes: list[object] = []
+    thread = threading.Thread(
+        target=lambda: outcomes.append(
+            instance.compile(loop, workdir=tmp_path, olean=None, timeout_s=120)
+        )
+    )
+    thread.start()
+    deadline = time.monotonic() + 30
+    while not instance._children and time.monotonic() < deadline:  # noqa: SLF001
+        time.sleep(0.05)
+    children = set(instance._children)  # noqa: SLF001
+    assert children
+    instance.close()
+    thread.join(timeout=30)
+    time.sleep(0.5)
+    for pid in children:
+        with pytest.raises(ProcessLookupError):
+            os.kill(pid, 0)
+    assert outcomes and outcomes[0].aborted  # type: ignore[attr-defined]
+
+
+@REAL
+def test_a_prebuilt_shim_needs_no_compiler_at_run_time(tmp_path: Path) -> None:
+    from pals_agent.lean_verifier.resident.manager import compile_shim
+
+    lean = os.environ["PALS_RESIDENT_LEAN"]
+    shim = tmp_path / "image" / "shim.so"
+    compile_shim(lean, shim)
+    instance = ResidentLean(
+        ResidentConfig(
+            lean_binary=lean,
+            lean_path=os.environ["PALS_RESIDENT_LEAN_PATH"],
+            build_dir=tmp_path / "run",
+            prebuilt_shim=shim,
+            allow_shim_compile=False,
+            startup_timeout_s=180,
+        )
+    )
+    instance.start()
+    try:
+        source = _write(tmp_path, "Main.lean", GOOD)
+        assert instance.compile(source, workdir=tmp_path, olean=None, timeout_s=60).returncode == 0
+        assert not list((tmp_path / "run").glob("*.so")) and not list(
+            (tmp_path / "run").glob("*.dylib")
+        )
+    finally:
+        instance.close()

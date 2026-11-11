@@ -44,6 +44,7 @@ WORKER_TEMPLATE: Final = _HERE / "worker.lean.in"
 SHIM_SOURCE: Final = _HERE / "shim.c"
 STATEMENT_CHECK_SOURCE: Final = _HERE / "statement_check.lean.in"
 MAX_RESTART_ATTEMPTS: Final = 5
+STABLE_SECONDS: Final = 30.0
 UNSUPPORTED_CODES: Final = frozenset({65, 66})
 
 
@@ -84,7 +85,12 @@ class ResidentConfig:
     build_dir: Path  # generated worker source and compiled shim go here (not request data)
     max_children: int = 4  # concurrent forked children
     queue_timeout_s: float = 2.0  # wait for a slot at most this long, then ResidentBusy
-    child_memory_bytes: int = 6 << 30  # private memory a child may add (Linux, RLIMIT_DATA)
+    # Private memory a child may add (Linux, RLIMIT_DATA).  Measured on the verifier image: a
+    # typical child adds 6-220 MB; `exact?` run cold in a child adds 2.0 GB (and 20 s), so 3 GiB
+    # bounds the worst honest case.  Four children at the limit would need 12 GiB: size the
+    # container for the typical case (zygote + children x ~0.2 GB) and let this limit stop the
+    # rest.  See docs/verification/resident-lean-2026-11-12.md for the measurement.
+    child_memory_bytes: int = 3 << 30
     child_cpu_seconds: int = 120
     startup_timeout_s: float = 180.0
     output_limit_bytes: int = 1 << 20
@@ -95,6 +101,16 @@ class ResidentConfig:
     # Build the `exact?` lemma index once in the zygote (12-15 s, extra memory) so every forked
     # child inherits it instead of building its own.
     warm_exact: bool = False
+    # Run children confined (Linux): no fork/exec/socket/signal syscalls, writes only under the
+    # request's own directory, reads only under `read_roots` and that directory.  Needed before
+    # the resident worker may serve untrusted source; the tests turn it on.
+    confine: bool = False
+    read_roots: tuple[str, ...] = ()
+    project_dir: Path | None = None  # the verifier binds to this (see LeanVerifier)
+    request_root: Path | None = None  # the tree the request directories live under
+    prebuilt_shim: Path | None = None
+    allow_shim_compile: bool = True
+    fsize_bytes: int = 16 << 20  # RLIMIT_FSIZE of a child, like the cold path's 16 MiB
 
 
 _AUDIT_HEADER = "unsafe def main (args : List String) : IO UInt32 := do\n"
@@ -145,69 +161,71 @@ class _Pending:
     done: threading.Event = field(default_factory=threading.Event)
     pid: int = 0
     code: int | None = None
+    abandoned: bool = False
 
 
 class ResidentLean:
     def __init__(self, config: ResidentConfig) -> None:
         self.config = config
-        self._lock = threading.Lock()  # guards _proc/_pending/_generation and stdin writes
+        self._lock = threading.Lock()  # guards _proc/_pending/_children and stdin writes
         self._slots = threading.BoundedSemaphore(config.max_children)
         self._proc: subprocess.Popen[bytes] | None = None
         self._pending: dict[str, _Pending] = {}
-        self._generation = 0
+        self._children: set[int] = set()  # pids (= process group ids) of running request children
         self._ready = threading.Event()
+        self._first_ready = threading.Event()
         self._closed = False
+        self._given_up = False
+        self._supervisor: threading.Thread | None = None
+        self._scratch: Path | None = None
         self.startup_s: float | None = None
         self.restarts = 0
-        self._scratch: Path | None = None
+        # how requests ended, for callers that must know the resident really served them
+        self.stats = {"served": 0, "aborted": 0, "timed_out": 0, "unsupported": 0}
 
     # ------------------------------------------------------------------ lifecycle
 
     def start(self) -> float:
-        """Build the shim, start the zygote and wait until Mathlib is imported."""
+        """Build the shim, start the supervisor and wait until Mathlib is imported once."""
         started = time.monotonic()
         build = self.config.build_dir
         build.mkdir(parents=True, exist_ok=True)
-        dylib = self._build_shim()
+        self._dylib = self._build_shim()
         worker = build / "worker.lean"
         text = render_worker_source()
         if not worker.exists() or worker.read_text(encoding="utf-8") != text:
             worker.write_text(text, encoding="utf-8")
-        self._worker, self._dylib = worker, dylib
-        self._spawn()
-        if not self._ready.wait(self.config.startup_timeout_s):
-            self.close()
-            raise ResidentUnavailable("resident Lean did not become ready")
-        self.startup_s = time.monotonic() - started
-        return self.startup_s
+        self._worker = worker
+        self._supervisor = threading.Thread(
+            target=self._supervise, daemon=True, name="resident-supervisor"
+        )
+        self._supervisor.start()
+        deadline = time.monotonic() + self.config.startup_timeout_s * MAX_RESTART_ATTEMPTS
+        while time.monotonic() < deadline:
+            if self._first_ready.wait(0.2):
+                self.startup_s = time.monotonic() - started
+                return self.startup_s
+            if self._given_up:
+                break
+        self.close()
+        raise ResidentUnavailable("resident Lean did not become ready")
 
     def _build_shim(self) -> Path:
+        cfg = self.config
+        if cfg.prebuilt_shim is not None:
+            if not cfg.prebuilt_shim.is_file():
+                raise ResidentUnavailable("the prebuilt resident shim is missing")
+            return cfg.prebuilt_shim
         suffix = ".dylib" if sys.platform == "darwin" else ".so"
-        out = self.config.build_dir / f"pals_resident_shim{suffix}"
+        out = cfg.build_dir / f"pals_resident_shim{suffix}"
         if out.exists() and out.stat().st_mtime >= SHIM_SOURCE.stat().st_mtime:
             return out
-        include = Path(self.config.lean_binary).resolve().parent.parent / "include"
-        candidates = [self.config.c_compiler] if self.config.c_compiler else []
-        if sys.platform != "darwin":  # the toolchain's bundled clang has no macOS SDK
-            candidates.append(str(Path(self.config.lean_binary).resolve().parent / "leanc"))
-        candidates += [shutil.which("cc"), shutil.which("clang")]
-        extra = ["-undefined", "dynamic_lookup"] if sys.platform == "darwin" else []
-        last = ""
-        for compiler in filter(None, candidates):
-            tmp = out.with_suffix(out.suffix + f".{secrets.token_hex(4)}")
-            result = subprocess.run(
-                [compiler, "-shared", "-fPIC", "-O1", "-fvisibility=default", *extra,
-                 f"-I{include}", "-o", str(tmp),
-                 str(SHIM_SOURCE)],
-                capture_output=True, text=True, timeout=120, check=False,
-            )
-            if result.returncode == 0:
-                os.replace(tmp, out)
-                return out
-            last = result.stderr[-300:]
-        raise ResidentUnavailable(f"could not build the resident shim: {last}")
+        if not cfg.allow_shim_compile:
+            raise ResidentUnavailable("no prebuilt shim and compiling is not allowed")
+        compile_shim(cfg.lean_binary, out, cfg.c_compiler)
+        return out
 
-    def _spawn(self) -> None:
+    def _spawn_one(self) -> subprocess.Popen[bytes]:
         cfg = self.config
         if self._scratch is not None:
             shutil.rmtree(self._scratch, ignore_errors=True)
@@ -224,35 +242,97 @@ class ResidentLean:
             "LANG": "C.UTF-8",
             "LC_ALL": "C.UTF-8",
             **({"PALS_RESIDENT_WARM_EXACT": "1"} if cfg.warm_exact else {}),
+            **({"PALS_RESIDENT_CONFINE": "1"} if cfg.confine else {}),
+            **({"PALS_RESIDENT_READ_ROOTS": ":".join(cfg.read_roots)} if cfg.read_roots else {}),
+            **(
+                {"PALS_RESIDENT_REQUEST_ROOT": str(cfg.request_root.resolve())}
+                if cfg.request_root is not None else {}
+            ),
             **cfg.extra_environment,
         }
-        self._ready.clear()
-        proc = subprocess.Popen(
+        return subprocess.Popen(
             argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
             env=env, cwd=str(self._scratch), start_new_session=True, bufsize=0,
+            preexec_fn=_die_with_parent if sys.platform.startswith("linux") else None,
         )
-        with self._lock:
-            self._generation += 1
-            generation = self._generation
-            self._proc = proc
-        threading.Thread(
-            target=self._read_loop, args=(proc, generation), daemon=True, name="resident-reader"
-        ).start()
 
-    def _read_loop(self, proc: subprocess.Popen[bytes], generation: int) -> None:
+    def _supervise(self) -> None:
+        """The only owner of zygote lifetimes: one spawn at a time, bounded consecutive failures,
+        back-off, and every failed or lost zygote is killed and reaped before the next one."""
+        failures = 0
+        while not self._closed:
+            self._ready.clear()
+            try:
+                proc = self._spawn_one()
+            except OSError:
+                proc = None
+            ready_at = None
+            if proc is not None:
+                with self._lock:
+                    self._proc = proc
+                reader = threading.Thread(
+                    target=self._read_loop, args=(proc,), daemon=True, name="resident-reader"
+                )
+                reader.start()
+                if self._ready.wait(self.config.startup_timeout_s):
+                    ready_at = time.monotonic()
+                    self._first_ready.set()
+                    proc.wait()  # until it dies, or close() kills it
+                self._lose(proc)
+                reader.join(timeout=2.0)
+            if self._closed:
+                return
+            self.restarts += 1
+            stable = ready_at is not None and time.monotonic() - ready_at >= STABLE_SECONDS
+            failures = 0 if stable else failures + 1
+            if failures >= MAX_RESTART_ATTEMPTS:
+                self._given_up = True  # a broken installation: stay unavailable, callers go cold
+                return
+            time.sleep(min(0.2 * 2**failures, 10.0))
+
+    def _lose(self, proc: subprocess.Popen[bytes]) -> None:
+        """The zygote is gone or must go: kill it and every child, fail what was in flight."""
+        with self._lock:
+            if self._proc is proc:
+                self._proc = None
+            self._ready.clear()
+            children, self._children = set(self._children), set()
+            lost = list(self._pending.values())
+        _kill_group(proc.pid)
+        for pid in children:
+            _kill_group(pid)
+        with contextlib.suppress(Exception):
+            proc.wait(timeout=5)
+        for pending in lost:
+            pending.forked.set()
+            pending.done.set()
+
+    def _read_loop(self, proc: subprocess.Popen[bytes]) -> None:
         assert proc.stdout is not None
         for raw in iter(proc.stdout.readline, b""):
-            line = raw.decode("utf-8", "replace").strip()
-            parts = line.split(" ")
-            if line == "PALS_READY":
+            parts = raw.decode("utf-8", "replace").strip().split(" ")
+            if parts == ["PALS_READY"]:
                 self._ready.set()
-            elif parts[0] == "FORKED" and len(parts) == 3:
-                pending = self._pending.get(parts[1])
-                if pending is not None and parts[2].isdigit():
-                    pending.pid = int(parts[2])
+            elif parts[0] == "FORKED" and len(parts) == 3 and parts[2].isdigit():
+                pid = int(parts[2])
+                with self._lock:
+                    pending = self._pending.get(parts[1])
+                    if pending is None or pending.abandoned or self._closed:
+                        self._pending.pop(parts[1], None)
+                        kill_now = True
+                    else:
+                        self._children.add(pid)
+                        pending.pid = pid
+                        kill_now = False
+                if kill_now:  # a late acknowledgement for a request nobody waits for any more
+                    _kill_group(pid)
+                elif pending is not None:
                     pending.forked.set()
             elif parts[0] == "DONE" and len(parts) == 3:
-                pending = self._pending.get(parts[1])
+                with self._lock:
+                    pending = self._pending.get(parts[1])
+                    if pending is not None:
+                        self._children.discard(pending.pid)
                 if pending is not None:
                     pending.code = int(parts[2]) if parts[2].lstrip("-").isdigit() else 70
                     pending.done.set()
@@ -262,49 +342,29 @@ class ResidentLean:
                     pending.code = 0
                     pending.forked.set()
                     pending.done.set()
-        # EOF: the zygote is gone. In-flight requests become interruptions, then restart.
-        with self._lock:
-            if self._generation != generation:
-                return
-            self._proc = None
-            self._ready.clear()
-            lost = list(self._pending.values())
-        for pending in lost:
-            pending.forked.set()
-            pending.done.set()
-        if not self._closed:
-            self.restarts += 1
-            threading.Thread(target=self._restart, daemon=True, name="resident-restart").start()
-
-    def _restart(self) -> None:
-        """Replace a lost zygote: bounded tries with back-off; after that stay unavailable (callers
-        use the cold path) instead of spinning on a broken installation."""
-        delay = 0.2
-        for _ in range(MAX_RESTART_ATTEMPTS):
-            if self._closed:
-                return
-            try:
-                self._spawn()
-                self._ready.wait(self.config.startup_timeout_s)
-                if self._ready.is_set():
-                    return
-            except OSError:
-                pass
-            time.sleep(delay)
-            delay = min(delay * 2, 10.0)
 
     def alive(self) -> bool:
         with self._lock:
-            return self._proc is not None and self._proc.poll() is None and self._ready.is_set()
+            proc = self._proc
+            return (
+                proc is not None and proc.poll() is None and self._ready.is_set()
+                and not self._closed
+            )
 
     def close(self) -> None:
         self._closed = True
         with self._lock:
-            proc, self._proc = self._proc, None
+            proc = self._proc
+            children, self._children = set(self._children), set()
+        for pid in children:
+            _kill_group(pid)
         if proc is not None:
-            with contextlib.suppress(ProcessLookupError, PermissionError):
-                os.killpg(proc.pid, signal.SIGKILL)  # zygote and any children it started
-            proc.wait()
+            _kill_group(proc.pid)  # wakes the supervisor
+        if self._supervisor is not None and self._supervisor is not threading.current_thread():
+            self._supervisor.join(timeout=10.0)
+        if proc is not None:
+            with contextlib.suppress(Exception):
+                proc.wait(timeout=5)
         if self._scratch is not None:
             shutil.rmtree(self._scratch, ignore_errors=True)
 
@@ -316,6 +376,18 @@ class ResidentLean:
         self.close()
 
     # ------------------------------------------------------------------ requests
+
+    def _check_workdir(self, workdir: Path) -> None:
+        """The request directory: no spaces (the protocol is line based), and with confinement
+        inside ``request_root`` (the only tree the zygote may write)."""
+        text = str(workdir)
+        if not workdir.is_absolute() or " " in text or "\n" in text:
+            raise ValueError("a request directory must be an absolute path without spaces")
+        root = self.config.request_root
+        if self.config.confine and (
+            root is None or not workdir.resolve().is_relative_to(root.resolve())
+        ):
+            raise ValueError("a confined request directory must lie under the request root")
 
     def compile(
         self,
@@ -330,7 +402,8 @@ class ResidentLean:
         started = time.monotonic()
         result = workdir / f"resident-{secrets.token_hex(8)}.out"
         code, status = self._run(
-            "CHECK", [str(source), str(result), str(olean) if olean else "-"], timeout_s, cancel
+            "CHECK", [str(source), str(result), str(olean) if olean else "-"], timeout_s, cancel,
+            workdir=workdir,
         )
         return self._compile_outcome(code, status, result, started)
 
@@ -348,7 +421,9 @@ class ResidentLean:
         request.write_text(opens + "\n" + term + "\n", encoding="utf-8")
         result = workdir / f"resident-{secrets.token_hex(8)}.out"
         try:
-            code, status = self._run("STMT", [str(request), str(result)], timeout_s)
+            code, status = self._run(
+                "STMT", [str(request), str(result)], timeout_s, workdir=workdir
+            )
         finally:
             request.unlink(missing_ok=True)
         outcome = self._compile_outcome(code, status, result, started)
@@ -368,7 +443,7 @@ class ResidentLean:
         started = time.monotonic()
         result = workdir / f"resident-{secrets.token_hex(8)}.out"
         code, status = self._run(
-            "AUDIT", [nonce, str(olean), str(reference), str(result)], timeout_s
+            "AUDIT", [nonce, str(olean), str(reference), str(result)], timeout_s, workdir=workdir
         )
         outcome = self._compile_outcome(code, status, result, started)
         return AuditOutcome(
@@ -380,6 +455,14 @@ class ResidentLean:
         self, code: int | None, status: str, result: Path, started: float
     ) -> CompileOutcome:
         elapsed = time.monotonic() - started
+        if status == "timeout":
+            self.stats["timed_out"] += 1
+        elif status != "done" or code is None:
+            self.stats["aborted"] += 1
+        elif code in UNSUPPORTED_CODES:
+            self.stats["unsupported"] += 1
+        else:
+            self.stats["served"] += 1
         if status != "done" or code is None:
             result.unlink(missing_ok=True)
             return CompileOutcome(
@@ -407,8 +490,11 @@ class ResidentLean:
         args: list[str],
         timeout_s: float,
         cancel: threading.Event | None = None,
+        *,
+        workdir: Path,
     ) -> tuple[int | None, str]:
         """Fork one child and wait for it. Status: done | timeout | aborted."""
+        self._check_workdir(workdir)
         if not self.alive():
             raise ResidentUnavailable("resident Lean is not running")
         if not self._slots.acquire(timeout=self.config.queue_timeout_s):
@@ -420,6 +506,7 @@ class ResidentLean:
         pending = _Pending(kind)
         deadline = time.monotonic() + timeout_s
         cfg = self.config
+        keep_pending = False
         try:
             with self._lock:
                 proc = self._proc
@@ -428,7 +515,7 @@ class ResidentLean:
                 self._pending[request_id] = pending
                 line = " ".join(
                     [kind, request_id, *args, str(cfg.child_memory_bytes),
-                     str(cfg.child_cpu_seconds)]
+                     str(cfg.child_cpu_seconds), str(cfg.fsize_bytes), str(workdir)]
                 )
                 try:
                     proc.stdin.write(line.encode() + b"\n")
@@ -436,16 +523,18 @@ class ResidentLean:
                     self._pending.pop(request_id, None)
                     raise ResidentUnavailable("resident Lean pipe closed") from None
             if not pending.forked.wait(max(0.0, min(deadline - time.monotonic(), 10.0))):
+                pending.abandoned = True  # a late FORKED for it is killed by the reader
+                keep_pending = True
                 return None, "aborted"
             pid = pending.pid
             while True:
                 if pending.done.wait(0.05):
                     break
                 if cancel is not None and cancel.is_set():
-                    self._kill_child(pid)
+                    _kill_group(pid)
                     return None, "aborted"
                 if time.monotonic() >= deadline:
-                    self._kill_child(pid)
+                    _kill_group(pid)
                     return None, "timeout"
                 if pid and not _alive(pid):
                     # finished without DONE: give the pipe a moment, then call it an interruption
@@ -457,16 +546,54 @@ class ResidentLean:
             return pending.code, "done"
         finally:
             with self._lock:
-                self._pending.pop(request_id, None)
+                if not keep_pending:
+                    self._pending.pop(request_id, None)
+                self._children.discard(pending.pid)
             self._slots.release()
 
-    @staticmethod
-    def _kill_child(pid: int) -> None:
-        if pid <= 1:
+
+def _kill_group(pid: int) -> None:
+    """SIGKILL a request child's process group (its pid is its group id), then the pid itself."""
+    if pid <= 1:
+        return
+    for kill in (os.killpg, os.kill):
+        with contextlib.suppress(ProcessLookupError, PermissionError):
+            kill(pid, signal.SIGKILL)
+
+
+def _die_with_parent() -> None:
+    """Linux: the zygote gets SIGKILL when the manager's thread dies (no orphaned Mathlib)."""
+    import ctypes
+
+    ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGKILL)  # PR_SET_PDEATHSIG
+
+
+def compile_shim(lean_binary: str, out: Path, c_compiler: str | None = None) -> None:
+    """Build the C part of the worker (needs a C compiler and the toolchain's ``lean.h``).
+
+    Run this at image build time and pass the result as ``ResidentConfig.prebuilt_shim``: the
+    verifier then needs neither a compiler nor a writable directory at run time.
+    """
+    include = Path(lean_binary).resolve().parent.parent / "include"
+    candidates = [c_compiler] if c_compiler else []
+    if sys.platform != "darwin":  # the toolchain's bundled clang has no macOS SDK
+        candidates.append(str(Path(lean_binary).resolve().parent / "leanc"))
+    candidates += [shutil.which("cc"), shutil.which("clang")]
+    extra = ["-undefined", "dynamic_lookup"] if sys.platform == "darwin" else []
+    last = ""
+    out.parent.mkdir(parents=True, exist_ok=True)
+    for compiler in filter(None, candidates):
+        tmp = out.with_suffix(out.suffix + f".{secrets.token_hex(4)}")
+        result = subprocess.run(
+            [compiler, "-shared", "-fPIC", "-O1", "-fvisibility=default", *extra,
+             f"-I{include}", "-o", str(tmp), str(SHIM_SOURCE)],
+            capture_output=True, text=True, timeout=120, check=False,
+        )
+        if result.returncode == 0:
+            os.replace(tmp, out)
             return
-        for kill, argument in ((os.killpg, pid), (os.kill, pid)):
-            with contextlib.suppress(ProcessLookupError, PermissionError):
-                kill(argument, signal.SIGKILL)
+        last = result.stderr[-300:]
+    raise ResidentUnavailable(f"could not build the resident shim: {last}")
 
 
 def _alive(pid: int) -> bool:
@@ -478,3 +605,12 @@ def _alive(pid: int) -> bool:
         return True
     return True
 
+
+
+def default_read_roots(lean_binary: str, lean_path: str) -> tuple[str, ...]:
+    """What a confined child may read: the toolchain, the import directories, system libraries."""
+    toolchain = Path(lean_binary).resolve().parent.parent
+    roots = [str(toolchain), *(p for p in lean_path.split(os.pathsep) if p)]
+    roots += ["/lib", "/lib64", "/usr/lib", "/usr/lib64", "/etc/ld.so.cache"]
+    roots += ["/proc", "/sys/devices"]
+    return tuple(dict.fromkeys(roots))

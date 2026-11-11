@@ -73,6 +73,7 @@ def main() -> None:
     parser.add_argument("--budget-given", type=float, default=stage0.BUDGET_GIVEN_S)
     parser.add_argument("--budget-formalised", type=float, default=stage0.BUDGET_FORMALISED_S)
     args = parser.parse_args()
+    args.out = args.out.resolve()
     args.out.mkdir(parents=True, exist_ok=True)
     spend = [0.0]
 
@@ -87,6 +88,7 @@ def main() -> None:
     ).stdout.strip()
     resident = ResidentLean(
         ResidentConfig(
+            project_dir=args.project,
             lean_binary=lean, lean_path=lean_path, build_dir=args.out / "resident",
             max_children=args.max_children, queue_timeout_s=30.0, warm_exact=args.warm_exact,
         )

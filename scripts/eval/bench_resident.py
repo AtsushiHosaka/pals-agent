@@ -84,6 +84,7 @@ def main() -> None:
     parser.add_argument("--repeats", type=int, default=2)
     parser.add_argument("--skip-cold-concurrent", action="store_true")
     args = parser.parse_args()
+    args.out = args.out.resolve()
     args.out.mkdir(parents=True, exist_ok=True)
     lean = f"{args.toolchain}/bin/lean"
     lake = f"{args.toolchain}/bin/lake"
@@ -102,6 +103,7 @@ def main() -> None:
 
     resident = ResidentLean(
         ResidentConfig(
+            project_dir=args.project,
             lean_binary=lean,
             lean_path=lean_path,
             build_dir=scratch / "resident",
