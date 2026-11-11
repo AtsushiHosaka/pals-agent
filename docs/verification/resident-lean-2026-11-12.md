@@ -33,7 +33,7 @@
   - fork した子には親のタスク管理スレッドがなく、通常のフロントエンドは `Task.get` で永久に待つ。共有ライブラリの `l_palsChildSetup` が `lean_init_task_manager_using(1)` で新しい管理を差し替える(`--threads=1` 相当)。
   - 旧式の逐次 `Frontend.processCommands` は 4.32 で**メッセージを黙って捨てる**(誤受理の原因になる)。使っていない。
   - 拡張の C 部分は Lean のインタプリタが `l_<名前>` で探す。Linux では `-fvisibility=default` と、`RTLD_GLOBAL` への昇格(`dladdr`+`dlopen(RTLD_NOLOAD)`)が要る。検証器イメージには libc ヘッダがないので、Linux 側は libc 関数を手で宣言している。
-- 失敗は判定にならない: 子の死亡、タイムアウト、zygote の死亡、満杯は `aborted` / `timed_out` / `unsupported` / `ResidentBusy` で、呼び出し側は cold の経路に落ちる。zygote が死んだら再起動(上限 5 回、バックオフ)。`LeanVerifier` は、常駐が提供できない依頼(import が `Mathlib` 以外、別のライブラリプロファイル、Recipe 受付の literal コマンド)では従来どおり動く。
+- 失敗は判定にならない: 子の死亡、zygote の死亡、満杯、別 import は `aborted` / `unsupported` / `ResidentBusy` で、`LeanVerifier` は cold の経路に落ちる(残り時間は request の 1 つの deadline から引く)。**常駐のコンパイルや監査がタイムアウトしたときは cold へ再試行せず、タイムアウトの結果を返す**(cold と同じ判定: 時間切れは検証済みにならない)。zygote が死んだら再起動する(連続失敗 5 回で使用不可、以後は cold のみ)。常駐が提供できない依頼(別のライブラリプロファイル、Recipe 受付の literal コマンド、Linux で `confine` が無い常駐、toolchain・project・出力上限が検証器と違う常駐)では従来どおり動く。
 - 監査: `warm_audit_source()` が `TRUSTED_AUDIT_SOURCE` から 2 行(エントリと import)だけを置換して `auditWarm` を作る。置換前の文字列が 1 回ずつ現れない場合は例外で、監査プログラムの変更に追従し損なえない。nonce は子が終わった後に作る。
 - 文面検査の層 1(許可リスト)も zygote の子で動く(`STMT`)。`warm_worker.lean` と同一の断片をテストで固定している。
 - `ResidentWorker`(adapter)は、段階 0 が使う `WarmWorker` の呼び出し(`check` / `check_statement`)を子で返す。「依頼ごとに新しい clean な worker」が、Mathlib の import なしで手に入る。
@@ -134,7 +134,7 @@ verifier = LeanVerifier(..., resident=resident)      # proof-job 用のみ。adm
   - 検証(ローカルの検証器イメージ、Docker 既定の seccomp、`tests/unit/test_resident_confinement.py` の 9 件): 他依頼のファイルの読み取り・上書き、zygote への `kill`、プロセスの起動、`/proc/<zygote>/environ` の読み取りがすべて拒否される。自分のディレクトリへの書き込みは通る。2 つの攻撃と良い依頼を 10 並行で混ぜても、良い依頼は全部通り、攻撃は全部失敗し、他依頼のファイルは無傷で zygote は生きている。40 MB の出力は子が打ち切られ、次の依頼は通る。壊れた実行ファイルは有限回(5 回)の再起動のあと使用不可になる。
   - `lean_child.py` は使わない。zygote に必要なのは依頼ごとに新しいディレクトリへの書き込みで、`lean_child.py` は 1 つの `pals-lean-*` ディレクトリを起動時に固定する設計のため。
 - 起動時の C コンパイル: `python -m pals_agent.lean_verifier.resident.build --lean <lean> --out <path>` をイメージのビルド時に実行し、`ResidentConfig(prebuilt_shim=<path>, allow_shim_compile=False)` で使うと、本番に C コンパイラも書き込み可能なディレクトリ(shim 用)も要らない。
-- 監査を常駐でやる前提: 監査に渡す `.olean` は子が書く。常駐の子は `writeModule` で書くが、cold のコンパイルが書く `.olean` との同一性(imports の列、定数の列)は 16 件の判定一致で確認しただけで、バイト列の一致は見ていない。
+- 監査を常駐でやる前提: 監査に渡す `.olean` は子が書く。常駐の子は `writeModule` で書くが、cold のコンパイルが書く `.olean` との同一性(imports の列、定数の列)は、判定の一致(40 件)で間接的に見ただけで、**直接は比べていない**。
 
 **cold と常駐の判定比較(Linux、検証器イメージ、confine あり、40 件)**: 通る 29 件と拒否 11 件(誤った主張、未解決のゴール、`sorry`・`axiom`・`native_decide` の方針拒否、後続定理のエラー、`variable`/`include`、記法の再定義、heartbeat 超過、別 import、型の不一致、未知の補題など)を `LeanVerifier.verify` に通した。**判定(成功の可否と error の診断コード)は 40 件すべて cold と一致**。10 並行の 39 件も、同じ件の単独の判定と全件一致(不一致 0)。常駐が処理した数は 126、中断・タイムアウト 0、`unsupported` 2(別 import は cold へ落ちる設計)。検証 1 回は単独 p50 0.43 秒(p90 0.53 秒、`exact?` の索引つき)、10 並行 p50 0.96 秒(最大 2.2 秒)。cold は単独 p50 8.4 秒(p90 9.1 秒、最大 28 秒)。生データ: `bench_resident.py` の出力(共有ノート `resident-lean/bench-linux-40cases-confined.json`)。
 
