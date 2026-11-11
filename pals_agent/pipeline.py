@@ -279,8 +279,13 @@ class ProofPipeline:
     # Used only by PALS_T2_PARALLEL_REVIEW_ENABLED: an object with the
     # ``LeanProofSemanticReviewer.review_proof`` signature.
     reviewer: Any = None
+    # Seconds ``_run_request`` waits, after the result is ready, for calls the T2 lane left running
+    # (a race loser's model call, an unused Draft) so their usage is reported before the caller's
+    # usage scope ends. 0 skips the wait; the caller must then call ``result.background.drain``.
+    accounting_wait_seconds: float = 15.0
 
     def __post_init__(self) -> None:
+        t2_lane.validate_flags()  # a malformed T2 switch fails here, not mid-job after spend
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
             raise ValueError("Request-linked typed retrieval must retain the natural Draft route")
         if (
@@ -420,11 +425,22 @@ class ProofPipeline:
 
     def _run_request(self, **arguments: Any) -> ProofRunResult:
         explain = getattr(self.explainer, "explain", None)
-        review = _speculative_review_call(
-            self.reviewer, getattr(arguments.get("request"), "formal_statement", None)
-        )
+        run_request = cast(ProofRequest, arguments["request"])
+        review = _speculative_review_call(self.reviewer, run_request.formal_statement)
+        harness = arguments.get("verification_harness")
+
+        def preflight(lean_code: str) -> list[Diagnostic]:
+            # The race's candidates are checked exactly as the main loop checks them.
+            return validate_generated_lean(
+                run_request,
+                lean_code,
+                verification_harness=harness,
+                require_single_target=self.verification_mode == "api_reconcile",
+            )
+
         with (
             step_timing.run_scope(arguments.get("proof_job_id")),
+            t2_lane.preflight_scope(preflight),
             t2_lane.t2_run_scope(explain, self.explanation_language, review) as (
                 _memo,
                 explanation_run,
@@ -445,10 +461,14 @@ class ProofPipeline:
                     explanation = handle
                 else:
                     review_handle = handle
-            if explanation is None and review_handle is None:
-                return result
+            background = t2_lane.current_background()
+            if background is not None:
+                background.drain(self.accounting_wait_seconds)
             return replace(
-                result, speculative_explanation=explanation, speculative_review=review_handle
+                result,
+                speculative_explanation=explanation,
+                speculative_review=review_handle,
+                background=background,
             )
 
     def _run_request_steps(
@@ -766,14 +786,18 @@ class ProofPipeline:
                     speculative_run.start(
                         statement=request.prompt, lean_code=generated.lean_code
                     )
-            with latency_stage("lean_compile_local"), step_timing.step("lean_check") as timing:
-                # A racing first attempt may already have been compiled by its own thread.
-                memoised = t2_lane.take_memoised(generated.lean_code)
-                verification = memoised if memoised is not None else verifier.verify(
-                    generated.lean_code
-                )
-                if timing is not None:
-                    timing.set_lean(verification.success, verification.diagnostics)
+            # A racing first attempt was already compiled (timed as lean_check) by its own thread.
+            memoised = t2_lane.take_memoised(generated.lean_code)
+            if memoised is not None:
+                verification = memoised
+            else:
+                with (
+                    latency_stage("lean_compile_local"),
+                    step_timing.step("lean_check") as timing,
+                ):
+                    verification = verifier.verify(generated.lean_code)
+                    if timing is not None:
+                        timing.set_lean(verification.success, verification.diagnostics)
             diagnostics = [*diagnostics, *verification.diagnostics]
             if not verification.success and self.lemma_alias_repair:
                 lemma_run = self._lemma_repair_in_attempt(
@@ -1350,13 +1374,17 @@ class ProofPipeline:
         verifier = self.verifier
         assert verifier is not None
         memo = t2_lane.current_memo()
+        preflight = t2_lane.current_preflight() or (
+            lambda lean_code: validate_generated_lean(request, lean_code)
+        )
+        # Lean capacity for racing compiles. A candidate takes a slot, then checks the cancel
+        # event *after* acquiring it: a loser that was queued behind the winner never compiles.
+        slots = threading.BoundedSemaphore(t2_lane.lean_slots())
 
         def task(cancel: threading.Event) -> _RacedCandidate:
             generated = prove_once()
             code = generated.lean_code
-            if not code.strip() or validate_generated_lean(request, code):
-                return _RacedCandidate(generated, None)
-            if cancel.is_set():
+            if not code.strip() or preflight(code) or cancel.is_set():
                 return _RacedCandidate(generated, None)
             # The explanation and the review of this candidate run while Lean compiles it.
             for speculative_run in (
@@ -1365,7 +1393,16 @@ class ProofPipeline:
             ):
                 if speculative_run is not None:
                     speculative_run.start(statement=request.prompt, lean_code=code)
-            verification = verifier.verify(code)
+            with slots:
+                if cancel.is_set():
+                    return _RacedCandidate(generated, None)
+                with step_timing.step("lean_check") as timing:
+                    verification = verifier.verify(code)
+                    if timing is not None:
+                        timing.set_lean(verification.success, verification.diagnostics)
+                if verification.success:
+                    # Decided while still holding the slot, so a queued loser sees the cancel.
+                    cancel.set()
             if memo is not None:
                 memo.put(code, verification)
             return _RacedCandidate(generated, verification)
@@ -1967,8 +2004,10 @@ def _generate_staged_attempt(
             {**context, "dsp_stage": "prove", "t2_no_draft": True, "t2_routine": request.routine},
         )
 
+        direct_proof = cast(Callable[[ProofRequest, None], GeneratedProof], direct)
+
         def direct_from_request() -> GeneratedProof:
-            return cast(GeneratedProof, direct(request, None))
+            return direct_proof(request, None)
 
         proof = race(direct_from_request) if race is not None else direct_from_request()
         verified = t2_lane.peek_memoised(proof.lean_code)

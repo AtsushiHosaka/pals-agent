@@ -75,6 +75,58 @@ def parallel_review_enabled() -> bool:
     return _flag(PARALLEL_REVIEW_ENV)
 
 
+LEAN_SLOTS_ENV = "PALS_T2_LEAN_SLOTS"
+
+
+def lean_slots() -> int:
+    """How many racing candidates may compile at once (default: all of them).
+
+    The race assumes Lean capacity for this many concurrent compiles per job. With 1 the race
+    is serial at the compiler: the first candidate to be ready compiles, and the other is
+    cancelled before it compiles if that one wins. Set it to the capacity a job really has."""
+    raw = os.environ.get(LEAN_SLOTS_ENV)
+    if raw is None:
+        return CANDIDATE_COUNT
+    if not raw.isdigit() or not 1 <= int(raw) <= CANDIDATE_COUNT:
+        raise ValueError(f"{LEAN_SLOTS_ENV} must be an integer from 1 to {CANDIDATE_COUNT}")
+    return int(raw)
+
+
+def validate_flags() -> None:
+    """Read every T2 switch once, so a malformed value fails at startup, not mid-job after
+    model spend. Raises ValueError."""
+    for check in (
+        no_sketch_enabled,
+        parallel_candidates_enabled,
+        patch_repair_enabled,
+        parallel_explanation_enabled,
+        parallel_review_enabled,
+        no_draft_enabled,
+        name_safety_enabled,
+        lean_slots,
+    ):
+        check()
+
+
+_preflight: ContextVar[Callable[[str], list[Any]] | None] = ContextVar(
+    "pals_t2_preflight", default=None
+)
+
+
+def current_preflight() -> Callable[[str], list[Any]] | None:
+    """The run's own source preflight (same harness and target rules as the main loop)."""
+    return _preflight.get()
+
+
+@contextmanager
+def preflight_scope(check: Callable[[str], list[Any]]) -> Iterator[None]:
+    token = _preflight.set(check)
+    try:
+        yield
+    finally:
+        _preflight.reset(token)
+
+
 def no_draft_enabled() -> bool:
     """First attempt: no Draft before the proof. Routine requests (``ProofRequest.routine``)
     skip the Draft entirely; the others run the Draft beside the proof and keep it for repair."""
@@ -101,9 +153,7 @@ class BackgroundCall:
 
     def __init__(self, fn: Callable[[], Any]) -> None:
         self._future: Future[Any] = Future()
-        with _PENDING_LOCK:
-            _PENDING.add(self._future)
-        self._future.add_done_callback(_discard_pending)
+        _track(self._future)
 
         def run() -> None:
             try:
@@ -211,9 +261,7 @@ def discarded_usage_scope(sink: Callable[[dict[str, Any]], None]) -> Iterator[No
 
 def _account_discarded(handle: Any, sink: Callable[[dict[str, Any]], None]) -> None:
     future: Future[None] = Future()
-    with _PENDING_LOCK:
-        _PENDING.add(future)
-    future.add_done_callback(_discard_pending)
+    _track(future)
 
     def work() -> None:
         try:
@@ -322,9 +370,11 @@ def t2_run_scope(
     memo_token = _memo.set(memo)
     run_token = _explanation_run.set(run)
     review_token = _review_run.set(review_run)
+    background_token = _run_background.set(RunBackground())
     try:
         yield memo, run
     finally:
+        _run_background.reset(background_token)
         _memo.reset(memo_token)
         _explanation_run.reset(run_token)
         _review_run.reset(review_token)
@@ -333,8 +383,53 @@ def t2_run_scope(
 # ---- candidate race ---------------------------------------------------------------------------
 
 T = TypeVar("T")
-_PENDING: set[Future[Any]] = set()
+_PENDING: set[Future[Any]] = set()  # fallback for work started outside a pipeline run
 _PENDING_LOCK = threading.Lock()
+
+
+class RunBackground:
+    """Calls one pipeline run left running (race losers, an unused Draft, discarded
+    explanations). Per run, so one run's accounting never waits for, or mixes with, another's."""
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._futures: set[Future[Any]] = set()
+
+    def track(self, future: Future[Any]) -> None:
+        with self._lock:
+            self._futures.add(future)
+        future.add_done_callback(self._forget)
+
+    def _forget(self, future: Future[Any]) -> None:
+        with self._lock:
+            self._futures.discard(future)
+
+    def drain(self, timeout: float = 180.0) -> int:
+        """Wait for them; their usage is forwarded when each ends. Returns how many were still
+        running at the deadline (their usage is then not counted in this run)."""
+        with self._lock:
+            pending = set(self._futures)
+        if not pending or timeout <= 0:
+            return len(pending)
+        _done, not_done = wait(pending, timeout=timeout)
+        return len(not_done)
+
+
+_run_background: ContextVar[RunBackground | None] = ContextVar("pals_t2_background", default=None)
+
+
+def current_background() -> RunBackground | None:
+    return _run_background.get()
+
+
+def _track(future: Future[Any]) -> None:
+    background = _run_background.get()
+    if background is not None:
+        background.track(future)
+        return
+    with _PENDING_LOCK:
+        _PENDING.add(future)
+    future.add_done_callback(_discard_pending)
 
 
 @dataclass(slots=True)
@@ -413,9 +508,7 @@ def race_candidates(  # noqa: UP047
     for index in range(len(tasks)):
         future: Future[None] = Future()
         futures.append(future)
-        with _PENDING_LOCK:
-            _PENDING.add(future)
-        future.add_done_callback(_discard_pending)
+        _track(future)
         # One real thread per candidate: they must run at the same time, never queue.
         threading.Thread(
             target=copy_context().run,
@@ -468,9 +561,11 @@ def drain_background(timeout: float = 180.0) -> int:
     tokens are counted without adding to the measured time. Returns how many were still running
     at the deadline.
     """
+    background = _run_background.get()
+    inner = background.drain(timeout) if background is not None else 0
     with _PENDING_LOCK:
         pending = set(_PENDING)
     if not pending:
-        return 0
+        return inner
     _done, not_done = wait(pending, timeout=timeout)
-    return len(not_done)
+    return inner + len(not_done)

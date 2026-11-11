@@ -58,6 +58,8 @@ ARM_FLAGS: dict[str, set[str]] = {
     "nd_k2_par": {"nodraft", "race", "pexpl", "preview"},
     # nd_k2 with the fixed-statement template and the layout splice (see ARM_PIPELINE)
     "nd_k2_tmpl": {"nodraft", "race"},
+    # nd_k2 with one Lean slot per job (see ARM_ENV): the race is serial at the compiler
+    "nd_k2_slot1": {"nodraft", "race"},
     "t2_norace": {"nosketch", "patch", "pexpl"},
     "t2_nopatch": {"nosketch", "race", "pexpl"},
     "t2_nonosketch": {"race", "patch", "pexpl"},
@@ -73,11 +75,18 @@ _IMPORT_ERR = re.compile(
 _UNKNOWN_ID = re.compile(r"unknown (identifier|constant|namespace)|unknown identifier", re.I)
 
 
+# Extra environment of an arm (not a boolean flag).
+ARM_ENV: dict[str, dict[str, str]] = {"nd_k2_slot1": {"PALS_T2_LEAN_SLOTS": "1"}}
+
+
 def set_arm(arm: str) -> dict[str, str]:
     on = ARM_FLAGS[arm]
     env = {name: ("true" if key in on else "false") for key, name in FLAG_NAMES.items()}
     os.environ.update(env)
-    return env
+    os.environ.pop("PALS_T2_LEAN_SLOTS", None)
+    extra = ARM_ENV.get(arm, {})
+    os.environ.update(extra)
+    return {**env, **extra}
 
 
 def classify(result: Any) -> dict[str, Any]:
@@ -541,6 +550,8 @@ def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
             explainer=explainer,
             reviewer=reviewer,
             harness_splice=options.get("harness_splice", False),
+            # keep the wall clock honest; the runner drains the background after the answer stage
+            accounting_wait_seconds=0.0,
         )
 
     pipelines = {arm: pipeline_for(arm) for arm in args.arms.split(",")}

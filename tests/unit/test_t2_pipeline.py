@@ -148,6 +148,7 @@ class Generator:
 
 
 def _pipeline(tmp_path: Path, generator: Generator, verifier: ScriptedVerifier, **kw: Any):
+    kw.setdefault("accounting_wait_seconds", 0.0)  # tests drain explicitly
     return ProofPipeline(
         generator=generator, verifier=verifier, artifact_store=FileArtifactStore(tmp_path), **kw
     )
@@ -162,6 +163,7 @@ def _flags(monkeypatch: pytest.MonkeyPatch, **on: bool) -> None:
         t2_lane.NO_DRAFT_ENV,
         t2_lane.NAME_SAFETY_ENV,
         t2_lane.PARALLEL_REVIEW_ENV,
+        t2_lane.LEAN_SLOTS_ENV,
     ):
         monkeypatch.delenv(env, raising=False)
     for env in on:
@@ -219,7 +221,7 @@ def test_race_first_verified_wins_loser_cancelled_and_not_recompiled(
         assert result.state == "verified" and result.generated.lean_code == GOOD
         assert elapsed < 0.5  # did not wait for the slow candidate
         assert verifier.compiled == [GOOD]  # one compile: the memo served the main loop
-        assert t2_lane.drain_background(5) == 0
+        assert result.background is None or result.background.drain(5) == 0
     assert verifier.compiled == [GOOD]  # the cancelled loser never reached Lean
     # draft (1) + winner (10) + loser (10): both candidates are counted
     assert sorted(r["input_tokens"] for r in seen) == [1, 10, 10]
@@ -410,7 +412,7 @@ def test_no_draft_with_a_verified_race_winner_does_not_wait_for_the_draft(
         )
         assert result.state == "verified"
         assert time.monotonic() - started < 0.7
-        assert t2_lane.drain_background(5) == 0
+        assert result.background is None or result.background.drain(5) == 0
     assert 1 in [r["input_tokens"] for r in seen]  # the slow Draft was still billed
 
 
@@ -428,7 +430,7 @@ def test_pipeline_runs_leave_no_state_behind_for_a_pre_stage(
         )
         assert result.state == "verified"
         assert t2_lane.current_memo() is None and t2_lane.current_explanation_run() is None
-    assert t2_lane.drain_background(5) == 0
+    assert result.background is None or result.background.drain(5) == 0
 
 
 class RecordingReviewer:
@@ -488,7 +490,7 @@ def test_race_starts_a_review_per_candidate_and_keeps_only_the_winners(
         result = _pipeline(
             tmp_path, gen, ScriptedVerifier({GOOD}), reviewer=reviewer
         ).run_statement(statement=STATEMENT, proof_job_id=JOB)
-        assert t2_lane.drain_background(5) == 0
+        assert result.background is None or result.background.drain(5) == 0
     assert result.state == "verified" and result.speculative_review is not None
     assert result.speculative_review.lean_code == GOOD
     assert sorted(reviewer.codes) == sorted([BAD, GOOD])
@@ -510,3 +512,134 @@ def test_a_rewritten_statement_is_never_accepted_with_the_template_flags_either(
     ).run_statement(statement=STATEMENT, formal_statement=fixed, proof_job_id=JOB)
     assert result.state == "failed"
     assert rewritten not in verifier.compiled  # rejected by the harness check before Lean
+
+
+def test_loser_already_compiling_when_the_race_is_decided_is_counted_not_used(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(monkeypatch, **{t2_lane.NO_SKETCH_ENV: True, t2_lane.PARALLEL_CANDIDATES_ENV: True})
+    gate = threading.Event()
+
+    class Gated(ScriptedVerifier):
+        def verify(self, lean_code: str) -> VerificationResult:
+            if lean_code == BAD:
+                gate.wait(5)  # the loser is mid-compile when the winner is found
+            return super().verify(lean_code)
+
+    gen = Generator([GOOD, BAD], proof_delays=[0.2, 0.0])
+    seen: list[dict[str, Any]] = []
+    with usage_scope(seen.append):
+        result = _pipeline(tmp_path, gen, Gated({GOOD})).run_statement(
+            statement=STATEMENT, proof_job_id=JOB
+        )
+        assert result.state == "verified" and result.generated.lean_code == GOOD
+        gate.set()
+        assert result.background is not None and result.background.drain(5) == 0
+    assert sorted(r["input_tokens"] for r in seen) == [1, 10, 10]
+
+
+def test_both_candidates_raising_surfaces_the_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(monkeypatch, **{t2_lane.NO_SKETCH_ENV: True, t2_lane.PARALLEL_CANDIDATES_ENV: True})
+
+    class Boom(Generator):
+        def generate_direct_proof(self, request, draft):
+            raise RuntimeError("model down")
+
+    with pytest.raises(RuntimeError, match="model down"):
+        _pipeline(tmp_path, Boom([]), ScriptedVerifier(set())).run_statement(
+            statement=STATEMENT, proof_job_id=JOB
+        )
+
+
+def test_rewritten_statement_from_a_race_candidate_is_never_accepted(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(monkeypatch, **{t2_lane.NO_SKETCH_ENV: True, t2_lane.PARALLEL_CANDIDATES_ENV: True})
+    fixed = "theorem add_zero_nat (n : Nat) : n + 0 = n"
+    rewritten = GOOD.replace("n + 0 = n", "n = n")
+    verifier = ScriptedVerifier({rewritten, GOOD})  # Lean would accept the rewrite
+    # both candidates rewrite the statement; the repair then returns the right one
+    gen = Generator([rewritten, rewritten, GOOD])
+    result = _pipeline(tmp_path, gen, verifier).run_statement(
+        statement=STATEMENT, formal_statement=fixed, proof_job_id=JOB
+    )
+    assert result.generated.lean_code == GOOD
+    assert rewritten not in verifier.compiled  # never reached Lean, never accepted
+
+
+def test_with_one_lean_slot_the_loser_never_compiles_after_the_winner(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(monkeypatch, **{t2_lane.NO_SKETCH_ENV: True, t2_lane.PARALLEL_CANDIDATES_ENV: True})
+    monkeypatch.setenv(t2_lane.LEAN_SLOTS_ENV, "1")
+    verifier = ScriptedVerifier({GOOD}, delay=0.3)
+    gen = Generator([GOOD, GOOD], proof_delays=[0.0, 0.0])
+    result = _pipeline(tmp_path, gen, verifier).run_statement(statement=STATEMENT, proof_job_id=JOB)
+    assert result.state == "verified"
+    assert result.background is None or result.background.drain(5) == 0
+    assert verifier.compiled == [GOOD]  # serial at the compiler: the second candidate was cancelled
+
+
+def test_with_one_lean_slot_a_failing_first_compile_lets_the_second_candidate_compile(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(monkeypatch, **{t2_lane.NO_SKETCH_ENV: True, t2_lane.PARALLEL_CANDIDATES_ENV: True})
+    monkeypatch.setenv(t2_lane.LEAN_SLOTS_ENV, "1")
+    verifier = ScriptedVerifier({GOOD}, delay=0.1)
+    gen = Generator([BAD, GOOD], proof_delays=[0.0, 0.3])
+    result = _pipeline(tmp_path, gen, verifier).run_statement(statement=STATEMENT, proof_job_id=JOB)
+    assert result.state == "verified" and result.generated.lean_code == GOOD
+    assert verifier.compiled == [BAD, GOOD]
+
+
+def test_the_pipeline_waits_a_bounded_time_for_late_usage_before_returning(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(monkeypatch, **{t2_lane.NO_SKETCH_ENV: True, t2_lane.PARALLEL_CANDIDATES_ENV: True})
+    gen = Generator([GOOD, BAD], proof_delays=[0.0, 0.4])
+    seen: list[dict[str, Any]] = []
+    with usage_scope(seen.append):
+        _pipeline(
+            tmp_path, gen, ScriptedVerifier({GOOD}), accounting_wait_seconds=5.0
+        ).run_statement(statement=STATEMENT, proof_job_id=JOB)
+        # the loser's usage is already in by the time the result came back
+        assert sorted(r["input_tokens"] for r in seen) == [1, 10, 10]
+
+
+def test_malformed_t2_flag_fails_at_construction_not_mid_job(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(monkeypatch)
+    monkeypatch.setenv(t2_lane.NO_DRAFT_ENV, "yes")
+    with pytest.raises(ValueError):
+        _pipeline(tmp_path, Generator([]), ScriptedVerifier(set()))
+    monkeypatch.delenv(t2_lane.NO_DRAFT_ENV)
+    monkeypatch.setenv(t2_lane.LEAN_SLOTS_ENV, "9")
+    with pytest.raises(ValueError):
+        _pipeline(tmp_path, Generator([]), ScriptedVerifier(set()))
+
+
+def test_race_lean_time_is_recorded_as_a_lean_step(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from pals_agent import step_timing
+
+    _flags(monkeypatch, **{t2_lane.NO_SKETCH_ENV: True, t2_lane.PARALLEL_CANDIDATES_ENV: True})
+    steps: list[str] = []
+    real_step = step_timing.step
+
+    from contextlib import contextmanager
+
+    @contextmanager
+    def spy(name, *a, **k):
+        steps.append(name)
+        with real_step(name, *a, **k) as timing:
+            yield timing
+
+    monkeypatch.setattr(step_timing, "step", spy)
+    _pipeline(tmp_path, Generator([GOOD, GOOD]), ScriptedVerifier({GOOD})).run_statement(
+        statement=STATEMENT, proof_job_id=JOB
+    )
+    assert "lean_check" in steps  # the race's compile is timed, though the main loop reuses it

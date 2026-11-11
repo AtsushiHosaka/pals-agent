@@ -16,6 +16,30 @@ from __future__ import annotations
 
 import re
 
+# A patch edits the proof, never the statement, imports or declarations around it, and may not
+# introduce anything that changes what Lean trusts or what the file declares.
+FORBIDDEN_IN_BODY = re.compile(
+    r"\b(?:axiom|set_option|native_decide|sorry|admit|import|unsafe|implemented_by|extern|macro|"
+    r"syntax|elab|notation|run_cmd|opaque|constant)\b|#|^\s*(?:theorem|lemma|def|abbrev|instance|"
+    r"structure|inductive|class)\b",
+    re.MULTILINE,
+)
+_DECLARATION = re.compile(r"^\s*(?:@\[[^\]]*\]\s*)?(?:theorem|lemma|example)\b")
+
+
+def protected_through(lean_code: str) -> int:
+    """Last line (1-based) a patch may not touch: imports, `open`s, the declaration header and the
+    line where its proof starts (`:=`). When no declaration is found, every line is protected."""
+    lines = lean_code.splitlines()
+    for index, line in enumerate(lines):
+        if _DECLARATION.match(line):
+            for end in range(index, len(lines)):
+                if ":=" in lines[end]:
+                    return end + 1
+            break
+    return len(lines)
+
+
 MAX_EDITS = 6
 MAX_BODY_CHARS = 6000
 _HEADER = re.compile(r"^REPLACE (\d{1,5})(?:-(\d{1,5}))?\s*$")
@@ -53,10 +77,24 @@ def parse_patch(text: str) -> list[tuple[int, int, list[str]]] | None:
     return edits
 
 
-def apply_patch(lean_code: str, patch_text: str) -> str | None:
-    """The patched source, or ``None`` if the patch is not acceptable."""
+def apply_patch(
+    lean_code: str, patch_text: str, *, protected: int | None = None
+) -> str | None:
+    """The patched source, or ``None`` if the patch is not acceptable.
+
+    ``protected`` is the last line no edit may touch (default: ``protected_through(lean_code)``).
+    ``lean_code`` must be the very string the line numbers refer to (leading blank lines count)."""
     edits = parse_patch(patch_text)
     if edits is None or len(edits) > MAX_EDITS:
+        return None
+    if protected is None:
+        protected = protected_through(lean_code)
+    if any(first <= protected for first, _last, _body in edits):
+        return None
+    if any(
+        FORBIDDEN_IN_BODY.search(re.sub(r"--[^\n]*", "", "\n".join(body)))
+        for _first, _last, body in edits
+    ):
         return None
     lines = lean_code.splitlines()
     if sum(len("\n".join(body)) for _first, _last, body in edits) > MAX_BODY_CHARS:

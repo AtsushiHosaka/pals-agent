@@ -502,9 +502,10 @@ def run_pipeline_once(
                 answer_s = time.monotonic() - t0
             # Candidates cancelled by a race (and discarded explanations) bill after the clock
             # stopped; wait for them so the usage and cost below include them.
-            from pals_agent import t2_lane
-
-            extra["undrained_background_calls"] = t2_lane.drain_background()
+            background = getattr(result, "background", None)
+            extra["undrained_background_calls"] = (
+                background.drain(180) if background is not None else 0
+            )
     except Exception as exc:
         error = type(exc).__name__
     meta: dict[str, Any] = {}

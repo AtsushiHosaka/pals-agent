@@ -228,6 +228,9 @@ class ProofRunResult:
     speculative_explanation: Any = field(default=None, compare=False, repr=False)
     # T2: a semantic review started beside verification for exactly this proof, or None.
     speculative_review: Any = field(default=None, compare=False, repr=False)
+    # T2: calls still running when the result was returned (``.drain(timeout)`` waits for their
+    # usage to be reported). None when nothing was left running.
+    background: Any = field(default=None, compare=False, repr=False)
 
     @property
     def state(self) -> ProofJobState:

@@ -59,7 +59,7 @@ def add_normalised(
             by_run[key].append((_parse_ts(a["started_at"]), _parse_ts(a["ended_at"])))
     for r in runs:
         merged: list[list[float]] = []
-        for start, end in sorted(by_run.get((r["problem_id"], r["arm"], int(r["repeat"])), [])):
+        for start, end in sorted(by_run.get((r["problem_id"], r["arm"], int(r.get("repeat", 1))), [])):
             if merged and start <= merged[-1][1]:
                 merged[-1][1] = max(merged[-1][1], end)
             else:
@@ -212,7 +212,7 @@ def main() -> None:
                 a["elapsed_ms"] / 1000
             )
     for r in runs:
-        c = checks.get((r["problem_id"], r["arm"], int(r["repeat"])))
+        c = checks.get((r["problem_id"], r["arm"], int(r.get("repeat", 1))))
         if c:
             r["lean_check_median_s"] = st.median(c)
     if args.lean_normal_s is not None:
