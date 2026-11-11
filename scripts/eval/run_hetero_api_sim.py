@@ -56,14 +56,14 @@ def main() -> None:
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
 
-    from pals_agent.lean_verifier.resident import ResidentConfig, ResidentLean
-    from pals_agent.lean_verifier.resident.manager import default_read_roots
-
     from pals_agent import t2_lane
     from pals_agent.artifacts import FileArtifactStore
     from pals_agent.evals.runner import estimate_usd
     from pals_agent.generator import HybridLeanGenerator
     from pals_agent.lean import LeanVerifier
+    from pals_agent.lean_verifier.resident import ResidentConfig, ResidentLean
+    from pals_agent.lean_verifier.resident.manager import default_read_roots
+    from pals_agent.models import Diagnostic
     from pals_agent.openai import OpenAIResponsesClient
     from pals_agent.pipeline import ApiRepairSeed, ProofPipeline
     from pals_agent.usage import usage_scope
@@ -181,8 +181,20 @@ def main() -> None:
                     for handle in (res.speculative_explanation, res.speculative_review):
                         if handle is not None:
                             held_handles.append(handle)
+                    # The API's compile failure: the verifier_compile_failed marker the seed
+                    # requires, then the compiler's own diagnostics as repair feedback.
+                    failed = dataclasses.replace(
+                        ver,
+                        diagnostics=[
+                            Diagnostic(
+                                severity="error", code="verifier_compile_failed",
+                                message="The Lean compiler rejected the candidate.",
+                            ),
+                            *ver.diagnostics,
+                        ],
+                    )
                     seed = ApiRepairSeed(
-                        generated=res.generated, verification=ver, attempt=attempt,
+                        generated=res.generated, verification=failed, attempt=attempt,
                         repairs_used=attempt - 1,
                     )
                     attempt += 1

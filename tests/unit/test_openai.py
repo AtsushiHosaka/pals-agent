@@ -314,3 +314,16 @@ def test_token_metered_requests_are_never_retried(monkeypatch: pytest.MonkeyPatc
         _client(transport, []).generate(model="m", prompt="p")
 
     assert Meter.calls == 1 and transport.calls == []
+
+
+def test_prompt_cache_key_is_sent_only_when_set() -> None:
+    body = json.dumps({"model": "gpt-5.4-nano", "output_text": "x"}).encode()
+    for key, expected in (("pals-prove", "pals-prove"), (None, None)):
+        transport = RecordingTransport(body)
+        client = OpenAIResponsesClient(
+            api_key="sk-test", transport=transport, prompt_cache_key=key
+        )
+        client.generate(model="gpt-5.4-nano", prompt="prove")
+        sent = json.loads(transport.calls[0]["body"].decode("utf-8"))
+        assert sent.get("prompt_cache_key") == expected
+        assert ("prompt_cache_key" in sent) is (key is not None)
