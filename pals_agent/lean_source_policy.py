@@ -298,10 +298,42 @@ def _signature(text: str, start: int) -> str | None:
                 character == "|"
                 and has_type
                 and not text[text.rfind("\n", start, index) + 1 : index].strip()
+                and _alternative_arrow_before_assignment(text, index + 1)
             ):
                 return text[start:index].rstrip()
         index += 1
     return None
+
+
+def _alternative_arrow_before_assignment(text: str, start: int) -> bool:
+    """Tell a pattern-matching ``|`` from an absolute value that begins a line of the type.
+
+    An alternative always reaches a top-level ``=>`` before any signature-ending ``:=``; a bar of
+    the type does not. A ``=>`` that only a later lambda supplies still reads as an alternative, so
+    the restatement is cut short, cannot elaborate and the audit rejects it (fail closed).
+    """
+    depth = 0
+    pending_lets = 0
+    index = start
+    while index < len(text):
+        character = text[index]
+        if character in _SIGNATURE_OPENING:
+            depth += 1
+        elif character in _SIGNATURE_CLOSING:
+            depth -= 1
+        elif depth == 0:
+            if text.startswith(":=", index):
+                if pending_lets == 0:
+                    return False
+                pending_lets -= 1
+                index += 2
+                continue
+            if text.startswith("=>", index):
+                return True
+            if _LET_WORD.match(text, index):
+                pending_lets += 1
+        index += 1
+    return False
 
 
 def mask_lean_comments_and_strings(source: str) -> str:
