@@ -23,8 +23,9 @@ CONTINUOUS = ("repairs_used", "wall_s", "cost_usd")
 METRICS = BINARY + CONTINUOUS
 
 
-def per_problem_means(rows: Iterable[dict[str, Any]], arm: str, metric: str) -> dict[str, float]:
-    acc: dict[str, list[float]] = defaultdict(list)
+def _cells(rows: Iterable[dict[str, Any]], arm: str, metric: str) -> dict[tuple[str, int], float]:
+    """(problem, repeat index) -> value for the non-error rows of one arm."""
+    out: dict[tuple[str, int], float] = {}
     for r in rows:
         if (
             r.get("schema", "").endswith("run.v1")
@@ -32,8 +33,45 @@ def per_problem_means(rows: Iterable[dict[str, Any]], arm: str, metric: str) -> 
             and r.get(metric) is not None
             and not r.get("error")
         ):
-            acc[r["problem_id"]].append(float(r[metric]))
+            out[(r["problem_id"], int(r.get("repeat", 1)))] = float(r[metric])
+    return out
+
+
+def per_problem_means(rows: Iterable[dict[str, Any]], arm: str, metric: str) -> dict[str, float]:
+    """Per-problem mean over ALL non-error repeats of one arm. For a comparison of two arms use
+    ``paired_problem_means``: averaging each arm separately lets A=[1, 0] meet B=[1, error] as a
+    difference of +0.5 although the only complete pair agrees."""
+    acc: dict[str, list[float]] = defaultdict(list)
+    for (problem, _repeat), value in _cells(rows, arm, metric).items():
+        acc[problem].append(value)
     return {k: float(fmean(v)) for k, v in acc.items()}
+
+
+def paired_problem_means(
+    rows: list[dict[str, Any]], arm_a: str, arm_b: str, metric: str
+) -> tuple[dict[str, float], dict[str, float], dict[str, Any]]:
+    """Per-problem means over the repeat indices present in BOTH arms (non-error, metric set).
+
+    Problems with no common repeat are dropped. Returns the two mean maps and a report of what
+    was left out: unpaired repeats per arm (one arm has the cell, the other has none or an error)
+    and the problems dropped because no repeat was complete in both arms."""
+    ca, cb = _cells(rows, arm_a, metric), _cells(rows, arm_b, metric)
+    common = set(ca) & set(cb)
+    a: dict[str, list[float]] = defaultdict(list)
+    b: dict[str, list[float]] = defaultdict(list)
+    for key in common:
+        a[key[0]].append(ca[key])
+        b[key[0]].append(cb[key])
+    seen = {k[0] for k in ca} | {k[0] for k in cb}
+    report = {
+        "excluded_pairs": {arm_a: len(set(ca) - common), arm_b: len(set(cb) - common)},
+        "dropped_problems": sorted(seen - set(a)),
+    }
+    return (
+        {k: float(fmean(v)) for k, v in a.items()},
+        {k: float(fmean(v)) for k, v in b.items()},
+        report,
+    )
 
 
 def mcnemar_exact(b: int, c: int) -> float:
@@ -136,11 +174,15 @@ def _mcnemar_entry(
 def compare(
     rows: list[dict[str, Any]], arm_a: str, arm_b: str, *, n_boot: int = 10000, seed: int = 20261110
 ) -> dict[str, Any]:
-    """Differences are B - A. Only problems present in BOTH arms are used."""
-    out: dict[str, Any] = {"arm_a": arm_a, "arm_b": arm_b, "metrics": {}}
+    """Differences are B - A, over repeat indices complete in BOTH arms (see
+    ``paired_problem_means``); ``pairing`` reports what each metric left out."""
+    out: dict[str, Any] = {"arm_a": arm_a, "arm_b": arm_b, "metrics": {}, "pairing": {}}
     shared: set[str] | None = None
+    means: dict[str, tuple[dict[str, float], dict[str, float]]] = {}
     for m in METRICS:
-        a, b = per_problem_means(rows, arm_a, m), per_problem_means(rows, arm_b, m)
+        a, b, report = paired_problem_means(rows, arm_a, arm_b, m)
+        means[m] = (a, b)
+        out["pairing"][m] = report
         found = set(a) & set(b)
         shared = found if shared is None else shared & found
     out["n_problems"] = len(shared or ())
@@ -151,7 +193,7 @@ def compare(
         for arm in (arm_a, arm_b)
     }
     for m in METRICS:
-        a, b = per_problem_means(rows, arm_a, m), per_problem_means(rows, arm_b, m)
+        a, b = means[m]
         common = sorted(set(a) & set(b))
         if not common:
             continue
@@ -212,6 +254,17 @@ def format_report(result: dict[str, Any]) -> str:
             f"{m} | {e['mean_a']:.3f} | {e['mean_b']:.3f} | {e['diff']:+.3f} "
             f"[{e['ci95'][0]:+.3f}, {e['ci95'][1]:+.3f}]{verdict} | "
             f"{e['improved']}/{e['worsened']} | {e['perm_p']:.3f} | {mc}"
+        )
+    pairing = result.get("pairing", {})
+    unpaired = {
+        arm: max((r["excluded_pairs"].get(arm, 0) for r in pairing.values()), default=0)
+        for arm in (result["arm_a"], result["arm_b"])
+    }
+    dropped = sorted({p for r in pairing.values() for p in r["dropped_problems"]})
+    if any(unpaired.values()) or dropped:
+        lines.append(
+            f"unpaired repeats left out (max over metrics): {unpaired}; "
+            f"problems dropped (no complete repeat in both arms): {dropped}"
         )
     if any(result.get("excluded_error_rows", {}).values()):
         lines.append(

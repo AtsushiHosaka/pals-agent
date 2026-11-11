@@ -2,6 +2,7 @@ import random
 
 import pytest
 
+from pals_agent.evals import analysis
 from pals_agent.evals.analysis import (
     compare,
     format_report,
@@ -226,3 +227,44 @@ def test_mde_gives_adequate_power_for_the_permutation_test_with_repeats():
             diffs.append(b_rate - a_rate)
         rejects += paired_permutation_test(diffs, n_perm=1000, seed=3) < 0.05
     assert 0.65 <= rejects / trials <= 0.95
+
+
+def _run(problem: str, arm: str, repeat: int, ok: bool | None, error: str | None = None) -> dict:
+    return {
+        "schema": "pals.generation-eval.run.v1", "problem_id": problem, "arm": arm,
+        "repeat": repeat, "success": ok, "first_attempt_ok": ok, "repairs_used": 0,
+        "wall_s": 1.0, "cost_usd": 0.01, "error": error,
+    }
+
+
+def test_only_repeat_indices_complete_in_both_arms_are_compared():
+    # A=[1,0], B=[1,error]: the only complete pair (repeat 1) agrees, so there is no difference.
+    rows = [
+        _run("p", "a", 1, True), _run("p", "a", 2, False),
+        _run("p", "b", 1, True), _run("p", "b", 2, None, error="Crash"),
+    ]
+    out = analysis.compare(rows, "a", "b", n_boot=200)
+    assert out["metrics"]["success"]["diff"] == 0
+    assert out["pairing"]["success"]["excluded_pairs"] == {"a": 1, "b": 0}
+    assert out["pairing"]["success"]["dropped_problems"] == []
+    text = analysis.format_report(out)
+    assert "unpaired repeats left out" in text
+
+
+def test_problem_without_any_common_repeat_is_dropped_and_reported():
+    rows = [
+        _run("p", "a", 1, True), _run("p", "b", 1, None, error="Crash"),
+        _run("q", "a", 1, False), _run("q", "b", 1, True),
+    ]
+    out = analysis.compare(rows, "a", "b", n_boot=200)
+    assert out["n_problems"] == 1
+    assert out["pairing"]["success"]["dropped_problems"] == ["p"]
+    assert out["metrics"]["success"]["diff"] == 1
+
+
+def test_single_repeat_complete_data_is_unchanged_by_pairing():
+    rows = [_run(f"p{i}", "a", 1, i % 2 == 0) for i in range(6)]
+    rows += [_run(f"p{i}", "b", 1, True) for i in range(6)]
+    out = analysis.compare(rows, "a", "b", n_boot=200)
+    assert out["metrics"]["success"]["mean_a"] == 0.5 and out["metrics"]["success"]["diff"] == 0.5
+    assert out["pairing"]["success"]["excluded_pairs"] == {"a": 0, "b": 0}

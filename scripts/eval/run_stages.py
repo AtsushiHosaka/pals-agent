@@ -16,6 +16,7 @@ uses multiprocessing spawn.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -60,7 +61,8 @@ def classify(result: Any) -> dict[str, Any]:
         "unknown_identifier": sum(1 for m in msgs if _UNKNOWN_ID.search(m)),
         "import_error": sum(1 for m in msgs if _IMPORT_ERR.search(m)),
         "codes": sorted({str(d.code) for d in errs if getattr(d, "code", None)}),
-        "first_messages": [m[:160] for m in msgs[:3]],
+        # Messages can quote problem terms: keep digests only.
+        "first_message_sha256": [hashlib.sha256(m.encode("utf-8")).hexdigest() for m in msgs[:3]],
     }
 
 
