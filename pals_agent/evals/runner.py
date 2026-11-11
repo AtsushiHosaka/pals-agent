@@ -12,6 +12,7 @@ Full    ``run_pipeline_once`` around a caller-built ``ProofPipeline`` (Tier 2/3;
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import random
@@ -133,7 +134,10 @@ def _diagnostic_summary(result: Any) -> tuple[list[str], int, list[dict[str, Any
             "code": getattr(d, "code", None),
             "severity": getattr(d, "severity", None),
             "line": getattr(d, "line", None),
-            "message": str(getattr(d, "message", ""))[:300],
+            # A Lean message can quote the problem's own terms: keep only a digest of it.
+            "message_sha256": hashlib.sha256(
+                str(getattr(d, "message", "")).encode("utf-8")
+            ).hexdigest(),
         }
         for d in errors[:5]
     ]
