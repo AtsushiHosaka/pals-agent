@@ -276,6 +276,9 @@ class ProofPipeline:
     # ``LeanProofExplainer.explain`` signature, called beside verification.
     explainer: Any = None
     explanation_language: str = "ja"
+    # Used only by PALS_T2_PARALLEL_REVIEW_ENABLED: an object with the
+    # ``LeanProofSemanticReviewer.review_proof`` signature.
+    reviewer: Any = None
 
     def __post_init__(self) -> None:
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
@@ -417,19 +420,36 @@ class ProofPipeline:
 
     def _run_request(self, **arguments: Any) -> ProofRunResult:
         explain = getattr(self.explainer, "explain", None)
+        review = _speculative_review_call(
+            self.reviewer, getattr(arguments.get("request"), "formal_statement", None)
+        )
         with (
             step_timing.run_scope(arguments.get("proof_job_id")),
-            t2_lane.t2_run_scope(explain, self.explanation_language) as (_memo, explanation_run),
+            t2_lane.t2_run_scope(explain, self.explanation_language, review) as (
+                _memo,
+                explanation_run,
+            ),
         ):
             result = self._run_request_steps(**arguments)
-            if not explanation_run.active:
+            review_run = t2_lane.current_review_run()
+            explanation = review_handle = None
+            for run, setter in ((explanation_run, "explanation"), (review_run, "review")):
+                if run is None or not run.active:
+                    continue
+                handle = run.finish(
+                    verified=result.verification.success,
+                    statement=result.prompt,
+                    lean_code=result.generated.lean_code,
+                )
+                if setter == "explanation":
+                    explanation = handle
+                else:
+                    review_handle = handle
+            if explanation is None and review_handle is None:
                 return result
-            handle = explanation_run.finish(
-                verified=result.verification.success,
-                statement=result.prompt,
-                lean_code=result.generated.lean_code,
+            return replace(
+                result, speculative_explanation=explanation, speculative_review=review_handle
             )
-            return replace(result, speculative_explanation=handle) if handle else result
 
     def _run_request_steps(
         self,
@@ -738,9 +758,14 @@ class ProofPipeline:
             verifier = self.verifier
             assert verifier is not None
             step_timing.set_attempt(attempt)
-            explanation_run = t2_lane.current_explanation_run()
-            if explanation_run is not None:
-                explanation_run.start(statement=request.prompt, lean_code=generated.lean_code)
+            for speculative_run in (
+                t2_lane.current_explanation_run(),
+                t2_lane.current_review_run(),
+            ):
+                if speculative_run is not None:
+                    speculative_run.start(
+                        statement=request.prompt, lean_code=generated.lean_code
+                    )
             with latency_stage("lean_compile_local"), step_timing.step("lean_check") as timing:
                 # A racing first attempt may already have been compiled by its own thread.
                 memoised = t2_lane.take_memoised(generated.lean_code)
@@ -1333,6 +1358,13 @@ class ProofPipeline:
                 return _RacedCandidate(generated, None)
             if cancel.is_set():
                 return _RacedCandidate(generated, None)
+            # The explanation and the review of this candidate run while Lean compiles it.
+            for speculative_run in (
+                t2_lane.current_explanation_run(),
+                t2_lane.current_review_run(),
+            ):
+                if speculative_run is not None:
+                    speculative_run.start(statement=request.prompt, lean_code=code)
             verification = verifier.verify(code)
             if memo is not None:
                 memo.put(code, verification)
@@ -1684,6 +1716,35 @@ class ProofPipeline:
             draft_catalog=self.draft_catalog,
             proof_flow_retriever=self.proof_flow_retriever,
         )
+
+
+def _speculative_review_call(reviewer: Any, formal_statement: str | None) -> Any:
+    """The semantic review as an ``explain``-shaped call, for ``SpeculativeExplanation``."""
+    review_proof = getattr(reviewer, "review_proof", None)
+    if not callable(review_proof):
+        return None
+
+    def review(
+        *,
+        theorem_statement: str,
+        lean_code: str,
+        verified: bool,
+        language: str,
+        deadline: float,
+        timeout_seconds: float,
+    ) -> Any:
+        target = extract_single_target_declaration(lean_code)
+        if target is None:
+            raise ValueError("no single target declaration to review")
+        return review_proof(
+            theorem_statement=theorem_statement,
+            formal_statement=formal_statement,
+            target_declaration=target,
+            lean_code=lean_code,
+            timeout_seconds=timeout_seconds,
+        )
+
+    return review
 
 
 def validate_generated_lean(

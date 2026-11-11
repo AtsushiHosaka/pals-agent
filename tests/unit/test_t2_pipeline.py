@@ -161,6 +161,7 @@ def _flags(monkeypatch: pytest.MonkeyPatch, **on: bool) -> None:
         t2_lane.PARALLEL_EXPLANATION_ENV,
         t2_lane.NO_DRAFT_ENV,
         t2_lane.NAME_SAFETY_ENV,
+        t2_lane.PARALLEL_REVIEW_ENV,
     ):
         monkeypatch.delenv(env, raising=False)
     for env in on:
@@ -428,3 +429,84 @@ def test_pipeline_runs_leave_no_state_behind_for_a_pre_stage(
         assert result.state == "verified"
         assert t2_lane.current_memo() is None and t2_lane.current_explanation_run() is None
     assert t2_lane.drain_background(5) == 0
+
+
+class RecordingReviewer:
+    def __init__(self) -> None:
+        self.codes: list[str] = []
+        self.started = threading.Event()
+
+    def review_proof(self, **kwargs: Any) -> str:
+        self.codes.append(kwargs["lean_code"])
+        self.started.set()
+        _spend(3)
+        return f"approved:{kwargs['lean_code']}"
+
+
+def test_review_starts_while_lean_compiles_and_the_exact_proof_keeps_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(monkeypatch, **{t2_lane.NO_SKETCH_ENV: True, t2_lane.PARALLEL_REVIEW_ENV: True})
+    reviewer = RecordingReviewer()
+    began_before_lean_ended: list[bool] = []
+
+    class Slow(ScriptedVerifier):
+        def verify(self, lean_code: str) -> VerificationResult:
+            began_before_lean_ended.append(reviewer.started.wait(2))
+            return super().verify(lean_code)
+
+    result = _pipeline(tmp_path, Generator([GOOD]), Slow({GOOD}), reviewer=reviewer).run_statement(
+        statement=STATEMENT, proof_job_id=JOB
+    )
+    assert began_before_lean_ended == [True]
+    handle = result.speculative_review
+    assert handle is not None and handle.lean_code == GOOD
+    # Adoption requires the exact statement and source: a different source gets nothing.
+    assert (
+        handle.adopt(
+            theorem_statement=STATEMENT, lean_code=GOOD + " ", language="ja", wait_seconds=1
+        )
+        is None
+    )
+
+
+def test_race_starts_a_review_per_candidate_and_keeps_only_the_winners(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(
+        monkeypatch,
+        **{
+            t2_lane.NO_SKETCH_ENV: True,
+            t2_lane.PARALLEL_CANDIDATES_ENV: True,
+            t2_lane.PARALLEL_REVIEW_ENV: True,
+        },
+    )
+    reviewer = RecordingReviewer()
+    discarded: list[dict[str, Any]] = []
+    gen = Generator([BAD, GOOD], proof_delays=[0.0, 0.1])
+    with t2_lane.discarded_usage_scope(discarded.append):
+        result = _pipeline(
+            tmp_path, gen, ScriptedVerifier({GOOD}), reviewer=reviewer
+        ).run_statement(statement=STATEMENT, proof_job_id=JOB)
+        assert t2_lane.drain_background(5) == 0
+    assert result.state == "verified" and result.speculative_review is not None
+    assert result.speculative_review.lean_code == GOOD
+    assert sorted(reviewer.codes) == sorted([BAD, GOOD])
+    assert [r["input_tokens"] for r in discarded] == [3]  # the losing candidate's review
+
+
+def test_a_rewritten_statement_is_never_accepted_with_the_template_flags_either(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The fixed statement is a harness: a proof of a different statement must not reach a
+    verdict of success, with or without the splice (which only repairs layout differences)."""
+    _flags(monkeypatch, **{t2_lane.NO_SKETCH_ENV: True})
+    fixed = "theorem add_zero_nat (n : Nat) : n + 0 = n"
+    rewritten = GOOD.replace("n + 0 = n", "n = n")
+    verifier = ScriptedVerifier({rewritten})  # Lean itself would accept the rewrite
+    gen = Generator([rewritten] * 4)
+    result = _pipeline(
+        tmp_path, gen, verifier, harness_splice=True, max_repair_attempts=1
+    ).run_statement(statement=STATEMENT, formal_statement=fixed, proof_job_id=JOB)
+    assert result.state == "failed"
+    assert rewritten not in verifier.compiled  # rejected by the harness check before Lean

@@ -37,6 +37,7 @@ FLAG_NAMES = {
     "race": "PALS_T2_PARALLEL_CANDIDATES_ENABLED",
     "patch": "PALS_T2_PATCH_REPAIR_ENABLED",
     "pexpl": "PALS_T2_PARALLEL_EXPLANATION_ENABLED",
+    "preview": "PALS_T2_PARALLEL_REVIEW_ENABLED",
     "nodraft": "PALS_T2_NO_DRAFT_ENABLED",
     "names": "PALS_T2_NAME_SAFETY_ENABLED",
 }
@@ -53,9 +54,17 @@ ARM_FLAGS: dict[str, set[str]] = {
     "nodraft": {"nodraft"},
     "nd_k2": {"nodraft", "race"},
     "nd_k2_names": {"nodraft", "race", "names"},
+    # nd_k2 plus the explanation and the semantic review started when a candidate enters Lean
+    "nd_k2_par": {"nodraft", "race", "pexpl", "preview"},
+    # nd_k2 with the fixed-statement template and the layout splice (see ARM_PIPELINE)
+    "nd_k2_tmpl": {"nodraft", "race"},
     "t2_norace": {"nosketch", "patch", "pexpl"},
     "t2_nopatch": {"nosketch", "race", "pexpl"},
     "t2_nonosketch": {"race", "patch", "pexpl"},
+}
+# Arms that also change how the generator/pipeline are built (not env flags).
+ARM_PIPELINE: dict[str, dict[str, bool]] = {
+    "nd_k2_tmpl": {"fixed_statement_template": True, "harness_splice": True},
 }
 DEFAULT_MANIFEST = Path(__file__).resolve().parents[2] / "testdata/generation-eval-v1/manifest.json"
 _IMPORT_ERR = re.compile(
@@ -225,18 +234,26 @@ def answer_stage(result: Any, problem: dict, explainer: Any, reviewer: Any) -> d
     target = extract_single_target_declaration(code)
     t = time.monotonic()
     approved = None
+    review_handle = result.speculative_review
     if target is not None:
         try:
-            review = reviewer.review_proof(
-                theorem_statement=statement,
-                formal_statement=problem.get("fixed_lean_statement"),
-                target_declaration=target,
-                lean_code=code,
-                timeout_seconds=120,
-            )
+            review = None
+            if review_handle is not None:
+                review = review_handle.adopt(
+                    theorem_statement=statement, lean_code=code, language="ja", wait_seconds=240
+                )
+            if review is None:
+                review = reviewer.review_proof(
+                    theorem_statement=statement,
+                    formal_statement=problem.get("fixed_lean_statement"),
+                    target_declaration=target,
+                    lean_code=code,
+                    timeout_seconds=120,
+                )
             approved = review.decision == "approved"
         except Exception as exc:
             out["review_error"] = type(exc).__name__
+    out["review_in_parallel"] = review_handle is not None
     out["review_s"] = round(time.monotonic() - t, 3)
     out["review_approved"] = approved
     t = time.monotonic()
@@ -507,13 +524,26 @@ def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
     by_id = {p["id"]: p for p in problems}
     sink = JsonlSink(args.out / "records.jsonl", artifacts_dir=args.out / "artifacts")
     scope = Scope(run_id=args.out.name, sink=sink)
-    pipeline = ProofPipeline(
-        generator=RecordingGenerator(generator, scope),
-        verifier=RecordingVerifier(verifier, scope),
-        artifact_store=FileArtifactStore(args.out / "art"),
-        max_repair_attempts=args.max_repairs,
-        explainer=explainer,
-    )
+    import dataclasses
+
+    recording_verifier = RecordingVerifier(verifier, scope)
+
+    def pipeline_for(arm: str) -> ProofPipeline:
+        options = ARM_PIPELINE.get(arm, {})
+        gen = dataclasses.replace(
+            generator, fixed_statement_template=options.get("fixed_statement_template", False)
+        )
+        return ProofPipeline(
+            generator=RecordingGenerator(gen, scope),
+            verifier=recording_verifier,
+            artifact_store=FileArtifactStore(args.out / "art"),
+            max_repair_attempts=args.max_repairs,
+            explainer=explainer,
+            reviewer=reviewer,
+            harness_splice=options.get("harness_splice", False),
+        )
+
+    pipelines = {arm: pipeline_for(arm) for arm in args.arms.split(",")}
     load_state: dict[str, Any] = {}
     wait_for_quiet_machine(args, load_state)
     probe_lean(verifier, args.out, "start")
@@ -534,7 +564,7 @@ def cmd_tier2(args: argparse.Namespace, meter: Meter) -> None:
         with t2_lane.discarded_usage_scope(lambda row: (scope.on_usage(row), meter.add(row))):
             r = run_pipeline_once(
                 by_id[pid],
-                pipeline,
+                pipelines[arm],
                 scope,
                 arm=arm,
                 repeat=rep,

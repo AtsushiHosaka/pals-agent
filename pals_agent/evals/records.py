@@ -90,6 +90,7 @@ RUN_FIELDS = {
     "explain_ok",
     "explain_error",
     "explained_in_parallel",
+    "review_in_parallel",
     "undrained_background_calls",
     "load_1m_start",
     "load_1m_end",

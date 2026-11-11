@@ -26,7 +26,7 @@ from pals_agent.evals.analysis import (  # noqa: E402
     mde_binary,
     paired_bootstrap,
     paired_permutation_test,
-    per_problem_means,
+    paired_problem_means,
 )
 
 
@@ -146,8 +146,7 @@ def report_metric(
     bootstrap interval on the per-problem differences of repeat means; McNemar only on genuinely
     paired binary cells (``_mcnemar_entry``), never on averaged values.
     """
-    a = per_problem_means(runs, base, key)
-    t = per_problem_means(runs, treat, key)
+    a, t, pairing = paired_problem_means(runs, base, treat, key)
     common = sorted(set(a) & set(t))
     if not common:
         print(f"{label}: no problems with both arms; nothing to compare")
@@ -163,6 +162,8 @@ def report_metric(
         f" worse={sum(d > 0 for d in diffs) if not binary else sum(d < 0 for d in diffs)}"
         f" median_diff={st.median(diffs):+.3f}"
     )
+    if any(pairing["excluded_pairs"].values()) or pairing["dropped_problems"]:
+        out += f" PAIRING: {json.dumps(pairing, sort_keys=True)}"
     if binary:
         entry = _mcnemar_entry(runs, base, treat, key, set(common))
         out += " " + json.dumps(entry, sort_keys=True)

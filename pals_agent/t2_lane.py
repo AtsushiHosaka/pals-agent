@@ -8,6 +8,7 @@
 * ``PALS_T2_NO_DRAFT_ENABLED``  first attempt: no Draft before the proof (routine requests skip
                                 it; others run it beside the proof, kept only for repair).
 * ``PALS_T2_NAME_SAFETY_ENABLED``  lemma-name guidance in the direct proof prompt.
+* ``PALS_T2_PARALLEL_REVIEW_ENABLED``  the semantic review starts when a candidate goes to Lean.
 * ``PALS_T2_PARALLEL_EXPLANATION_ENABLED`` the explanation call starts when a candidate goes to
                                           Lean, not after it is verified; discarded if the proof
                                           changes.
@@ -37,6 +38,7 @@ NO_SKETCH_ENV = "PALS_T2_NO_SKETCH_ENABLED"
 PARALLEL_CANDIDATES_ENV = "PALS_T2_PARALLEL_CANDIDATES_ENABLED"
 PATCH_REPAIR_ENV = "PALS_T2_PATCH_REPAIR_ENABLED"
 PARALLEL_EXPLANATION_ENV = "PALS_T2_PARALLEL_EXPLANATION_ENABLED"
+PARALLEL_REVIEW_ENV = "PALS_T2_PARALLEL_REVIEW_ENABLED"
 NO_DRAFT_ENV = "PALS_T2_NO_DRAFT_ENABLED"
 NAME_SAFETY_ENV = "PALS_T2_NAME_SAFETY_ENABLED"
 CANDIDATE_COUNT = 2
@@ -65,6 +67,12 @@ def patch_repair_enabled() -> bool:
 
 def parallel_explanation_enabled() -> bool:
     return _flag(PARALLEL_EXPLANATION_ENV)
+
+
+def parallel_review_enabled() -> bool:
+    """The semantic review starts when a candidate goes to Lean (discarded if the proof
+    changes); it still must approve the exact returned proof before an answer is released."""
+    return _flag(PARALLEL_REVIEW_ENV)
 
 
 def no_draft_enabled() -> bool:
@@ -220,17 +228,26 @@ def _account_discarded(handle: Any, sink: Callable[[dict[str, Any]], None]) -> N
 
 
 class ExplanationRun:
-    """The speculative explanation of one pipeline run (flag ``PALS_T2_PARALLEL_EXPLANATION``).
+    """Speculative calls of one pipeline run for one purpose (explanation or semantic review).
 
-    ``start`` is called with each candidate that goes to verification; a changed source discards
-    the earlier call (its usage is kept in ``discarded_usage``: it was billed even though unused).
-    ``finish`` returns the handle for the proof that was returned, or discards everything.
+    ``start`` is called with every candidate that goes to verification (a race starts one per
+    candidate); each distinct (statement, source) gets one call. ``finish`` returns the call that
+    belongs to the proof actually returned and verified, and discards all others: a discarded
+    call is billed work nobody uses, so its usage goes to the ``discarded_usage_scope`` sink (an
+    evaluation counts it as spend) and never to the learner's usage reporter.
     """
 
-    def __init__(self, explain: Callable[..., Any] | None, language: str) -> None:
+    def __init__(
+        self,
+        explain: Callable[..., Any] | None,
+        language: str,
+        enabled: Callable[[], bool] | None = None,
+    ) -> None:
         self._explain = explain
         self._language = language
-        self._current: Any | None = None
+        self._enabled = enabled or parallel_explanation_enabled
+        self._handles: dict[tuple[str, str], Any] = {}
+        self._lock = threading.Lock()
         self.discarded: list[Any] = []
         self._sink = _discarded_sink.get()
 
@@ -242,40 +259,37 @@ class ExplanationRun:
 
     @property
     def active(self) -> bool:
-        return self._explain is not None and parallel_explanation_enabled()
+        return self._explain is not None and self._enabled()
 
     def start(self, *, statement: str, lean_code: str) -> None:
         if not self.active or not lean_code.strip():
             return
-        current = self._current
-        if current is not None:
-            if current.lean_code == lean_code and current.theorem_statement == statement:
+        key = (statement, lean_code)
+        with self._lock:
+            if key in self._handles:
                 return
-            self._drop(current)
-            self._current = None
-        from pals_agent.speculative_explanation import SpeculativeExplanation
+            from pals_agent.speculative_explanation import SpeculativeExplanation
 
-        deadline = time.monotonic() + EXPLANATION_DEADLINE_SECONDS
-        try:
-            self._current = SpeculativeExplanation.start(
-                explain=self._explain,  # type: ignore[arg-type]
-                theorem_statement=statement,
-                lean_code=lean_code,
-                language=self._language,
-                deadline=deadline,
-                timeout_seconds=EXPLANATION_CALL_TIMEOUT_SECONDS,
-            )
-        except Exception:  # noqa: BLE001 -- an early start is an optimisation only
-            self._current = None
+            # An early start is an optimisation only: a failure to start is ignored.
+            with contextlib.suppress(Exception):
+                self._handles[key] = SpeculativeExplanation.start(
+                    explain=self._explain,  # type: ignore[arg-type]
+                    theorem_statement=statement,
+                    lean_code=lean_code,
+                    language=self._language,
+                    deadline=time.monotonic() + EXPLANATION_DEADLINE_SECONDS,
+                    timeout_seconds=EXPLANATION_CALL_TIMEOUT_SECONDS,
+                )
 
     def finish(self, *, verified: bool, statement: str, lean_code: str) -> Any | None:
-        current, self._current = self._current, None
-        if current is None:
+        with self._lock:
+            handles, self._handles = self._handles, {}
+        keep = handles.pop((statement, lean_code), None) if verified else None
+        for handle in handles.values():
+            self._drop(handle)
+        if keep is None and verified is False:
             return None
-        if verified and current.lean_code == lean_code and current.theorem_statement == statement:
-            return current
-        self._drop(current)
-        return None
+        return keep
 
 
 EXPLANATION_DEADLINE_SECONDS = 360.0
@@ -289,19 +303,31 @@ def current_explanation_run() -> ExplanationRun | None:
     return _explanation_run.get()
 
 
+_review_run: ContextVar[ExplanationRun | None] = ContextVar("pals_t2_review_run", default=None)
+
+
+def current_review_run() -> ExplanationRun | None:
+    return _review_run.get()
+
+
 @contextmanager
 def t2_run_scope(
-    explain: Callable[..., Any] | None, language: str
+    explain: Callable[..., Any] | None,
+    language: str,
+    review: Callable[..., Any] | None = None,
 ) -> Iterator[tuple[VerificationMemo, ExplanationRun]]:
     """Per-run state: the verification memo and the explanation run, visible to race threads."""
     memo, run = VerificationMemo(), ExplanationRun(explain, language)
+    review_run = ExplanationRun(review, language, enabled=parallel_review_enabled)
     memo_token = _memo.set(memo)
     run_token = _explanation_run.set(run)
+    review_token = _review_run.set(review_run)
     try:
         yield memo, run
     finally:
         _memo.reset(memo_token)
         _explanation_run.reset(run_token)
+        _review_run.reset(review_token)
 
 
 # ---- candidate race ---------------------------------------------------------------------------

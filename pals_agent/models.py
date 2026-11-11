@@ -226,6 +226,8 @@ class ProofRunResult:
     verification_pending: bool = False
     # T2: an explanation call started beside verification for exactly this proof, or None.
     speculative_explanation: Any = field(default=None, compare=False, repr=False)
+    # T2: a semantic review started beside verification for exactly this proof, or None.
+    speculative_review: Any = field(default=None, compare=False, repr=False)
 
     @property
     def state(self) -> ProofJobState:
