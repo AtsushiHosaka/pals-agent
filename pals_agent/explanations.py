@@ -22,6 +22,7 @@ from pals_agent.lean_target import (
     LeanTargetDeclaration,
     extract_single_target_declaration,
     matches_x_squared_continuity,
+    targets_another_property_of_a_function,
 )
 from pals_agent.math_task import ANSWER_PRESENTATION, ANSWER_SCOPE_REVIEW
 from pals_agent.prompt_safety import (
@@ -2356,4 +2357,21 @@ def _with_review_feedback(prompt: str, feedback: dict[str, Any] | None) -> str:
         "concerns with clearer valid reasoning; do not introduce a mathematical error to satisfy "
         "a mistaken critique. Do not simply repeat the prior candidate. A fresh independent "
         "review will evaluate the new candidate.\n" + json.dumps(feedback, ensure_ascii=False)
+    )
+
+
+def target_matches_statement(theorem_statement: str, target: LeanTargetDeclaration) -> bool:
+    """Deterministic check before the semantic review (shared by the worker and the T2 race).
+
+    A request about the continuity of x² needs a target that is that statement. The only
+    exception is a request that itself names another property (derivative, uniform continuity)
+    together with a target about such a property: that pair is left to the semantic review. The
+    decision reads the Lean target, never only the request wording.
+    """
+    if not _asks_about_x_squared_continuity(theorem_statement):
+        return True
+    if matches_x_squared_continuity(target.proposition):
+        return True
+    return _names_another_property(theorem_statement) and targets_another_property_of_a_function(
+        target.proposition
     )

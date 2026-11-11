@@ -40,18 +40,15 @@ from pals_agent.explanations import (
     ProofSemanticReview,
     ProofSemanticReviewer,
     ProofSemanticReviewUnavailable,
-    _asks_about_x_squared_continuity,
-    _names_another_property,
     _requires_epsilon_delta,
     proof_explanation_from_api,
     single_sample_catch_all_ids,
+    target_matches_statement,
 )
 from pals_agent.figure_calls import validate_figure_bindings, validate_figure_call
 from pals_agent.lean_target import (
     LeanTargetDeclaration,
     extract_single_target_declaration,
-    matches_x_squared_continuity,
-    targets_another_property_of_a_function,
 )
 from pals_agent.linked_chat import linked_chat_scope
 from pals_agent.model_roles import ModelRole, fixed_model_default
@@ -1362,7 +1359,11 @@ class SqsProofWorker:
         if not isinstance(pipeline, ProofPipeline) or pipeline.verification_mode != "api_reconcile":
             return pipeline
         explainer = reviewer = None
-        if t2_lane.parallel_explanation_enabled() and self.explainer is not None:
+        if (
+            t2_lane.parallel_explanation_enabled()
+            and self.explainer is not None
+            and self.output_reviewer is not None  # the summary path cannot adopt it without one
+        ):
             inner = self.explainer
             fixed_enabled = self._fixed_explanation_enabled()
 
@@ -1451,8 +1452,6 @@ class SqsProofWorker:
         usable = carry is not None and reconciled.get("state") in ("semantic_review", "verified")
         if carry is not None and not usable:
             self._settle_t2_carry(carry, proof_job_id=proof_job_id, claim_id=claim_id)
-        if carry is not None and usable:
-            carry.drain()
         reporter = self._claim_usage_reporter(proof_job_id, claim_id)
         token = _T2_CARRY.set(carry if usable else None)
         # A failed compile of the winner may be answered by the race's other candidate instead of
@@ -3095,22 +3094,8 @@ def _target_matches_statement(
     statement: str,
     target_declaration: LeanTargetDeclaration,
 ) -> bool:
-    """Apply deterministic checks before the independent semantic review.
-
-    A request about the continuity of x² needs a target that is that statement. The only
-    exception is a request that itself names another property (derivative, uniform
-    continuity) together with a target about such a property: that pair is left to the
-    semantic review. The decision reads the Lean target, never only the request wording, so
-    "prove it without derivatives" does not switch the check off.
-    """
-    if not _asks_about_x_squared_continuity(statement):
-        return True
-    proposition = target_declaration.proposition
-    if matches_x_squared_continuity(proposition):
-        return True
-    return _names_another_property(statement) and targets_another_property_of_a_function(
-        proposition
-    )
+    """Deterministic check before the independent semantic review (see explanations)."""
+    return target_matches_statement(statement, target_declaration)
 
 
 def _verified_candidate_matches_statement(statement: str, lean_code: str) -> bool:

@@ -160,6 +160,7 @@ def test_the_pipeline_gets_the_early_callers_only_when_a_switch_is_on(
         pipeline=None,
         explainer=cast(Any, SimpleNamespace(explain=lambda **_k: "e")),
         proof_reviewer=cast(Any, RecordingSemanticReviewer()),
+        output_reviewer=cast(Any, object()),
     )
     base = _real_pipeline(tmp_path)
 
@@ -189,6 +190,7 @@ def test_a_source_the_fixed_template_covers_never_starts_an_explanation_call(
         pipeline=None,
         explainer=cast(Any, SimpleNamespace(explain=lambda **k: calls.append(k["lean_code"]))),
         proof_reviewer=cast(Any, RecordingSemanticReviewer()),
+        output_reviewer=cast(Any, object()),
     )
     explain = worker._with_t2_calls(_real_pipeline(tmp_path), "ja").explainer.explain
     kwargs = {
@@ -319,3 +321,44 @@ def test_a_failed_compile_hands_the_held_alternate_to_the_repair_and_only_then(
 
     assert seen == [slot, None]  # the repair gets it; the review path never does
     assert t2_lane.repair_alternate() is None  # and it does not leak out of the call
+
+
+def test_an_explanation_is_not_started_when_the_summary_path_could_not_adopt_it(
+    tmp_path: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv(t2_lane.PARALLEL_EXPLANATION_ENV, "true")
+    monkeypatch.delenv(t2_lane.PARALLEL_REVIEW_ENV, raising=False)
+    worker = SqsProofWorker(
+        settings=cast(AgentSettings, SimpleNamespace(template_fixed_explanation_enabled=False)),
+        api_client=cast(Any, SemanticReviewApi()),
+        pipeline=None,
+        explainer=cast(Any, SimpleNamespace(explain=lambda **_k: "e")),
+        proof_reviewer=cast(Any, RecordingSemanticReviewer()),
+        output_reviewer=None,  # the summary path needs it to publish an explanation
+    )
+    base = _real_pipeline(tmp_path)
+
+    assert worker._with_t2_calls(base, "ja") is base
+
+
+def test_resuming_after_the_compile_does_not_wait_for_a_race_loser(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    waited: list[float] = []
+
+    class Background:
+        def drain(self, timeout: float = 0.0) -> int:
+            waited.append(timeout)
+            return 0
+
+        def pending(self) -> int:
+            return 1
+
+    monkeypatch.setattr(SqsProofWorker, "process_proof_job", lambda self, *a, **k: True)
+    worker = _worker(_Recorder(), RecordingSemanticReviewer())
+    worker._resume_with_carry(
+        _T2Carry(background=Background()), {"state": "semantic_review"},
+        proof_job_id="j", claim_id="c", extend_visibility=None,
+    )
+
+    assert waited == []  # the loser reports its own usage when it ends; the review is not held

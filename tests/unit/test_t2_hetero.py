@@ -154,3 +154,21 @@ def test_the_switch_is_validated_with_the_other_t2_flags(monkeypatch: pytest.Mon
     monkeypatch.setenv(t2_lane.HETERO_RACE_ENV, "yes")
     with pytest.raises(ValueError):
         t2_lane.validate_flags()
+
+
+def test_a_candidate_for_another_statement_is_neither_submitted_nor_held(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from pals_agent.usage import usage_scope
+    from tests.unit.test_t2_api_reconcile import TRIVIAL, X2_PROOF, X2_STATEMENT
+
+    _flags(monkeypatch, **ON)
+    generator = Generator([TRIVIAL, X2_PROOF], proof_delays=[0.0, 0.15])
+    with usage_scope(lambda _u: None):
+        result = _api_pipeline(tmp_path, generator).run_statement(
+            statement=X2_STATEMENT, proof_job_id="job-x2", on_status=lambda *_a: None
+        )
+        result.background.drain(5.0)
+
+    assert result.generated.lean_code == X2_PROOF
+    assert result.background.alternate.take(0.5) is None  # the misaligned one is not an alternate
