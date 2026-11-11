@@ -1,0 +1,154 @@
+import Lean
+import Lean.Replay
+import Lean.Util.CollectAxioms
+open Lean Elab
+
+/-!
+Resident Lean worker.  It imports Mathlib once and then serves requests, one stdin line each.
+
+Isolation: the process itself never elaborates a request.  Every request is handled in a `fork`ed
+child that owns a copy-on-write view of the imported environment, writes its result file and
+`_exit`s.  The parent's state therefore never depends on any request, and one request's source can
+not influence another's result.  A forked child has none of the parent's task-manager threads, so
+the shim installs a fresh task manager (one worker, like `lean --threads=1`) before the child runs
+the ordinary frontend (`IO.processCommands`, what `lean` and `Lean.Elab.process` use).  The legacy
+sequential `Frontend.processCommands` is NOT usable: in 4.32 it silently drops every message.
+
+Requests (space separated, paths contain no spaces):
+  CHECK <id> <source> <result> <olean|-> <budget> <cpu> <fsize> <dir>
+        elaborate `<source>` (header must be exactly `import Mathlib`), write the compiler-style
+        message text to `<result>`, optionally the module to `<olean>`; exit code 1 on any error
+  AUDIT <id> <nonce> <olean> <reference> <result> <budget> <cpu> <fsize> <dir>
+        the trusted audit program (generated from `lean_audit.TRUSTED_AUDIT_SOURCE`)
+  STMT <id> <file> <result> <budget> <cpu> <fsize> <dir>
+        parse-only allow-list check of a statement (file: line 1 opened namespaces, line 2 the
+        term); result `PALS_CHECK_OK` or `PALS_CHECK_REFUSED <reason>`; the statement is never
+        elaborated.  The scan of all constants it needs is done once, by the parent, at start
+  PING  <id>            answer `PONG <id>`
+(`dir`: the one directory the child may write; with confinement it may read nothing else
+outside the runtime.)
+Replies, one line each, written by the parent: `FORKED <id> <pid>`; by the child when finished:
+`DONE <id> <exit code>`.  Exit code 66: the request needs another import set (use a cold compile).
+-/
+
+@[extern "palsInit"] opaque palsInit (u : Unit) : BaseIO Unit
+@[extern "palsFork"] opaque palsFork (nonce : UInt64) : UInt32
+@[extern "palsChildSetup"] opaque palsChildSetup (budget cpu fsize : UInt64) (dir : String) :
+    BaseIO Unit
+@[extern "palsExit"] opaque palsExit (code : UInt32) : BaseIO Unit
+
+{{STATEMENT_CHECK}}
+
+{{AUDIT_BODY}}
+
+/-- Compile `src` like `lean [-o olean] src`: messages as text, 1 if any error. -/
+unsafe def checkWarm (env : Environment) (warmImports : Array Import) (src result olean : String) : IO UInt32 := do
+  let input ← IO.FS.readFile src
+  let ctx := Parser.mkInputContext input src
+  let (header, parserState, messages) ← Parser.parseHeader ctx
+  let imports := Elab.headerToImports header
+  unless imports == warmImports do return 66
+  let st ← IO.processCommands ctx parserState (Command.mkState (env.setMainModule `Main) messages {})
+  let mut text := ""
+  let mut failed := false
+  for msg in st.commandState.messages.toList do
+    text := text ++ (← msg.toString)
+    if msg.severity == .error then failed := true
+  IO.FS.writeFile result text
+  if olean != "-" && !failed then
+    writeModule st.commandState.env olean
+  pure (if failed then 1 else 0)
+
+/-- `STMT`: refuse or accept a term by syntax kinds and resolved constants, without elaborating. -/
+def stmtWarm (env : Environment) (badFields : Std.HashSet String) (file result : String) :
+    IO UInt32 := do
+  let lines := (← IO.FS.readFile file).splitOn "\n"
+  let opens := ((lines.getD 0 "").splitOn " ").filter (· ≠ "")
+    |>.map (fun n => OpenDecl.simple n.toName [])
+  let verdict :=
+    match parseTerm env (lines.getD 1 "") with
+    | .error e => s!"PALS_CHECK_REFUSED parse error: {(e.replace "\n" " ").take 200}"
+    | .ok stx =>
+      match checkSyntax env badFields opens stx with
+      | .ok _ => "PALS_CHECK_OK"
+      | .error e => s!"PALS_CHECK_REFUSED {e}"
+  IO.FS.writeFile result (verdict ++ "\n")
+  pure 0
+
+unsafe def serve : IO Unit := do
+  enableInitializersExecution
+  -- the sysroot comes from the binary's own path: `findSysroot` runs `lean --print-prefix`
+  -- through PATH, which is not available (and not wanted) inside the verifier boundary
+  let app ← IO.appPath
+  let sysroot := (app.parent.bind (·.parent)).getD ⟨"."⟩
+  initSearchPath sysroot
+  -- the import set is whatever the header `import Mathlib` means, computed by Lean itself
+  let (warmHeader, _, _) ← Parser.parseHeader (Parser.mkInputContext "import Mathlib\n" "<warm>")
+  let warmImports := Elab.headerToImports warmHeader
+  let env ← importModules warmImports {} 0 (loadExts := true)
+  -- the whole-environment scan the statement check needs: done here, once, over trusted input
+  let badFields := badFieldNames env
+  if badFields.size == 0 then IO.eprintln "no excluded field names found"
+  if (← IO.getEnv "PALS_RESIDENT_WARM_EXACT").isSome then
+    -- trusted, fixed text: builds the lemma index that every forked child then inherits
+    let src := "theorem pals_prewarm : ∀ n : Nat, n ≤ n + 1 := by\n  intros; exact?\n"
+    let _ ← IO.processCommands (Parser.mkInputContext src "<warm>") {} (Command.mkState env {} {})
+  palsInit ()
+  let stdin ← IO.getStdin
+  let stdout ← IO.getStdout
+  stdout.putStrLn "PALS_READY"
+  stdout.flush
+  repeat
+    let line ← stdin.getLine
+    if line.isEmpty then break
+    let parts := (line.trimAscii.toString.splitOn " ").filter (· ≠ "")
+    match parts with
+    | ["QUIT"] => break
+    | ["PING", id] =>
+      stdout.putStrLn s!"PONG {id}"
+      stdout.flush
+    | "CHECK" :: id :: rest | "AUDIT" :: id :: rest | "STMT" :: id :: rest =>
+      let kindTag := parts.head!
+      let isCheck := kindTag == "CHECK"
+      -- the last four words of every request: budget cpu fsize writeDir
+      let n := rest.length
+      let tail := rest.drop (n - 4)
+      let rest := rest.take (n - 4)
+      let (budget, cpu, fsize, writeDir) := match tail with
+        | [b, c, f, d] => (b.toNat!.toUInt64, c.toNat!.toUInt64, f.toNat!.toUInt64, d)
+        | _ => (0, 0, 0, "")
+      let pid := palsFork (← IO.monoNanosNow).toUInt64
+      if pid == 0 then
+        -- child: from here on the parent's loop is not ours
+        palsChildSetup budget cpu fsize writeDir
+        let code ← try
+          if kindTag == "STMT" then
+            match rest with
+            | [file, result] => stmtWarm env badFields file result
+            | _ => pure 64
+          else if isCheck then
+            match rest with
+            | [src, result, olean] => checkWarm env warmImports src result olean
+            | _ => pure 64
+          else
+            match rest with
+            | [nonce, olean, reference, result] =>
+              let h ← IO.FS.Handle.mk result .write
+              let _ ← IO.setStdout (IO.FS.Stream.ofHandle h)
+              let code ← auditWarm env warmImports [nonce, olean, reference]
+              h.flush
+              pure code
+            | _ => pure 64
+        catch _ => pure 70
+        -- one atomic short write to the shared pipe tells the manager the request is complete
+        stdout.putStrLn s!"DONE {id} {code}"
+        stdout.flush
+        palsExit code
+      else
+        stdout.putStrLn s!"FORKED {id} {pid}"
+        stdout.flush
+    | _ => pure ()
+
+@[implemented_by serve] opaque serveSafe : IO Unit
+
+def main : IO Unit := serveSafe

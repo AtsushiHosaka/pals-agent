@@ -641,21 +641,52 @@ def solve_warm(
 
     if recipe_stage(False):
         return result
+
+    def portfolio_text(k: int, tactic: Tactic) -> str:
+        decl = f"_pals_portfolio_{k}"
+        return prefix + (
+            f"set_option maxHeartbeats {tactic.heartbeats} in\n"
+            f"theorem {decl} : {proposition} := by\n  {tactic.text}\n#print axioms {decl}\n"
+        )
+
+    # A worker whose requests are independent processes (the resident Lean) can run every
+    # attempt at once: they are raced, the others are cancelled at the first accepted one, and
+    # the loop below judges the finished outputs in portfolio order exactly as before.
+    race = getattr(worker, "check_race", None)
+    raced: dict[int, str] = {}
+    if race is not None and portfolio:
+
+        def accepted(k: int, output: str) -> bool:
+            match = _AX.search(output)
+            decl = f"_pals_portfolio_{k}"
+            return (
+                match is not None
+                and decl not in lane.errored_declarations(output)
+                and _verdict(match.group(2)) is None
+            )
+
+        raced = race(
+            [portfolio_text(k, t) for k, t in enumerate(portfolio)],
+            accepted,
+            timeout_s=60.0 if deadline is None else max(0.5, deadline - time.monotonic()),
+        )
     for k, tactic in enumerate(portfolio):
         if deadline is not None and time.monotonic() >= deadline:
             result.code = "budget_exhausted"
             break
         decl = f"_pals_portfolio_{k}"
-        text = prefix + (
-            f"set_option maxHeartbeats {tactic.heartbeats} in\n"
-            f"theorem {decl} : {proposition} := by\n  {tactic.text}\n#print axioms {decl}\n"
-        )
+        text = portfolio_text(k, tactic)
         remaining = 60.0 if deadline is None else max(0.5, deadline - time.monotonic())
-        try:
-            output, seconds = worker.check(text, timeout_s=min(60.0, remaining))
-        except TimeoutError:
-            result.code = "budget_exhausted"
-            break
+        if race is not None:
+            if k not in raced:
+                continue  # cancelled (a cheaper attempt was accepted) or did not finish
+            output = raced[k]
+        else:
+            try:
+                output, seconds = worker.check(text, timeout_s=min(60.0, remaining))
+            except TimeoutError:
+                result.code = "budget_exhausted"
+                break
         match = _AX.search(output)
         attempt = Attempt("portfolio", tactic.name, decl)
         attempt.tactic = tactic.text
