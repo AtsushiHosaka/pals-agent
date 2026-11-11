@@ -344,6 +344,7 @@ class ProofPipeline:
         prepared_request: ProofRequest | None = None,
         request_linked: bool = False,
         library_profile: str | None = None,
+        routine: bool = False,
     ) -> ProofRunResult:
         if library_profile is not None:
             return self.for_library_profile(library_profile).run_statement(
@@ -354,6 +355,7 @@ class ProofPipeline:
                 api_repair_seed=api_repair_seed,
                 prepared_request=prepared_request,
                 request_linked=request_linked,
+                routine=routine,
             )
         if prepared_request is not None:
             request = prepared_request
@@ -390,6 +392,8 @@ class ProofPipeline:
             formal_statement.strip() if formal_statement else None
         ):
             raise ValueError("Prepared proof request does not match the submitted statement")
+        if routine and not request.routine:
+            request = replace(request, routine=True)  # the assessment's routine signal
         return self._run_request(
             request=request,
             verification_harness=request.formal_statement,
@@ -1878,6 +1882,40 @@ def _generate_staged_attempt(
 ) -> GeneratedProof:
     draft = feedback.previous_draft if feedback is not None else None
     sketch = feedback.previous_sketch if feedback is not None else None
+
+    direct = getattr(generator, "generate_direct_proof", None)
+    if (
+        feedback is None
+        and callable(direct)
+        and t2_lane.no_draft_enabled()
+        and not (deterministic_templates and template_proof_for_request(request) is not None)
+    ):
+        # T2 no-Draft: the proof is written from the request. A routine request never needs a
+        # Draft; any other runs it beside the proof and keeps it only to seed a repair.
+        draft_call = (
+            None
+            if request.routine
+            else t2_lane.BackgroundCall(lambda: generator.generate_draft(request, None))
+        )
+        _emit(
+            on_status,
+            "proving",
+            diagnostics,
+            None,
+            None,
+            {**context, "dsp_stage": "prove", "t2_no_draft": True, "t2_routine": request.routine},
+        )
+
+        def direct_from_request() -> GeneratedProof:
+            return cast(GeneratedProof, direct(request, None))
+
+        proof = race(direct_from_request) if race is not None else direct_from_request()
+        verified = t2_lane.peek_memoised(proof.lean_code)
+        if draft_call is not None and not (verified is not None and verified.success):
+            late_draft = draft_call.value()
+            if late_draft is not None and late_draft.text.strip():
+                proof = replace(proof, draft=late_draft)
+        return proof
 
     if repair_route == "draft" or draft is None or not draft.text.strip():
         _emit(

@@ -109,7 +109,7 @@ class Generator:
         )
 
     def generate_direct_proof(self, request, draft):
-        self.calls.append("direct")
+        self.calls.append("direct" if draft is not None else "direct_nodraft")
         code, delay = self._next_proof()
         time.sleep(delay)
         _spend(10)
@@ -159,6 +159,8 @@ def _flags(monkeypatch: pytest.MonkeyPatch, **on: bool) -> None:
         t2_lane.PARALLEL_CANDIDATES_ENV,
         t2_lane.PATCH_REPAIR_ENV,
         t2_lane.PARALLEL_EXPLANATION_ENV,
+        t2_lane.NO_DRAFT_ENV,
+        t2_lane.NAME_SAFETY_ENV,
     ):
         monkeypatch.delenv(env, raising=False)
     for env in on:
@@ -354,3 +356,75 @@ def test_no_explanation_when_the_proof_never_verifies(
         max_repair_attempts=1,
     ).run_statement(statement=STATEMENT, proof_job_id=JOB)
     assert result.state == "failed" and result.speculative_explanation is None
+
+
+def test_no_draft_routine_request_never_calls_the_draft(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(monkeypatch, **{t2_lane.NO_DRAFT_ENV: True})
+    gen = Generator([GOOD])
+    result = _pipeline(tmp_path, gen, ScriptedVerifier({GOOD})).run_statement(
+        statement=STATEMENT, proof_job_id=JOB, routine=True
+    )
+    assert result.state == "verified"
+    assert gen.calls == ["direct_nodraft"]
+
+
+def test_no_draft_non_routine_runs_the_draft_beside_the_proof_and_keeps_it_for_repair(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(
+        monkeypatch,
+        **{t2_lane.NO_DRAFT_ENV: True, t2_lane.PATCH_REPAIR_ENV: True},
+    )
+    gen = Generator([BAD], patches=[GOOD])
+    result = _pipeline(tmp_path, gen, ScriptedVerifier({GOOD})).run_statement(
+        statement=STATEMENT, proof_job_id=JOB
+    )
+    assert result.state == "verified"
+    assert sorted(gen.calls[:2]) == ["direct_nodraft", "draft"]
+    # the Draft was not used for the first attempt, but it seeds the repair
+    assert gen.last_patch_feedback.previous_draft is not None
+
+
+def test_no_draft_with_a_verified_race_winner_does_not_wait_for_the_draft(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(
+        monkeypatch,
+        **{t2_lane.NO_DRAFT_ENV: True, t2_lane.PARALLEL_CANDIDATES_ENV: True},
+    )
+
+    class SlowDraft(Generator):
+        def generate_draft(self, request, feedback=None):
+            time.sleep(0.8)
+            return super().generate_draft(request, feedback)
+
+    gen = SlowDraft([GOOD, GOOD], proof_delays=[0.0, 0.0])
+    started = time.monotonic()
+    seen: list[dict[str, Any]] = []
+    with usage_scope(seen.append):
+        result = _pipeline(tmp_path, gen, ScriptedVerifier({GOOD})).run_statement(
+            statement=STATEMENT, proof_job_id=JOB
+        )
+        assert result.state == "verified"
+        assert time.monotonic() - started < 0.7
+        assert t2_lane.drain_background(5) == 0
+    assert 1 in [r["input_tokens"] for r in seen]  # the slow Draft was still billed
+
+
+def test_pipeline_runs_leave_no_state_behind_for_a_pre_stage(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A stage 0 in front of the pipeline may return early (the pipeline is then never entered)
+    or hand over to it; T2 keeps no process-wide state, so both compose."""
+    _flags(monkeypatch, **{t2_lane.NO_SKETCH_ENV: True, t2_lane.PARALLEL_CANDIDATES_ENV: True})
+    assert t2_lane.current_memo() is None and t2_lane.current_explanation_run() is None
+    for index in range(2):
+        gen = Generator([GOOD, GOOD])
+        result = _pipeline(tmp_path, gen, ScriptedVerifier({GOOD})).run_statement(
+            statement=STATEMENT, proof_job_id=f"{JOB}-{index}"
+        )
+        assert result.state == "verified"
+        assert t2_lane.current_memo() is None and t2_lane.current_explanation_run() is None
+    assert t2_lane.drain_background(5) == 0

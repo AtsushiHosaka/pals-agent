@@ -107,6 +107,8 @@ class ProofRequest:
         default=None,
         compare=False,
     )
+    # The assessment judged this request routine (easy). Only read by PALS_T2_NO_DRAFT_ENABLED.
+    routine: bool = field(default=False, compare=False)
 
 
 @dataclass(frozen=True, slots=True)

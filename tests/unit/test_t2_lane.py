@@ -22,12 +22,15 @@ def test_flags_default_off_and_are_strict(monkeypatch: pytest.MonkeyPatch) -> No
         t2_lane.PARALLEL_CANDIDATES_ENV,
         t2_lane.PATCH_REPAIR_ENV,
         t2_lane.PARALLEL_EXPLANATION_ENV,
+        t2_lane.NO_DRAFT_ENV,
+        t2_lane.NAME_SAFETY_ENV,
     ):
         monkeypatch.delenv(name, raising=False)
     assert not t2_lane.no_sketch_enabled()
     assert not t2_lane.parallel_candidates_enabled()
     assert not t2_lane.patch_repair_enabled()
     assert not t2_lane.parallel_explanation_enabled()
+    assert not t2_lane.no_draft_enabled() and not t2_lane.name_safety_enabled()
     monkeypatch.setenv(t2_lane.PATCH_REPAIR_ENV, "true")
     assert t2_lane.patch_repair_enabled()
     monkeypatch.setenv(t2_lane.PATCH_REPAIR_ENV, "yes")

@@ -5,6 +5,9 @@
                                           concurrently; the first that compiles wins.
 * ``PALS_T2_PATCH_REPAIR_ENABLED``        first repairs: a minimal edit fed with a sanitised
                                           failure summary instead of route + handoff + regeneration.
+* ``PALS_T2_NO_DRAFT_ENABLED``  first attempt: no Draft before the proof (routine requests skip
+                                it; others run it beside the proof, kept only for repair).
+* ``PALS_T2_NAME_SAFETY_ENABLED``  lemma-name guidance in the direct proof prompt.
 * ``PALS_T2_PARALLEL_EXPLANATION_ENABLED`` the explanation call starts when a candidate goes to
                                           Lean, not after it is verified; discarded if the proof
                                           changes.
@@ -34,6 +37,8 @@ NO_SKETCH_ENV = "PALS_T2_NO_SKETCH_ENABLED"
 PARALLEL_CANDIDATES_ENV = "PALS_T2_PARALLEL_CANDIDATES_ENABLED"
 PATCH_REPAIR_ENV = "PALS_T2_PATCH_REPAIR_ENABLED"
 PARALLEL_EXPLANATION_ENV = "PALS_T2_PARALLEL_EXPLANATION_ENABLED"
+NO_DRAFT_ENV = "PALS_T2_NO_DRAFT_ENABLED"
+NAME_SAFETY_ENV = "PALS_T2_NAME_SAFETY_ENABLED"
 CANDIDATE_COUNT = 2
 # Consecutive repairs that may use a patch before the full repair path takes over.
 PATCH_REPAIR_MAX_ROUNDS = 2
@@ -60,6 +65,54 @@ def patch_repair_enabled() -> bool:
 
 def parallel_explanation_enabled() -> bool:
     return _flag(PARALLEL_EXPLANATION_ENV)
+
+
+def no_draft_enabled() -> bool:
+    """First attempt: no Draft before the proof. Routine requests (``ProofRequest.routine``)
+    skip the Draft entirely; the others run the Draft beside the proof and keep it for repair."""
+    return _flag(NO_DRAFT_ENV)
+
+
+def name_safety_enabled() -> bool:
+    """Add the lemma-name guidance (the top first-attempt failure class: unknown identifiers)."""
+    return _flag(NAME_SAFETY_ENV)
+
+
+NAME_SAFETY_GUIDANCE = (
+    "Name safety: an unknown identifier is the most common reason a first proof fails. Use a "
+    "Mathlib lemma by name only when you are certain of its exact current spelling and "
+    "namespace (Lean 4 Mathlib: `Nat.succ_le_iff`, `Real.sqrt_nonneg`, `abs_nonneg`; never "
+    "Lean 3 style such as `nat.succ_le_iff` or `real.sqrt`). Otherwise build the fact "
+    "yourself with `have`, or use `nlinarith [sq_nonneg (a - b), ...]`, `positivity`, "
+    "`norm_num`, `simp`, `omega`, `gcongr`, `field_simp` or `ring`."
+)
+
+
+class BackgroundCall:
+    """A call started now whose value is read later; it is waited for by ``drain_background``."""
+
+    def __init__(self, fn: Callable[[], Any]) -> None:
+        self._future: Future[Any] = Future()
+        with _PENDING_LOCK:
+            _PENDING.add(self._future)
+        self._future.add_done_callback(_discard_pending)
+
+        def run() -> None:
+            try:
+                self._future.set_result(fn())
+            except BaseException as exc:  # noqa: BLE001 -- surfaced as None by ``value``
+                self._future.set_exception(exc)
+
+        threading.Thread(
+            target=copy_context().run, args=(run,), name="pals-t2-background", daemon=True
+        ).start()
+
+    def value(self) -> Any | None:
+        """The result, waiting for it; ``None`` when the call raised."""
+        try:
+            return self._future.result()
+        except BaseException:  # noqa: BLE001
+            return None
 
 
 # ---- candidate variants -----------------------------------------------------------------------
@@ -99,6 +152,10 @@ class VerificationMemo:
         with self._lock:
             self._results[self._key(lean_code)] = result
 
+    def peek(self, lean_code: str) -> Any | None:
+        with self._lock:
+            return self._results.get(self._key(lean_code))
+
     def take(self, lean_code: str) -> Any | None:
         with self._lock:
             return self._results.pop(self._key(lean_code), None)
@@ -115,6 +172,11 @@ def take_memoised(lean_code: str) -> Any | None:
     """The Lean result a racing candidate already obtained for exactly this source, once."""
     memo = _memo.get()
     return memo.take(lean_code) if memo is not None else None
+
+
+def peek_memoised(lean_code: str) -> Any | None:
+    memo = _memo.get()
+    return memo.peek(lean_code) if memo is not None else None
 
 
 # ---- explanation started beside verification ---------------------------------------------------

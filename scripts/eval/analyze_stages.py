@@ -1,10 +1,10 @@
 """Paired, problem-clustered analysis for run_stages.py output (Tier 1 / Tier 2 records.jsonl).
 
-Unit of analysis is the problem. Repeats of one (problem, arm) are averaged first, so repeats are
-never counted as independent problems. Binary outcomes: exact McNemar on single-repeat pairs plus a
-paired difference with a bootstrap interval; continuous outcomes: mean paired difference with a
-percentile bootstrap interval and a sign-flip permutation p. Also prints the minimum detectable
-difference (80% power, two-sided 5%) for the observed number of pairs.
+All statistics come from ``pals_agent.evals.analysis`` (one implementation): per-problem
+differences of repeat means, a paired sign-flip permutation test (exact up to 16 non-zero problems,
+seeded Monte Carlo beyond), a problem-clustered bootstrap interval, McNemar only on paired binary
+cells (one test per repeat index when there are several repeats), and the minimum detectable
+difference. This script adds per-arm summaries (p50/p90, stage breakdown) on top.
 
     analyze_stages.py RUN_DIR --base base --treat combined [--errors sketch_errors.jsonl]
 """
@@ -14,25 +14,24 @@ from __future__ import annotations
 import argparse
 import json
 import math
-import random
 import statistics as st
+import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-B = 10000
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from pals_agent.evals.analysis import (  # noqa: E402
+    _mcnemar_entry,
+    mde_binary,
+    paired_bootstrap,
+    paired_permutation_test,
+    per_problem_means,
+)
 
 
 def load(path: Path) -> list[dict[str, Any]]:
     return [json.loads(x) for x in path.read_text().splitlines() if x.strip()]
-
-
-def per_problem(runs: list[dict[str, Any]], arm: str, key: str) -> dict[str, float]:
-    acc: dict[str, list[float]] = defaultdict(list)
-    for r in runs:
-        if r["arm"] == arm and r.get(key) is not None:
-            acc[r["problem_id"]].append(float(r[key]))
-    return {k: sum(v) / len(v) for k, v in acc.items()}
 
 
 def quantile(values: list[float], q: float) -> float:
@@ -74,100 +73,43 @@ def arm_summary(runs: list[dict[str, Any]], arm: str) -> None:
     for r in rows:
         for k, ms in (r.get("stage_ms") or {}).items():
             stages[k].append(ms / 1000)
-    parts = ", ".join(
-        f"{k}={sum(v) / n:.1f}s(x{len(v)})" for k, v in sorted(stages.items())
-    )
+    parts = ", ".join(f"{k}={sum(v) / n:.1f}s(x{len(v)})" for k, v in sorted(stages.items()))
     print(f"    mean stage seconds per item (concurrent candidates add up): {parts}")
 
 
-def mcnemar_exact(b: int, c: int) -> float:
-    n = b + c
-    if n == 0:
-        return 1.0
-    k = min(b, c)
-    p = sum(math.comb(n, i) for i in range(k + 1)) / 2**n
-    return min(1.0, 2 * p)
+def report_metric(
+    runs: list[dict[str, Any]], base: str, treat: str, key: str, label: str, *, binary: bool
+) -> None:
+    """One metric, via the shared implementation in ``pals_agent.evals.analysis``.
 
-
-def boot_ci(d: list[float], seed: int = 1) -> tuple[float, float]:
-    rng = random.Random(seed)
-    n = len(d)
-    means = sorted(sum(rng.choice(d) for _ in range(n)) / n for _ in range(B))
-    return means[int(0.025 * B)], means[int(0.975 * B) - 1]
-
-
-def sign_flip_p(d: list[float], seed: int = 2) -> float:
-    rng = random.Random(seed)
-    obs = abs(sum(d))
-    hits = sum(
-        abs(sum(x if rng.random() < 0.5 else -x for x in d)) >= obs - 1e-12 for _ in range(B)
-    )
-    return (hits + 1) / (B + 1)
-
-
-def mdd_binary(n: int, disc: float, sims: int = 4000, seed: int = 3) -> float:
-    """Smallest true difference (base-only minus treat-only share of pairs) detected with 80%
-    power by exact McNemar, given the share ``disc`` of discordant pairs."""
-    rng = random.Random(seed)
-    for step in range(1, 100):
-        delta = step / 100
-        if delta > disc:
-            return float("nan")
-        pb, pc = (disc + delta) / 2, (disc - delta) / 2
-        hit = 0
-        for _ in range(sims):
-            b = c = 0
-            for _ in range(n):
-                u = rng.random()
-                if u < pb:
-                    b += 1
-                elif u < pb + pc:
-                    c += 1
-            hit += mcnemar_exact(b, c) < 0.05
-        if hit / sims >= 0.8:
-            return delta
-    return float("nan")
-
-
-def report_binary(name: str, a: dict[str, float], t: dict[str, float]) -> None:
-    ids = sorted(set(a) & set(t))
-    if not ids:
-        print(f"{name}: no problems with both arms; nothing to compare")
+    Problem-clustered paired sign-flip permutation test (exact up to 16 non-zero problems) and
+    bootstrap interval on the per-problem differences of repeat means; McNemar only on genuinely
+    paired binary cells (``_mcnemar_entry``), never on averaged values.
+    """
+    a = per_problem_means(runs, base, key)
+    t = per_problem_means(runs, treat, key)
+    common = sorted(set(a) & set(t))
+    if not common:
+        print(f"{label}: no problems with both arms; nothing to compare")
         return
-    d = [t[i] - a[i] for i in ids]
-    n = len(ids)
-    single = all(x in (0.0, 1.0) for x in list(a.values()) + list(t.values()))
-    only_b = sum(a[i] > t[i] for i in ids)
-    only_t = sum(t[i] > a[i] for i in ids)
-    lo, hi = boot_ci(d)
+    diffs = [t[p] - a[p] for p in common]
+    mean, lo, hi = paired_bootstrap(diffs)
+    n = len(common)
     out = (
-        f"{name}: n={n} base={sum(a[i] for i in ids):.1f} treat={sum(t[i] for i in ids):.1f}"
-        f" ({sum(a[i] for i in ids) / n:.3f} -> {sum(t[i] for i in ids) / n:.3f})"
-        f" diff={sum(d) / n:+.3f} boot95=[{lo:+.3f},{hi:+.3f}] base-only={only_b} treat-only={only_t}"  # noqa: E501
+        f"{label}: n={n} base={st.mean(a[p] for p in common):.3f}"
+        f" treat={st.mean(t[p] for p in common):.3f} diff={mean:+.3f}"
+        f" boot95=[{lo:+.3f},{hi:+.3f}] perm_p={paired_permutation_test(diffs):.3f}"
+        f" better={sum(d < 0 for d in diffs) if not binary else sum(d > 0 for d in diffs)}"
+        f" worse={sum(d > 0 for d in diffs) if not binary else sum(d < 0 for d in diffs)}"
+        f" median_diff={st.median(diffs):+.3f}"
     )
-    if single:
-        out += f" mcnemar_exact_p={mcnemar_exact(only_b, only_t):.3f}"
-        disc = (only_b + only_t) / n
-        out += f" MDD(obs discordance {disc:.2f})={mdd_binary(n, max(disc, 0.05)):.2f}"
-        out += f" MDD(disc 0.30)={mdd_binary(n, 0.30):.2f}"
-    else:
-        out += f" signflip_p={sign_flip_p(d):.3f}"
+    if binary:
+        entry = _mcnemar_entry(runs, base, treat, key, set(common))
+        out += " " + json.dumps(entry, sort_keys=True)
+        disc = sum(d != 0 for d in diffs) / n
+        out += f" MDE(obs discordance {disc:.2f})={mde_binary(n, max(disc, 0.05)):.2f}"
+        out += f" MDE(disc 0.30)={mde_binary(n, 0.30):.2f}"
     print(out)
-
-
-def report_cont(name: str, a: dict[str, float], t: dict[str, float]) -> None:
-    ids = sorted(set(a) & set(t))
-    if not ids:
-        print(f"{name}: no problems with both arms; nothing to compare")
-        return
-    d = [t[i] - a[i] for i in ids]
-    lo, hi = boot_ci(d)
-    print(
-        f"{name}: n={len(ids)} base_mean={st.mean(a[i] for i in ids):.2f}"
-        f" treat_mean={st.mean(t[i] for i in ids):.2f} diff={st.mean(d):+.2f}"
-        f" boot95=[{lo:+.2f},{hi:+.2f}] signflip_p={sign_flip_p(d):.3f}"
-        f" median_diff={st.median(d):+.2f}"
-    )
 
 
 def error_totals(
@@ -198,11 +140,7 @@ def main() -> None:
     for arm in (args.base, args.treat):
         arm_summary(runs, arm)
     for key, label in (("first_attempt_ok", "first-attempt ok"), ("success", "success")):
-        report_binary(
-            label,
-            per_problem(ok, args.base, key),
-            per_problem(ok, args.treat, key),
-        )
+        report_metric(ok, args.base, args.treat, key, label, binary=True)
     for key in (
         "input_tokens",
         "output_tokens",
@@ -214,7 +152,7 @@ def main() -> None:
         "repairs_used",
         "model_calls",
     ):
-        report_cont(key, per_problem(ok, args.base, key), per_problem(ok, args.treat, key))
+        report_metric(ok, args.base, args.treat, key, key, binary=False)
     err_path = args.run_dir / "sketch_errors.jsonl"
     if err_path.exists():
         errs = load(err_path)

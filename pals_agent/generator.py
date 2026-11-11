@@ -46,7 +46,7 @@ from pals_agent.prompt_safety import (
 from pals_agent.proof_reuse_usage import model_role
 from pals_agent.sketch_repair import normalize_header
 from pals_agent.statement_template import TEMPLATE_INSTRUCTION, assemble
-from pals_agent.t2_lane import variant_instruction
+from pals_agent.t2_lane import NAME_SAFETY_GUIDANCE, name_safety_enabled, variant_instruction
 
 _LEAN_BLOCK_RE = re.compile(r"```(?:lean4?|Lean)?\s*(.*?)```", re.DOTALL)
 _MAX_REPAIR_INSTRUCTION_BYTES = 8_192
@@ -462,7 +462,7 @@ class HybridLeanGenerator:
     def generate_direct_proof(
         self,
         request: ProofRequest,
-        draft: GeneratedDraft,
+        draft: GeneratedDraft | None,
     ) -> GeneratedProof:
         """T2 no-Sketch lane: the full proof in one call from the Draft (no Sketch exists)."""
         return self._prove(
@@ -514,7 +514,7 @@ class HybridLeanGenerator:
     def _prove(
         self,
         request: ProofRequest,
-        draft: GeneratedDraft,
+        draft: GeneratedDraft | None,
         sketch: GeneratedSketch | None,
         build_prompt: Callable[[], str],
     ) -> GeneratedProof:
@@ -1101,9 +1101,23 @@ Lean Sketch to complete:
 """
 
 
-def _direct_prove_prompt_for(request: ProofRequest, draft: GeneratedDraft) -> str:
-    """T2 no-Sketch prompt: the Prove instructions without a Sketch to complete."""
-    scalar, algebra, late = _guidance_slots(request, draft.text, None)
+def _direct_prove_prompt_for(request: ProofRequest, draft: GeneratedDraft | None) -> str:
+    """T2 no-Sketch prompt: the Prove instructions without a Sketch to complete.
+
+    ``draft`` is None when the Draft is skipped (T2 no-Draft): the model then chooses the proof
+    method itself, still bound by the retrieved method context and the exact theorem harness.
+    """
+    scalar, algebra, late = _guidance_slots(request, draft.text if draft else "", None)
+    name_safety = f"{NAME_SAFETY_GUIDANCE}\n" if name_safety_enabled() else ""
+    if draft is not None:
+        draft_section = (
+            "Informal Draft whose required proof method must be preserved:\n"
+            f"{_draft_block(draft.text)}"
+        )
+    else:
+        draft_section = (
+            "There is no informal Draft: choose a direct, standard proof method yourself."
+        )
     reliability = _lean_reliability_guidance(request)
     return f"""Write a complete Lean 4/mathlib proof from the supplied informal Draft.
 There is no intermediate Sketch: return the final, compiling proof in one step.
@@ -1124,7 +1138,7 @@ claiming unexposed tactic internals were explicit Lean proof steps.
 {DERIVE_ANSWER_INSTRUCTION}
 {algebra}
 {reliability}
-Do not use `sorry` or `admit`.
+{name_safety}Do not use `sorry` or `admit`.
 You must prove the exact Lean theorem harness shown below when one is provided.
 {late}
 {_problem_section(request)}
@@ -1133,8 +1147,7 @@ You must prove the exact Lean theorem harness shown below when one is provided.
 {_matrix_literal_guidance(request)}
 Retrieved method context (its required/advisory status is declared inside):
 {_draft_guidance(request)}
-Informal Draft whose required proof method must be preserved:
-{_draft_block(draft.text)}
+{draft_section}
 """
 
 
