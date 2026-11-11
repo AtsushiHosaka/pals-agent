@@ -361,3 +361,35 @@ def test_eval_runner_has_a_stepwise_arm_and_the_selection_is_in_the_manifests():
     picked = module.select(manifest, ",".join(ids), None)  # KeyError on a held-out id
     assert len(picked) == len(ids) == 15
     assert all("(x+y)^2" not in p["statement"].replace(" ", "") for p in picked)
+
+
+def test_without_a_fixed_statement_the_models_own_theorem_and_marker_line_parse():
+    raw = (
+        "```lean\nimport Mathlib\n\ntheorem t (a b c : ℝ) (hab : a ≤ b) (hbc : b ≤ c) :\n"
+        "    a ≤ c := by\n-- PALS-PROOF-BODY\n  have h1 : a ≤ b := by sorry\n"
+        "  have h2 : b ≤ c := by sorry\n  exact le_trans h1 h2\n```"
+    )
+    code = dsp.assemble_skeleton(raw, None)
+    sk = dsp.parse_skeleton(code, None)
+    assert sk is not None and [s.name for s in sk.steps] == ["h1", "h2"]
+    assert "PALS-PROOF-BODY" not in code
+
+
+HARNESS = (
+    "import Mathlib\nopen MeasureTheory\n\nuniverse u\n"
+    "theorem t (a b c : ℝ) (hab : a ≤ b) (hbc : b ≤ c) : a ≤ c := by"
+)
+
+
+def test_a_fixed_statement_with_imports_universe_and_trailing_by_is_split_and_kept():
+    raw = (
+        "```lean\nimport Mathlib\nopen Foo\n\n-- PALS-PROOF-BODY\n"
+        "  have h1 : a ≤ b := by sorry\n  have h2 : b ≤ c := by sorry\n"
+        "  exact le_trans h1 h2\n```"
+    )
+    code = dsp.assemble_skeleton(raw, HARNESS)
+    assert code.startswith("import Mathlib\nopen MeasureTheory\n\nuniverse u\n")
+    assert "open Foo" not in code  # the harness preamble is verbatim, the model's is dropped
+    assert code.count(":= by") >= 3 and "a ≤ c := by\n  have h1" in code
+    sk = dsp.parse_skeleton(code, HARNESS)
+    assert sk is not None and [s.name for s in sk.steps] == ["h1", "h2"]

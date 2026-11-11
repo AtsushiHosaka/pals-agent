@@ -118,14 +118,35 @@ def _unfence(raw: str) -> str:
     return (match.group(1) if match else raw).strip("\n")
 
 
+_DECL_START = re.compile(r"^[ \t]*(?:@\[[^\]]*\]\s*)?(?:theorem|lemma|example)\b", re.MULTILINE)
+
+
+def split_formal(formal: str) -> tuple[str, str]:
+    """(preamble, declaration): a harness may carry imports, `open`, `universe` lines before the
+    declaration and end with `:= by`; the declaration is what the model may not change."""
+    text = formal.strip()
+    found = _DECL_START.search(text)
+    if found is None:
+        return "", text
+    decl = re.sub(r"\s*:=\s*by\s*\Z", "", text[found.start() :]).strip()
+    return text[: found.start()].strip(), decl
+
+
 def assemble_skeleton(raw: str, formal_statement: str | None) -> str:
     """Model output -> source. With a fixed statement it is inserted verbatim; any theorem line
     the model wrote for the target is dropped. Without one, the model's own code is kept."""
     code = _unfence(raw)
     if formal_statement and formal_statement.strip():
-        code = assemble(code, formal_statement)
-        if formal_statement.strip() not in code:
+        preamble, decl = split_formal(formal_statement)
+        code = assemble(code, decl)
+        at = code.find(decl)
+        if at < 0:
             return ""
+        if preamble:
+            code = preamble + "\n\n" + code[at:]
+    else:
+        # No fixed statement: the model wrote its own theorem; drop the layout marker line.
+        code = "\n".join(line for line in code.splitlines() if line.strip() != MARKER)
     if code and not re.match(r"\s*import\b", code):
         code = "import Mathlib\n\n" + code.lstrip("\n")
     return code
@@ -134,10 +155,11 @@ def assemble_skeleton(raw: str, formal_statement: str | None) -> str:
 def _target_by_end(code: str, formal_statement: str | None) -> int | None:
     """Index just after the `:= by` (and its newline) of the target declaration."""
     if formal_statement and formal_statement.strip():
-        start = code.find(formal_statement.strip())
+        decl = split_formal(formal_statement)[1]
+        start = code.find(decl)
         if start < 0:
             return None
-        index = start + len(formal_statement.strip())
+        index = start + len(decl)
     else:
         found = _DECL.search(code)
         if found is None:
