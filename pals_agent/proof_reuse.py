@@ -297,6 +297,8 @@ class ProofReuseRuntime:
     instantiation_enabled: bool = False
     # Model-free specialization for requests the vocabulary table covers (needs the flag above).
     grammar_instantiation: bool = True
+    # Optional stage 0 (pals_agent.stage0.Stage0), default None; also needs PALS_STAGE0_PORTFOLIO.
+    stage0: Any = None
 
     def answer(
         self, request: dict[str, Any], recipe_lookup: RecipeLookup | None = None, *,
@@ -326,6 +328,9 @@ class ProofReuseRuntime:
             )
             if grammar is not None:
                 return grammar
+            stage0 = self.stage0_input(request, deadline=deadline)
+            if stage0 is not None:
+                return stage0
             evidence["phase"] = "recipe_semantic_review"
             semantic = self.semantic_recipe_input(
                 request, recipe_batch=recipe_batch, claim_id=claim_id, deadline=deadline,
@@ -969,6 +974,29 @@ class ProofReuseRuntime:
             "applied_conventions": copy.deepcopy(APPLIED),
             "recipe_exact_input_correspondence": receipt,
         })
+
+    def stage0_input(self, request: dict[str, Any], *, deadline: float) -> ProofReuseResult | None:
+        """Lean-automation stage 0 (gated, default off); a miss returns None, nothing is lost."""
+        if self.stage0 is None:  # default path: nothing imported, nothing evaluated
+            return None
+        from pals_agent.stage0 import stage0_enabled
+
+        if (
+            not stage0_enabled()
+            or request.get("context_turns") or request.get("chat_history")
+            or request.get("attachment_ids") or request.get("chat_images")
+            or request.get("material_context") or current_chat_images()
+            or _conversation_history(request)
+        ):
+            return None
+        statement, language, _ = _request_input(request)
+        result = self.stage0.run(
+            statement, language, budget_s=max(1.0, min(12.0, deadline - time.monotonic() - 30.0))
+        )
+        if result.outcome != "answered" or not result.answer_text:
+            return None
+        answer = {"text": result.answer_text, "evidence_kind": "lean_portfolio", "sources": []}
+        return ProofReuseResult("answered", None, answer, None, result.evidence())
 
     def grammar_recipe_input(
         self, request: dict[str, Any], *, recipe_search: RecipeSearch | None,

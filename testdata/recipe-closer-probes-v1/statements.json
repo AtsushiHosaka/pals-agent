@@ -1,0 +1,246 @@
+{
+ "schema": "pals.recipe-closer-probes.v1",
+ "source": "statements written by the instantiation experiment (pals-agent#108 draft, branch claude/recipe-instantiation-experiment); test-only; the G/bind/pool fields are that experiment's hand choices and are NOT used by this lane",
+ "statements": [
+  {
+   "id": "P01_x2",
+   "kind": "def",
+   "stmt": "Continuous (fun x : ℝ => x ^ 2)"
+  },
+  {
+   "id": "P02_x3",
+   "kind": "def",
+   "stmt": "Continuous (fun x : ℝ => x ^ 3)"
+  },
+  {
+   "id": "P03_x5",
+   "kind": "def",
+   "stmt": "Continuous (fun x : ℝ => x ^ 5)"
+  },
+  {
+   "id": "P04_3x",
+   "kind": "def",
+   "stmt": "Continuous (fun x : ℝ => 3 * x)"
+  },
+  {
+   "id": "P05_2x1",
+   "kind": "def",
+   "stmt": "Continuous (fun x : ℝ => 2 * x + 1)"
+  },
+  {
+   "id": "P06_0x5",
+   "kind": "def",
+   "stmt": "Continuous (fun x : ℝ => 0 * x + 5)"
+  },
+  {
+   "id": "P07_x2_sq",
+   "kind": "def",
+   "stmt": "Continuous (fun x : ℝ => x ^ 2)"
+  },
+  {
+   "id": "P08_xx",
+   "kind": "nondef",
+   "stmt": "Continuous (fun x : ℝ => x * x)"
+  },
+  {
+   "id": "P09_xm1",
+   "kind": "nondef",
+   "stmt": "Continuous (fun x : ℝ => x - 1)"
+  },
+  {
+   "id": "P10_x",
+   "kind": "nondef",
+   "stmt": "Continuous (fun x : ℝ => x)"
+  },
+  {
+   "id": "P11_negx",
+   "kind": "nondef",
+   "stmt": "Continuous (fun x : ℝ => -x)"
+  },
+  {
+   "id": "P12_xdiv2",
+   "kind": "nondef",
+   "stmt": "Continuous (fun x : ℝ => x / 2)"
+  },
+  {
+   "id": "P13_xxx",
+   "kind": "nondef",
+   "stmt": "Continuous (fun x : ℝ => x * x * x)"
+  },
+  {
+   "id": "P14_xp1",
+   "kind": "nondef",
+   "stmt": "Continuous (fun x : ℝ => x + 1)"
+  },
+  {
+   "id": "P15_2x_p_x",
+   "kind": "nondef",
+   "stmt": "Continuous (fun x : ℝ => 2 * x + x)"
+  },
+  {
+   "id": "P16_at_x2",
+   "kind": "at",
+   "stmt": "ContinuousAt (fun x : ℝ => x ^ 2) 1"
+  },
+  {
+   "id": "P17_at_3x",
+   "kind": "at",
+   "stmt": "ContinuousAt (fun x : ℝ => 3 * x) 2"
+  },
+  {
+   "id": "P18_x2_p_3x1",
+   "kind": "comp",
+   "stmt": "Continuous (fun x : ℝ => x ^ 2 + (3 * x + 1))"
+  },
+  {
+   "id": "P19_x2_3x_1",
+   "kind": "comp",
+   "stmt": "Continuous (fun x : ℝ => x ^ 2 + 3 * x + 1)"
+  },
+  {
+   "id": "P20_x3_x2",
+   "kind": "comp",
+   "stmt": "Continuous (fun x : ℝ => x ^ 3 + x ^ 2)"
+  },
+  {
+   "id": "P21_3x2",
+   "kind": "comp",
+   "stmt": "Continuous (fun x : ℝ => 3 * x ^ 2)"
+  },
+  {
+   "id": "P22_x2_plus_x",
+   "kind": "comp",
+   "stmt": "Continuous (fun x : ℝ => x ^ 2 + x)"
+  },
+  {
+   "id": "P23_x2_1x",
+   "kind": "comp",
+   "stmt": "Continuous (fun x : ℝ => x ^ 2 + 1 * x)"
+  },
+  {
+   "id": "P24_x2_x3_x4",
+   "kind": "comp",
+   "stmt": "Continuous (fun x : ℝ => x ^ 2 + x ^ 3 + x ^ 4)"
+  },
+  {
+   "id": "P25_2x2_3x3",
+   "kind": "comp",
+   "stmt": "Continuous (fun x : ℝ => 2 * x ^ 2 + 3 * x ^ 3)"
+  },
+  {
+   "id": "P26_add_abs",
+   "kind": "hyp",
+   "stmt": "∀ f g : ℝ → ℝ, Continuous f → Continuous g → Continuous (fun x : ℝ => f x + g x)"
+  },
+  {
+   "id": "P27_cmul_abs",
+   "kind": "hyp",
+   "stmt": "∀ f : ℝ → ℝ, Continuous f → Continuous (fun x : ℝ => 3 * f x)"
+  },
+  {
+   "id": "P28_ff",
+   "kind": "hyp",
+   "stmt": "∀ f : ℝ → ℝ, Continuous f → Continuous (fun x : ℝ => f x + f x)"
+  },
+  {
+   "id": "P29_x2_g",
+   "kind": "hyp",
+   "stmt": "∀ g : ℝ → ℝ, Continuous g → Continuous (fun x : ℝ => x ^ 2 + g x)"
+  },
+  {
+   "id": "P31_mono_x3",
+   "kind": "mono",
+   "stmt": "StrictMono (fun x : ℝ => x ^ 3)"
+  },
+  {
+   "id": "P32_mono_x5",
+   "kind": "mono",
+   "stmt": "StrictMono (fun x : ℝ => x ^ 5)"
+  },
+  {
+   "id": "P33_mono_x7",
+   "kind": "mono",
+   "stmt": "StrictMono (fun x : ℝ => x ^ 7)"
+  },
+  {
+   "id": "P34_mono_gen",
+   "kind": "mono",
+   "stmt": "∀ n : ℕ, StrictMono (fun x : ℝ => x ^ (2 * n + 1))"
+  },
+  {
+   "id": "P35_d_x3",
+   "kind": "diff",
+   "stmt": "Differentiable ℝ (fun x : ℝ => x ^ 3)"
+  },
+  {
+   "id": "P36_d_2x1",
+   "kind": "diff",
+   "stmt": "Differentiable ℝ (fun x : ℝ => 2 * x + 1)"
+  },
+  {
+   "id": "P37_d_3x",
+   "kind": "diff",
+   "stmt": "Differentiable ℝ (fun x : ℝ => 3 * x)"
+  },
+  {
+   "id": "P38_d_xx",
+   "kind": "diff",
+   "stmt": "Differentiable ℝ (fun x : ℝ => x * x)"
+  },
+  {
+   "id": "P39_d_xm1",
+   "kind": "diff",
+   "stmt": "Differentiable ℝ (fun x : ℝ => x - 1)"
+  },
+  {
+   "id": "N01_x2_p1",
+   "kind": "neg",
+   "stmt": "Continuous (fun x : ℝ => x ^ 2 + 1)"
+  },
+  {
+   "id": "N02_inv",
+   "kind": "neg",
+   "stmt": "Continuous (fun x : ℝ => x⁻¹)"
+  },
+  {
+   "id": "N03_mono_x2",
+   "kind": "neg",
+   "stmt": "StrictMono (fun x : ℝ => x ^ 2)"
+  },
+  {
+   "id": "N04_abs_cont",
+   "kind": "neg",
+   "stmt": "Continuous (fun x : ℝ => |x|)"
+  },
+  {
+   "id": "N05_abs_diff",
+   "kind": "neg",
+   "stmt": "Differentiable ℝ (fun x : ℝ => |x|)"
+  },
+  {
+   "id": "N06_ucont_x2",
+   "kind": "neg",
+   "stmt": "UniformContinuous (fun x : ℝ => x ^ 2)"
+  },
+  {
+   "id": "N07_x2x",
+   "kind": "neg",
+   "stmt": "Continuous (fun x : ℝ => x ^ 2 * x)"
+  },
+  {
+   "id": "N08_mono_x4",
+   "kind": "neg",
+   "stmt": "StrictMono (fun x : ℝ => x ^ 4)"
+  },
+  {
+   "id": "N09_step",
+   "kind": "neg",
+   "stmt": "Continuous (fun x : ℝ => if x < 0 then (0:ℝ) else 1)"
+  },
+  {
+   "id": "N10_x2_p_inv",
+   "kind": "neg",
+   "stmt": "Continuous (fun x : ℝ => x ^ 2 + x⁻¹)"
+  }
+ ]
+}

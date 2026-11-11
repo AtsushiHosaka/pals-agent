@@ -1,0 +1,150 @@
+{
+ "schema": "pals.general-recipe-probes.v1",
+ "note": "test-only specialisation requests of the existing Recipe families; not part of generation-eval-v1; never added to the catalog",
+ "probes": [
+  {
+   "id": "pow3-cont",
+   "family": "power-continuity",
+   "formal": "Continuous (fun x : ℝ => x ^ 3)",
+   "nl": "xの3乗は実数全体で連続であることを示せ。",
+   "expect_instance": true,
+   "grammar_parses": true
+  },
+  {
+   "id": "pow10-cont",
+   "family": "power-continuity",
+   "formal": "Continuous (fun x : ℝ => x ^ 10)",
+   "nl": "x^10 is continuous on the real line.",
+   "expect_instance": true,
+   "grammar_parses": true
+  },
+  {
+   "id": "pow0-cont",
+   "family": "power-continuity",
+   "formal": "Continuous (fun x : ℝ => x ^ 0)",
+   "nl": null,
+   "expect_instance": true,
+   "grammar_parses": false
+  },
+  {
+   "id": "pow-succ-cont",
+   "family": "power-continuity-abstract",
+   "formal": "∀ n : ℕ, Continuous (fun x : ℝ => x ^ (n + 1))",
+   "nl": null,
+   "expect_instance": true,
+   "grammar_parses": false
+  },
+  {
+   "id": "pow5-diff",
+   "family": "power-differentiability",
+   "formal": "Differentiable ℝ (fun x : ℝ => x ^ 5)",
+   "nl": "x^5 is differentiable everywhere.",
+   "expect_instance": true,
+   "grammar_parses": true
+  },
+  {
+   "id": "affine-2x1-cont",
+   "family": "affine-continuity",
+   "formal": "Continuous (fun x : ℝ => 2 * x + 1)",
+   "nl": "f(x)=2x+1 は連続であることを示せ。",
+   "expect_instance": true,
+   "grammar_parses": true
+  },
+  {
+   "id": "affine-2x1-diff",
+   "family": "affine-differentiability",
+   "formal": "Differentiable ℝ (fun x : ℝ => 2 * x + 1)",
+   "nl": null,
+   "expect_instance": true,
+   "grammar_parses": false
+  },
+  {
+   "id": "affine-3x2-unif",
+   "family": "affine-uniform-continuity",
+   "formal": "UniformContinuous (fun x : ℝ => 3 * x + 2)",
+   "nl": null,
+   "expect_instance": true,
+   "grammar_parses": false
+  },
+  {
+   "id": "linear-7x-cont",
+   "family": "linear-continuity",
+   "formal": "Continuous (fun x : ℝ => 7 * x)",
+   "nl": null,
+   "expect_instance": true,
+   "grammar_parses": false
+  },
+  {
+   "id": "linear-9x-diff",
+   "family": "linear-differentiability",
+   "formal": "Differentiable ℝ (fun x : ℝ => 9 * x)",
+   "nl": null,
+   "expect_instance": true,
+   "grammar_parses": false
+  },
+  {
+   "id": "linear-4x-unif",
+   "family": "linear-uniform-continuity",
+   "formal": "UniformContinuous (fun x : ℝ => 4 * x)",
+   "nl": null,
+   "expect_instance": true,
+   "grammar_parses": false
+  },
+  {
+   "id": "linear-all-c",
+   "family": "linear-continuity-abstract",
+   "formal": "∀ c : ℝ, Continuous (fun x : ℝ => c * x)",
+   "nl": null,
+   "expect_instance": true,
+   "grammar_parses": false
+  },
+  {
+   "id": "odd-pow7-mono",
+   "family": "odd-power-monotone",
+   "formal": "StrictMono (fun x : ℝ => x ^ (2 * 3 + 1))",
+   "nl": null,
+   "expect_instance": true,
+   "grammar_parses": false
+  },
+  {
+   "id": "odd-pow-n-mono",
+   "family": "odd-power-monotone-abstract",
+   "formal": "∀ n : ℕ, StrictMono (fun x : ℝ => x ^ (2 * n + 1))",
+   "nl": null,
+   "expect_instance": true,
+   "grammar_parses": false
+  },
+  {
+   "id": "affine-sub-cont",
+   "family": "affine-continuity-boundary",
+   "formal": "Continuous (fun x : ℝ => 3 * x - 5)",
+   "nl": null,
+   "expect_instance": null,
+   "grammar_parses": false
+  },
+  {
+   "id": "neg-pow2p1",
+   "family": "negative-control",
+   "formal": "Continuous (fun x : ℝ => x ^ 2 + 1)",
+   "nl": null,
+   "expect_instance": false,
+   "grammar_parses": false
+  },
+  {
+   "id": "neg-abs-diff",
+   "family": "negative-control",
+   "formal": "Differentiable ℝ (fun x : ℝ => |x|)",
+   "nl": null,
+   "expect_instance": false,
+   "grammar_parses": false
+  },
+  {
+   "id": "neg-wrong-prop",
+   "family": "negative-control",
+   "formal": "UniformContinuous (fun x : ℝ => x ^ 2)",
+   "nl": null,
+   "expect_instance": false,
+   "grammar_parses": false
+  }
+ ]
+}
