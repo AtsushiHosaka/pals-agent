@@ -201,3 +201,52 @@ def test_pae_017_outer_memory_attestation_is_bounded_at_eight_gib(
         )
         is expected
     )
+
+
+@pytest.mark.parametrize(
+    ("env", "cpu_max", "expected"),
+    [
+        (None, "400000 100000", False),
+        ("2", "200000 100000", True),
+        ("2", "400000 100000", False),
+        ("4", "400000 100000", True),
+        ("4", "400001 100000", False),
+    ],
+)
+def test_cpu_ceiling_follows_the_reviewed_setting_and_defaults_to_two(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, env: str | None, cpu_max: str, expected: bool
+) -> None:
+    (tmp_path / "cpu.max").write_text(cpu_max, encoding="ascii")
+    monkeypatch.setattr(boundary_module, "_cgroup_v2_root", lambda: tmp_path)
+    if env is None:
+        monkeypatch.delenv("PALS_VERIFIER_CPUS", raising=False)
+    else:
+        monkeypatch.setenv("PALS_VERIFIER_CPUS", env)
+    assert boundary_module._cpu_cgroup_limited() is expected
+
+
+@pytest.mark.parametrize("value", ["1", "5", "02", "two", "", "2.5", " 4"])
+def test_invalid_cpu_setting_is_refused(monkeypatch: pytest.MonkeyPatch, value: str) -> None:
+    monkeypatch.setenv("PALS_VERIFIER_CPUS", value)
+    with pytest.raises(boundary_module.BoundaryAttestationError):
+        boundary_module._max_cpu_count()
+
+
+@pytest.mark.parametrize(
+    ("env", "expected_gib"), [(None, 8), ("8", 8), ("4", 4), ("16", 16), ("24", 24)]
+)
+def test_memory_ceiling_follows_the_reviewed_setting_and_defaults_to_eight_gib(
+    monkeypatch: pytest.MonkeyPatch, env: str | None, expected_gib: int
+) -> None:
+    if env is None:
+        monkeypatch.delenv("PALS_VERIFIER_MEMORY_GIB", raising=False)
+    else:
+        monkeypatch.setenv("PALS_VERIFIER_MEMORY_GIB", env)
+    assert boundary_module._max_memory_bytes() == expected_gib * _GIB
+
+
+@pytest.mark.parametrize("value", ["0", "3", "25", "08", "eight", "", "8.5"])
+def test_invalid_memory_setting_is_refused(monkeypatch: pytest.MonkeyPatch, value: str) -> None:
+    monkeypatch.setenv("PALS_VERIFIER_MEMORY_GIB", value)
+    with pytest.raises(boundary_module.BoundaryAttestationError):
+        boundary_module._max_memory_bytes()
