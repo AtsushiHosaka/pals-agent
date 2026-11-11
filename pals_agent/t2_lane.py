@@ -342,10 +342,19 @@ def settle_unadopted(handle: Any, timeout: float = 120.0) -> None:
 
     A kept handle's usage is forwarded only when it is adopted. A caller that releases an answer
     without adopting it (or drops the result) must settle it here, so provider spend is never
-    silently lost. Waits up to ``timeout`` for the call to end, then reports what it used."""
+    silently lost. Waits up to ``timeout`` for the call to end and reports what it used; if it is
+    still running then, the usage is reported when it ends (see ``drain_background``)."""
     handle.discard()
     handle.wait(timeout)
-    forward_usage(handle.take_usage_once())
+    if handle.done():
+        forward_usage(handle.take_usage_once())
+        return
+    # Still running at the deadline: its usage is not known yet and must not be marked as
+    # forwarded now. Report it through the ordinary reporter of this context when it ends
+    # (tracked, so a drain waits for it; a failed report is counted and logged).
+    logger.warning("t2_settle_timeout")  # closed code: no content
+    parent = copy_context()
+    _account_discarded(handle, lambda record: parent.copy().run(forward_usage_strict, [record]))
 
 
 def _account_discarded(handle: Any, sink: Callable[[dict[str, Any]], None]) -> None:

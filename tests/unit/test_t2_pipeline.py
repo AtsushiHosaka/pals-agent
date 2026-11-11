@@ -891,3 +891,28 @@ def test_usage_is_reported_exactly_once_whatever_the_order_of_adopt_and_settle()
     assert run(["adopt", "discard"]) == 1
     assert run(["discard", "settle"]) == 1
     assert run(["settle", "discard"]) == 1
+
+
+def test_settle_unadopted_that_times_out_still_reports_the_late_usage_once() -> None:
+    from pals_agent.speculative_explanation import SpeculativeExplanation
+
+    release = threading.Event()
+
+    def slow_explain(**kwargs: Any) -> str:
+        release.wait(5)
+        _spend(7)
+        return "late"
+
+    seen: list[dict[str, Any]] = []
+    with usage_scope(seen.append):
+        handle = SpeculativeExplanation.start(
+            explain=slow_explain, theorem_statement="s", lean_code="v", language="ja",
+            deadline=time.monotonic() + 60, timeout_seconds=5,
+        )
+        t2_lane.settle_unadopted(handle, timeout=0.05)  # the call is still running
+        assert seen == []
+        release.set()
+        assert t2_lane.drain_background(5) == 0
+        # a second settle must not report it again
+        t2_lane.settle_unadopted(handle, timeout=1)
+    assert [r["input_tokens"] for r in seen] == [7]
