@@ -55,6 +55,10 @@ def test_multiline_model_tactics_are_indented_into_the_theorem() -> None:
     assert source.endswith("by\n  intro n\n  simp\n")
 
 
+def approve(request: str, source: str, parts: dict, language: str) -> tuple[bool, str]:  # type: ignore[type-arg]
+    return True, ""
+
+
 def test_unknown_gate_modes_are_refused() -> None:
     with pytest.raises(ValueError):
         fa.FastAnswer(  # type: ignore[arg-type]
@@ -63,6 +67,7 @@ def test_unknown_gate_modes_are_refused() -> None:
             model=None,
             scratch=Path("."),
             gate_mode="nope",
+            explanation_reviewer=approve,
         )
 
 
@@ -130,7 +135,13 @@ def test_a_true_statement_with_a_good_proof_is_answered_and_verified(fast) -> No
         "negation_tactics": [],
     }
     answer = fa.FastAnswer(
-        resident, verifier, fake_model({"merged": merged}), scratch, calls=2, gate_mode="terse2"
+        resident,
+        verifier,
+        fake_model({"merged": merged}),
+        scratch,
+        calls=2,
+        gate_mode="terse2",
+        explanation_reviewer=approve,
     )
     result = answer.run("Show n + 0 = n for every natural n.", "en")
     assert result.outcome == "answered" and result.verified and result.gate is not None
@@ -147,7 +158,15 @@ def test_a_rejecting_review_blocks_the_answer_even_when_lean_proves_it(fast) -> 
         "negation_tactics": [],
     }
     model = fake_model({"merged": merged, "faithful": False})
-    answer = fa.FastAnswer(resident, verifier, model, scratch, calls=2, gate_mode="terse2")
+    answer = fa.FastAnswer(
+        resident,
+        verifier,
+        model,
+        scratch,
+        calls=2,
+        gate_mode="terse2",
+        explanation_reviewer=approve,
+    )
     result = answer.run("Show n + 0 = n for every natural n.", "en")
     assert result.outcome == "fallthrough" and result.reason == "fidelity_gate_failed"
 
@@ -161,7 +180,14 @@ def test_a_false_statement_with_a_wrong_proof_is_never_answered(fast) -> None:  
         "tactics": ["norm_num", "simp"],
         "negation_tactics": [],
     }
-    answer = fa.FastAnswer(resident, verifier, fake_model({"merged": merged}), scratch, calls=2)
+    answer = fa.FastAnswer(
+        resident,
+        verifier,
+        fake_model({"merged": merged}),
+        scratch,
+        calls=2,
+        explanation_reviewer=approve,
+    )
     result = answer.run("Show 2 + 2 = 5.", "en")
     assert result.outcome == "fallthrough" and not result.verified
 
@@ -176,28 +202,158 @@ def test_a_question_is_answered_no_by_proving_the_negation(fast) -> None:  # typ
         "negation_tactics": ["intro h\nhave := @h 1 (-1) (by norm_num)\nnorm_num at this"],
     }
     answer = fa.FastAnswer(
-        resident, verifier, fake_model({"merged": merged}), scratch, calls=2, gate_mode="terse2"
+        resident,
+        verifier,
+        fake_model({"merged": merged}),
+        scratch,
+        calls=2,
+        gate_mode="terse2",
+        explanation_reviewer=approve,
     )
     result = answer.run("Is x ↦ x² injective on the reals?", "en")
     assert result.outcome == "answered" and result.answer == "no"
     assert result.proved is not None and result.proved.startswith("¬")
 
 
+def _stub_verifier():  # type: ignore[no-untyped-def]
+    return type("V", (), {"resident": None})()
+
+
+def test_an_answer_without_the_explanation_review_is_refused_unless_named() -> None:
+    with pytest.raises(ValueError, match="explanation_reviewer"):
+        fa.FastAnswer(None, _stub_verifier(), None, Path("."))  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="explanation_reviewer"):
+        fa.FastAnswer(  # type: ignore[arg-type]
+            None, _stub_verifier(), None, Path("."), explain=False, explanation_reviewer=approve
+        )
+    fa.FastAnswer(  # the explicit development switch, by name
+        None,
+        _stub_verifier(),
+        None,
+        Path("."),
+        allow_unreviewed_explanation=True,  # type: ignore[arg-type]
+    )
+    fa.FastAnswer(None, _stub_verifier(), None, Path("."), explanation_reviewer=approve)  # type: ignore[arg-type]
+
+
+GOOD_MERGED = {
+    "kind": "prove",
+    "formal": "∀ n : ℕ, n + 0 = n",
+    "tactics": ["intro n\nsimp"],
+    "negation_tactics": [],
+}
+
+
+@REAL
+def test_a_rejected_explanation_blocks_the_answer_and_falls_through(fast) -> None:  # type: ignore[no-untyped-def]
+    resident, verifier, scratch = fast
+    calls: list[dict] = []  # type: ignore[type-arg]
+
+    def reject(request: str, source: str, parts: dict, language: str):  # type: ignore[no-untyped-def,type-arg]
+        calls.append(parts)
+        return False, "rejected:format"
+
+    answer = fa.FastAnswer(
+        resident,
+        verifier,
+        fake_model({"merged": GOOD_MERGED}),
+        scratch,
+        calls=2,
+        gate_mode="terse2",
+        explanation_reviewer=reject,
+    )
+    result = answer.run("Show n + 0 = n for every natural n.", "en")
+    assert calls and result.verified and result.gate is not None and result.gate.passed
+    assert result.outcome == "fallthrough" and result.reason == "explanation_rejected"
+    assert result.explanation_approved is False and result.explanation_issue == "rejected:format"
+
+
+@REAL
+def test_an_unavailable_explanation_review_is_a_rejection(fast) -> None:  # type: ignore[no-untyped-def]
+    resident, verifier, scratch = fast
+
+    def broken(request: str, source: str, parts: dict, language: str):  # type: ignore[no-untyped-def,type-arg]
+        raise RuntimeError("reviewer down")
+
+    answer = fa.FastAnswer(
+        resident,
+        verifier,
+        fake_model({"merged": GOOD_MERGED}),
+        scratch,
+        calls=2,
+        gate_mode="terse2",
+        explanation_reviewer=broken,
+    )
+    result = answer.run("Show n + 0 = n for every natural n.", "en")
+    assert result.outcome == "fallthrough" and result.reason == "explanation_rejected"
+    assert result.explanation_issue == "review_unavailable"
+
+
+@REAL
+def test_every_wait_is_bounded_by_the_request_budget(fast) -> None:  # type: ignore[no-untyped-def]
+    resident, verifier, scratch = fast
+    base = fake_model({"merged": GOOD_MERGED})
+
+    def slow_gate(prompt: str, schema: dict) -> dict:  # type: ignore[type-arg]
+        if prompt.startswith("You review a formalisation"):
+            time.sleep(6.0)  # the review never comes back within the budget
+        return base(prompt, schema)
+
+    answer = fa.FastAnswer(
+        resident,
+        verifier,
+        slow_gate,
+        scratch,
+        calls=2,
+        gate_mode="terse2",
+        budget_s=2.0,
+        explanation_reviewer=approve,
+    )
+    started = time.monotonic()
+    result = answer.run("Show n + 0 = n for every natural n.", "en")
+    assert result.outcome == "fallthrough" and result.reason == "budget_exhausted"
+    assert time.monotonic() - started < 4.5  # not the 6 s of the slow call
+
+
+@REAL
+def test_a_cancelled_run_stops_and_publishes_nothing(fast) -> None:  # type: ignore[no-untyped-def]
+    import threading
+
+    resident, verifier, scratch = fast
+    cancel = threading.Event()
+    base = fake_model({"merged": GOOD_MERGED})
+
+    def slow(prompt: str, schema: dict) -> dict:  # type: ignore[type-arg]
+        time.sleep(3.0)
+        return base(prompt, schema)
+
+    answer = fa.FastAnswer(resident, verifier, slow, scratch, calls=2, explanation_reviewer=approve)
+    threading.Timer(0.3, cancel.set).start()
+    started = time.monotonic()
+    result = answer.run("q", "en", cancel=cancel)
+    assert result.reason == "cancelled" and time.monotonic() - started < 2.0
+
+
 # ------------------------------------------------------------------ fallback race (no Lean needed)
 class _FakeFast:
     def __init__(self, outcome: str, seconds: float, usage: int = 1) -> None:
         self.outcome, self.seconds, self.usage = outcome, seconds, usage
+        self.published = 0
 
-    def run(self, request: str, language: str):  # type: ignore[no-untyped-def]
+    def run(self, request: str, language: str, cancel=None):  # type: ignore[no-untyped-def]
         from pals_agent.usage import forward_usage
 
-        time.sleep(self.seconds)
         forward_usage([{"model": "fast", "input_tokens": 10, "output_tokens": 5}] * self.usage)
+        end = time.monotonic() + self.seconds
+        while time.monotonic() < end:
+            if cancel is not None and cancel.is_set():
+                return fa.FastAnswerResult("fallthrough", "cancelled")
+            time.sleep(0.01)
         return fa.FastAnswerResult(self.outcome, None if self.outcome == "answered" else "x")
 
 
-def _normal(duration: float, stops: list[bool]):  # type: ignore[no-untyped-def]
-    def run(cancel, deadline):  # type: ignore[no-untyped-def]
+def _normal(duration: float, stops: list[bool], *, publish: list[str] | None = None):  # type: ignore[no-untyped-def]
+    def run(cancel, deadline, claim):  # type: ignore[no-untyped-def]
         from pals_agent.usage import forward_usage
 
         forward_usage([{"model": "normal", "input_tokens": 100, "output_tokens": 50}])
@@ -207,7 +363,11 @@ def _normal(duration: float, stops: list[bool]):  # type: ignore[no-untyped-def]
                 stops.append(True)
                 return None
             time.sleep(0.01)
-        return "normal answer" if time.monotonic() < deadline else None  # out of time: no answer
+        if time.monotonic() >= deadline:
+            return None  # out of time: no answer
+        if publish is not None and claim.try_claim("fallback"):
+            publish.append("fallback")  # it saves its own answer, only after winning the claim
+        return "normal answer"
 
     return run
 
@@ -217,22 +377,58 @@ def test_a_verified_fast_answer_cancels_the_normal_path_and_both_spends_are_coun
     outcome = fa.run_with_fallback(
         _FakeFast("answered", 0.1), "q", "en", _normal(5.0, stops), deadline_s=10.0
     )
-    assert outcome.winner == "fast" and stops == [True] and outcome.seconds["total"] < 2.0
-    assert sorted(r["model"] for r in outcome.usage) == ["fast", "normal"]
+    assert outcome.winner == "fast" and outcome.seconds["total"] < 2.0
+    assert sorted(r["model"] for r in outcome.settle(5.0)) == ["fast", "normal"]
+    assert stops == [True]
 
 
 def test_a_fast_failure_costs_nothing_extra_because_the_normal_path_already_runs() -> None:
     outcome = fa.run_with_fallback(
         _FakeFast("fallthrough", 0.2), "q", "en", _normal(0.5, []), deadline_s=10.0
     )
-    # total = the normal path alone (0.5 s), not 0.2 s of fast work plus a 0.5 s start afterwards
     assert outcome.winner == "fallback" and outcome.fallback_result == "normal answer"
-    assert outcome.seconds["total"] < 0.7
+    assert outcome.seconds["total"] < 0.8  # the normal path alone, not 0.2 s + 0.5 s
+
+
+def test_a_quick_normal_answer_is_not_held_up_by_a_slow_fast_path() -> None:
+    fast = _FakeFast("answered", 5.0)
+    outcome = fa.run_with_fallback(fast, "q", "en", _normal(0.2, []), deadline_s=10.0)
+    assert outcome.winner == "fallback" and outcome.seconds["total"] < 1.5
+    outcome.settle(5.0)  # the slow fast path was cancelled, not waited for
 
 
 def test_the_shared_deadline_ends_both_paths() -> None:
-    stops: list[bool] = []
     outcome = fa.run_with_fallback(
-        _FakeFast("fallthrough", 0.1), "q", "en", _normal(30.0, stops), deadline_s=0.5
+        _FakeFast("fallthrough", 0.1), "q", "en", _normal(30.0, []), deadline_s=0.5
     )
     assert outcome.winner == "none" and outcome.seconds["total"] < 2.0
+
+
+def test_usage_that_arrives_after_the_race_returned_is_still_recorded() -> None:
+    def stubborn(cancel, deadline, claim):  # type: ignore[no-untyped-def]
+        from pals_agent.usage import forward_usage
+
+        forward_usage([{"model": "normal", "input_tokens": 1, "output_tokens": 1}])
+        time.sleep(0.6)  # ignores the cancel, and its provider call is billed all the same
+        forward_usage([{"model": "late", "input_tokens": 1, "output_tokens": 1}])
+        return None
+
+    outcome = fa.run_with_fallback(_FakeFast("answered", 0.05), "q", "en", stubborn, deadline_s=5)
+    assert outcome.winner == "fast"
+    assert "late" not in [r["model"] for r in outcome.usage]  # not there yet
+    assert "late" in [r["model"] for r in outcome.settle(5.0)]  # but never lost
+
+
+def test_at_most_one_path_publishes_even_when_both_finish_together() -> None:
+    for _ in range(20):
+        published: list[str] = []
+        fast = _FakeFast("answered", 0.05)
+        outcome = fa.run_with_fallback(
+            fast, "q", "en", _normal(0.05, [], publish=published), deadline_s=5
+        )
+        outcome.settle(5.0)
+        fast_published = ["fast"] if outcome.winner == "fast" else []
+        assert outcome.winner in {"fast", "fallback"}
+        # exactly the winner publishes: the fallback only after winning the claim, the caller
+        # publishes the fast answer only when the winner is "fast"
+        assert published + fast_published == [outcome.winner]

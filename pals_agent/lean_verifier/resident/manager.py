@@ -119,8 +119,7 @@ class ResidentConfig:
 
 _AUDIT_HEADER = "unsafe def main (args : List String) : IO UInt32 := do\n"
 _AUDIT_IMPORT = (
-    "  enableInitializersExecution\n"
-    "  let env ← importModules mod.imports {} 0 (loadExts := true)\n"
+    "  enableInitializersExecution\n  let env ← importModules mod.imports {} 0 (loadExts := true)\n"
 )
 
 
@@ -145,8 +144,7 @@ def warm_audit_source(source: str = TRUSTED_AUDIT_SOURCE) -> str:
     )
     body = body.replace(
         _AUDIT_IMPORT,
-        "  unless mod.imports == warmImports do return 65\n"
-        "  let env := warmEnv\n",
+        "  unless mod.imports == warmImports do return 65\n  let env := warmEnv\n",
     )
     return body
 
@@ -228,8 +226,11 @@ class ResidentLean:
     def _confinement_self_test(self) -> None:
         """Prove, with a real child, that confinement holds before anything is served.
 
-        One request directory may be written, a second one (another request's) may not (Landlock,
-        read from the file system), and a child may not start a process (seccomp, EPERM).
+        The child tries three things and records each outcome in a file named after it, so the
+        verdict is read from the file system (no message text, no locale): writing its own
+        directory must work, writing another request's directory must fail (Landlock), starting
+        a process must fail (seccomp).  ``own/ok``, ``own/other_denied`` and ``own/exec_denied``
+        must exist; ``other/no``, ``own/other_wrote`` and ``own/exec_ran`` must not.
         """
         root = self.config.request_root
         assert root is not None
@@ -237,23 +238,35 @@ class ResidentLean:
         other = root / f"pals-selftest-{secrets.token_hex(4)}"
         own.mkdir(mode=0o700)
         other.mkdir(mode=0o700)
+
+        def attempt(action: str, ok_name: str, denied_name: str) -> str:
+            return (
+                "#eval show IO Unit from do\n"
+                f'  try\n    {action}\n    IO.FS.writeFile "{own}/{ok_name}" "x"\n'
+                f'  catch _ => IO.FS.writeFile "{own}/{denied_name}" "x"\n'
+            )
+
         try:
             source = own / "Main.lean"
             source.write_text(
                 "import Mathlib\n"
-                f'#eval show IO Unit from IO.FS.writeFile "{own}/ok" "x"\n'
-                f'#eval show IO Unit from IO.FS.writeFile "{other}/no" "x"\n'
-                # seccomp: starting a process (exec) must be refused with EPERM
-                '#eval show IO Unit from do discard <| IO.Process.output {cmd := "/bin/true"}\n',
+                + attempt(f'IO.FS.writeFile "{own}/ok" "x"', "ok", "own_denied")
+                + attempt(f'IO.FS.writeFile "{other}/no" "x"', "other_wrote", "other_denied")
+                + attempt(
+                    'discard <| IO.Process.output {cmd := "/bin/true"}', "exec_ran", "exec_denied"
+                ),
                 encoding="utf-8",
             )
             outcome = self.compile(source, workdir=own, olean=None, timeout_s=60)
             confined = (
                 not outcome.aborted
                 and (own / "ok").is_file()
+                and not (own / "own_denied").exists()
+                and (own / "other_denied").is_file()  # Landlock refused the foreign directory
+                and not (own / "other_wrote").exists()
                 and not (other / "no").exists()
-                and "permission denied" in outcome.stdout  # Landlock
-                and "not permitted" in outcome.stdout  # seccomp
+                and (own / "exec_denied").is_file()  # seccomp refused to start a process
+                and not (own / "exec_ran").exists()
             )
         finally:
             shutil.rmtree(own, ignore_errors=True)
@@ -298,13 +311,20 @@ class ResidentLean:
             **({"PALS_RESIDENT_READ_ROOTS": ":".join(cfg.read_roots)} if cfg.read_roots else {}),
             **(
                 {"PALS_RESIDENT_REQUEST_ROOT": str(cfg.request_root.resolve())}
-                if cfg.request_root is not None else {}
+                if cfg.request_root is not None
+                else {}
             ),
             **cfg.extra_environment,
         }
         return subprocess.Popen(
-            argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-            env=env, cwd=str(self._scratch), start_new_session=True, bufsize=0,
+            argv,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            env=env,
+            cwd=str(self._scratch),
+            start_new_session=True,
+            bufsize=0,
             preexec_fn=_die_with_parent if sys.platform.startswith("linux") else None,
         )
 
@@ -399,7 +419,9 @@ class ResidentLean:
         with self._lock:
             proc = self._proc
             return (
-                proc is not None and proc.poll() is None and self._ready.is_set()
+                proc is not None
+                and proc.poll() is None
+                and self._ready.is_set()
                 and not self._closed
             )
 
@@ -454,7 +476,10 @@ class ResidentLean:
         started = time.monotonic()
         result = workdir / f"resident-{secrets.token_hex(8)}.out"
         code, status = self._run(
-            "CHECK", [str(source), str(result), str(olean) if olean else "-"], timeout_s, cancel,
+            "CHECK",
+            [str(source), str(result), str(olean) if olean else "-"],
+            timeout_s,
+            cancel,
             workdir=workdir,
         )
         return self._compile_outcome(code, status, result, started)
@@ -499,8 +524,13 @@ class ResidentLean:
         )
         outcome = self._compile_outcome(code, status, result, started)
         return AuditOutcome(
-            outcome.returncode, outcome.stdout, outcome.timed_out, outcome.aborted,
-            outcome.unsupported, outcome.output_limited, outcome.elapsed_s,
+            outcome.returncode,
+            outcome.stdout,
+            outcome.timed_out,
+            outcome.aborted,
+            outcome.unsupported,
+            outcome.output_limited,
+            outcome.elapsed_s,
         )
 
     def _compile_outcome(
@@ -518,7 +548,10 @@ class ResidentLean:
         if status != "done" or code is None:
             result.unlink(missing_ok=True)
             return CompileOutcome(
-                -1, "", timed_out=status == "timeout", aborted=status != "timeout",
+                -1,
+                "",
+                timed_out=status == "timeout",
+                aborted=status != "timeout",
                 elapsed_s=elapsed,
             )
         if code in UNSUPPORTED_CODES:
@@ -566,8 +599,15 @@ class ResidentLean:
                     raise ResidentUnavailable("resident Lean is not running")
                 self._pending[request_id] = pending
                 line = " ".join(
-                    [kind, request_id, *args, str(cfg.child_memory_bytes),
-                     str(cfg.child_cpu_seconds), str(cfg.fsize_bytes), str(workdir)]
+                    [
+                        kind,
+                        request_id,
+                        *args,
+                        str(cfg.child_memory_bytes),
+                        str(cfg.child_cpu_seconds),
+                        str(cfg.fsize_bytes),
+                        str(workdir),
+                    ]
                 )
                 try:
                     proc.stdin.write(line.encode() + b"\n")
@@ -637,9 +677,22 @@ def compile_shim(lean_binary: str, out: Path, c_compiler: str | None = None) -> 
     for compiler in filter(None, candidates):
         tmp = out.with_suffix(out.suffix + f".{secrets.token_hex(4)}")
         result = subprocess.run(
-            [compiler, "-shared", "-fPIC", "-O1", "-fvisibility=default", *extra,
-             f"-I{include}", "-o", str(tmp), str(SHIM_SOURCE)],
-            capture_output=True, text=True, timeout=120, check=False,
+            [
+                compiler,
+                "-shared",
+                "-fPIC",
+                "-O1",
+                "-fvisibility=default",
+                *extra,
+                f"-I{include}",
+                "-o",
+                str(tmp),
+                str(SHIM_SOURCE),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=False,
         )
         if result.returncode == 0:
             os.replace(tmp, out)
@@ -656,7 +709,6 @@ def _alive(pid: int) -> bool:
     except PermissionError:
         return True
     return True
-
 
 
 def default_read_roots(lean_binary: str, lean_path: str) -> tuple[str, ...]:

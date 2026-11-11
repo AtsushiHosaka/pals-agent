@@ -1363,6 +1363,22 @@
   {
    "id": "tests.unit.test_fast_answer::test_a_question_is_answered_no_by_proving_the_negation",
    "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
+  },
+  {
+   "id": "tests.unit.test_fast_answer::test_a_rejected_explanation_blocks_the_answer_and_falls_through",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
+  },
+  {
+   "id": "tests.unit.test_fast_answer::test_an_unavailable_explanation_review_is_a_rejection",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
+  },
+  {
+   "id": "tests.unit.test_fast_answer::test_every_wait_is_bounded_by_the_request_budget",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
+  },
+  {
+   "id": "tests.unit.test_fast_answer::test_a_cancelled_run_stops_and_publishes_nothing",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
   }
  ],
  "allowed_unexecuted_modules": [

@@ -17,7 +17,7 @@ import contextvars
 import threading
 import time
 from collections.abc import Callable
-from concurrent.futures import Future, ThreadPoolExecutor, as_completed
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, as_completed, wait
 from concurrent.futures import TimeoutError as FutureTimeout
 from dataclasses import dataclass, field
 from typing import Any, Final
@@ -142,6 +142,10 @@ EXPLAIN_SCHEMA: Final = {
 }
 
 
+class _Cancelled(Exception):
+    """The caller cancelled this run."""
+
+
 @dataclass(slots=True)
 class FastAnswerResult:
     outcome: str  # "answered" | "fallthrough"
@@ -183,7 +187,17 @@ class FastAnswer:
         race_budget_s: float = 4.0,
         explanation_reviewer: Callable[[str, str, dict[str, Any], str], tuple[bool, str]]
         | None = None,
+        allow_unreviewed_explanation: bool = False,
     ) -> None:
+        # The fidelity of what is shown depends on the existing explanation review (a weakened
+        # statement passed the gate once and only that review stopped it), so an answer without
+        # one is refused unless the caller says, by name, that it accepts unreviewed output.
+        if (explanation_reviewer is None or not explain) and not allow_unreviewed_explanation:
+            raise ValueError(
+                "FastAnswer needs explain=True and an explanation_reviewer "
+                "(see existing_explanation_reviewer); allow_unreviewed_explanation=True is the "
+                "explicit development switch for answers that skip the explanation review"
+            )
         if verifier.resident is not resident:
             raise ValueError("the verifier must use the same resident worker")
         self.resident, self.verifier, self.model = resident, verifier, model
@@ -198,11 +212,17 @@ class FastAnswer:
         # explanation review (see `existing_explanation_reviewer`); None = not reviewed
         self.explanation_reviewer = explanation_reviewer
 
-    def run(self, request: str, language: str) -> FastAnswerResult:
+    def run(
+        self, request: str, language: str, cancel: threading.Event | None = None
+    ) -> FastAnswerResult:
+        """``cancel``: set by a caller who no longer needs this run (it stops promptly and returns
+        a fallthrough; it never publishes anything itself)."""
         t0 = time.monotonic()
         result = FastAnswerResult("fallthrough", "not_started")
         try:
-            self._run(request, language, t0, result)
+            self._run(request, language, t0, result, cancel)
+        except _Cancelled:
+            result.outcome, result.reason = "fallthrough", "cancelled"
         except Exception as error:  # noqa: BLE001 - a fast lane must never fail a request
             result.outcome = "fallthrough"
             result.reason = f"fast_answer_error:{type(error).__name__}"
@@ -255,12 +275,29 @@ class FastAnswer:
         return statement, proposition, tactic, answer
 
     # -- the whole run -------------------------------------------------------------------------
-    def _run(self, request: str, language: str, t0: float, result: FastAnswerResult) -> None:
+    def _run(
+        self,
+        request: str,
+        language: str,
+        t0: float,
+        result: FastAnswerResult,
+        cancel: threading.Event | None = None,
+    ) -> None:
         pool = ThreadPoolExecutor(max_workers=self.calls + 8)
         deadline = t0 + self.budget_s
 
-        def left() -> float:
-            return max(0.1, deadline - time.monotonic())
+        def res(future: Future[Any]) -> Any:
+            """The future's result within the request budget; stops early when cancelled."""
+            while True:
+                if cancel is not None and cancel.is_set():
+                    raise _Cancelled
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise FutureTimeout
+                try:
+                    return future.result(timeout=min(0.1, remaining))
+                except FutureTimeout:
+                    continue
 
         def submit(fn: Callable[..., Any], *args: Any) -> Future[Any]:
             # the usage reporter and other context variables follow the work into its thread
@@ -282,23 +319,35 @@ class FastAnswer:
                 )
             return gates[m.formal]
 
+        pending_calls = set(merged_futures)
         try:
-            for future in as_completed(merged_futures, timeout=self.budget_s):
-                try:
-                    m = future.result()
-                except Exception:  # noqa: BLE001
-                    continue
-                merged.append(m)
-                result.seconds.setdefault("first_call", round(time.monotonic() - t0, 3))
-                if winner is None and self.speculative_gate and m.kind in {"prove", "decide"} \
-                        and m.formal:
-                    start_gate(m)  # beside the race, not after it; wasted if the race fails
-                if winner is None:
+            while pending_calls and winner is None:
+                if cancel is not None and cancel.is_set():
+                    raise _Cancelled
+                if time.monotonic() >= deadline:
+                    break
+                done_calls, pending_calls = wait(
+                    pending_calls, timeout=0.1, return_when=FIRST_COMPLETED
+                )
+                for future in done_calls:
+                    if winner is not None:
+                        break
+                    try:
+                        m = future.result()
+                    except Exception:  # noqa: BLE001
+                        continue
+                    merged.append(m)
+                    result.seconds.setdefault("first_call", round(time.monotonic() - t0, 3))
+                    if (
+                        self.speculative_gate
+                        and m.kind in {"prove", "decide"}
+                        and m.formal
+                    ):
+                        start_gate(m)  # beside the race, not after it; wasted if it fails
                     attempt = self._attempt(m)
                     if attempt is not None:
                         winner = (m, attempt)
                         result.seconds["closed"] = round(time.monotonic() - t0, 3)
-                        break
         except FutureTimeout:
             pass
         if winner is None:
@@ -328,10 +377,10 @@ class FastAnswer:
         g.structure = gate.structure_check(request, statement)
         g.triviality = gate.triviality_check(statement)
         try:
-            g.agree = agree_f.result(timeout=left())
-            g.reviewed, g.review_issue, review_at = review_f.result(timeout=left())
-            g.roundtrip, g.roundtrip_issue, trip_at = trip_f.result(timeout=left())
-            result.verified, verified_at = verify_f.result(timeout=left())
+            g.agree = res(agree_f)
+            g.reviewed, g.review_issue, review_at = res(review_f)
+            g.roundtrip, g.roundtrip_issue, trip_at = res(trip_f)
+            result.verified, verified_at = res(verify_f)
         except FutureTimeout:
             pool.shutdown(wait=False, cancel_futures=True)
             result.outcome, result.reason = "fallthrough", "budget_exhausted"
@@ -351,7 +400,7 @@ class FastAnswer:
         g.passed = not g.reasons
         if explain_f is not None:
             try:
-                parts, explained_at = explain_f.result(timeout=left())
+                parts, explained_at = res(explain_f)
             except FutureTimeout:
                 pool.shutdown(wait=False, cancel_futures=True)
                 result.outcome, result.reason = "fallthrough", "budget_exhausted"
@@ -370,10 +419,13 @@ class FastAnswer:
         ):
             review_started = time.monotonic()
             try:
-                result.explanation_approved, result.explanation_issue = submit(
-                    self.explanation_reviewer,
-                    request, candidate_source(proved, tactic), result.explanation_parts, language,
-                ).result(timeout=left())
+                result.explanation_approved, result.explanation_issue = res(
+                    submit(
+                        self.explanation_reviewer,
+                        request, candidate_source(proved, tactic), result.explanation_parts,
+                        language,
+                    )
+                )
             except FutureTimeout:
                 pool.shutdown(wait=False, cancel_futures=True)
                 result.outcome, result.reason = "fallthrough", "budget_exhausted"
@@ -575,71 +627,149 @@ def existing_explanation_reviewer(
     return review
 
 
-# --- the normal pipeline beside the fast path: one deadline, one usage ledger --------------
+# --- the normal pipeline beside the fast path: one deadline, one claim, one usage ledger -------
+class UsageLedger:
+    """Every model-usage record of both paths, including records that arrive late.
+
+    A call still in flight when the request returns is billed by the provider all the same; its
+    record lands here whenever it finishes, so read ``snapshot()`` after ``RaceOutcome.settle()``.
+    """
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._rows: list[dict[str, Any]] = []
+
+    def add(self, row: dict[str, Any]) -> None:
+        with self._lock:
+            self._rows.append(dict(row))
+
+    def snapshot(self) -> list[dict[str, Any]]:
+        with self._lock:
+            return [dict(row) for row in self._rows]
+
+
+class RaceClaim:
+    """The single decision of who may publish: the first ``try_claim`` wins, for good."""
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self.winner: str | None = None
+
+    def try_claim(self, who: str) -> bool:
+        with self._lock:
+            if self.winner is None:
+                self.winner = who
+            return self.winner == who
+
+
 @dataclass(slots=True)
 class RaceOutcome:
     winner: str  # "fast" | "fallback" | "none"
-    fast: FastAnswerResult
+    fast: FastAnswerResult | None
     fallback_result: Any = None
     seconds: dict[str, float] = field(default_factory=dict)
-    usage: list[dict[str, Any]] = field(default_factory=list)  # every model call, both paths
+    ledger: UsageLedger = field(default_factory=UsageLedger)
+    threads: list[threading.Thread] = field(default_factory=list)
+
+    @property
+    def usage(self) -> list[dict[str, Any]]:
+        """The records so far; ``settle()`` first for the complete total."""
+        return self.ledger.snapshot()
+
+    def settle(self, timeout: float = 30.0) -> list[dict[str, Any]]:
+        """Wait (bounded) for both paths to stop, then return every usage record."""
+        end = time.monotonic() + timeout
+        for thread in self.threads:
+            thread.join(timeout=max(0.0, end - time.monotonic()))
+        return self.ledger.snapshot()
 
 
 def run_with_fallback(
     fast: Any,
     request: str,
     language: str,
-    fallback: Callable[[threading.Event, float], Any],
+    fallback: Callable[[threading.Event, float, RaceClaim], Any],
     *,
     deadline_s: float,
 ) -> RaceOutcome:
-    """Start the normal pipeline at the same moment as the fast path and take what finishes first.
+    """Start the normal pipeline together with the fast path; the first usable answer wins.
 
-    ``fallback(cancel, deadline)`` runs the normal path; it must stop when ``cancel`` is set
-    (the fast path won) and may use until ``deadline`` (a ``time.monotonic()`` value, shared with
-    the fast path).  The fast path wins only with a verified, gated answer; a fast failure costs
-    the request nothing extra because the normal path has been running since t0.  Every usage
-    record of both paths lands in ``RaceOutcome.usage``, so cost is one total.
+    Contract (one answer, never two):
+
+    * ``fallback(cancel, deadline, claim)`` runs the normal path and RETURNS its answer; it must
+      not store, send or otherwise publish anything itself.  If it has to publish (it saves its
+      answer), it must call ``claim.try_claim("fallback")`` immediately before and publish only if
+      that returns True.  ``cancel`` is set when the fast path won or the deadline passed: stop.
+    * The fast path (``fast.run(request, language, cancel=...)``) wins only with ``outcome ==
+      "answered"`` AND a successful ``claim.try_claim("fast")``; the caller then publishes the
+      fast answer.  The losing side is cancelled and must not publish.
+    * The caller publishes exactly ``RaceOutcome.winner``'s result, and nothing else.
+    * Whichever answers first is returned at once; the other path is not waited for.  A fast
+      failure costs nothing extra (the normal path has been running since t0), and a quick normal
+      answer is not held up by a slow fast path.
+    * Usage: every model call of both paths is recorded in ``RaceOutcome.ledger``, also those
+      that finish after this function returned; call ``settle()`` for the complete total.
     """
     from pals_agent.usage import usage_scope  # noqa: PLC0415
 
     t0 = time.monotonic()
     deadline = t0 + deadline_s
-    cancel = threading.Event()
-    rows: list[dict[str, Any]] = []
-    lock = threading.Lock()
-
-    def collect(row: dict[str, Any]) -> None:
-        with lock:
-            rows.append(row)
-
+    claim = RaceClaim()
+    ledger = UsageLedger()
+    cancel_fast, cancel_fallback = threading.Event(), threading.Event()
+    wake = threading.Event()
     box: dict[str, Any] = {}
+
+    def run_fast() -> None:
+        try:
+            box["fast"] = fast.run(request, language, cancel=cancel_fast)
+        except Exception as error:  # noqa: BLE001
+            box["fast_error"] = type(error).__name__
+        box["fast_at"] = time.monotonic() - t0
+        wake.set()
 
     def run_fallback() -> None:
         try:
-            box["result"] = fallback(cancel, deadline)
+            box["fallback"] = fallback(cancel_fallback, deadline, claim)
         except Exception as error:  # noqa: BLE001
-            box["error"] = type(error).__name__
-        box["done_at"] = time.monotonic() - t0
+            box["fallback_error"] = type(error).__name__
+        box["fallback_at"] = time.monotonic() - t0
+        wake.set()
 
-    with usage_scope(collect):
-        thread = threading.Thread(
-            target=contextvars.copy_context().run, args=(run_fallback,), daemon=True,
-            name="normal-pipeline",
-        )
-        thread.start()
-        fast_result = fast.run(request, language)
-        seconds = {"fast_total": round(time.monotonic() - t0, 3)}
-        if fast_result.outcome == "answered":
-            cancel.set()  # the normal path stops; its spend so far is in `usage`
-            thread.join(timeout=2.0)
-            seconds["total"] = round(time.monotonic() - t0, 3)
-            return RaceOutcome("fast", fast_result, None, seconds, list(rows))
-        thread.join(timeout=max(0.0, deadline - time.monotonic()))
-        if thread.is_alive():
-            cancel.set()  # the shared deadline is over
-        seconds["total"] = round(time.monotonic() - t0, 3)
-        if "done_at" in box:
-            seconds["fallback_done"] = round(box["done_at"], 3)
-    winner = "fallback" if box.get("result") is not None and not cancel.is_set() else "none"
-    return RaceOutcome(winner, fast_result, box.get("result"), seconds, list(rows))
+    with usage_scope(ledger.add):  # both threads copy this context: late calls still report
+        threads = [
+            threading.Thread(
+                target=contextvars.copy_context().run, args=(fn,), daemon=True, name=name
+            )
+            for fn, name in ((run_fast, "fast-answer"), (run_fallback, "normal-pipeline"))
+        ]
+        for thread in threads:
+            thread.start()
+
+    def outcome(winner: str, fast_result: Any, fallback_result: Any) -> RaceOutcome:
+        seconds = {"total": round(time.monotonic() - t0, 3)}
+        for key in ("fast_at", "fallback_at"):
+            if key in box:
+                seconds[key] = round(box[key], 3)
+        return RaceOutcome(winner, fast_result, fallback_result, seconds, ledger, threads)
+
+    while True:
+        wake.wait(timeout=max(0.0, deadline - time.monotonic()))
+        wake.clear()
+        fast_result = box.get("fast")
+        if (
+            fast_result is not None
+            and fast_result.outcome == "answered"
+            and claim.try_claim("fast")
+        ):
+            cancel_fallback.set()
+            return outcome("fast", fast_result, None)
+        fallback_result = box.get("fallback")
+        if fallback_result is not None and claim.try_claim("fallback"):
+            cancel_fast.set()
+            return outcome("fallback", fast_result, fallback_result)
+        both_done = "fast_at" in box and "fallback_at" in box
+        if both_done or time.monotonic() >= deadline:
+            cancel_fast.set()
+            cancel_fallback.set()
+            return outcome("none", fast_result, None)

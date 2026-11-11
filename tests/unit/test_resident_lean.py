@@ -366,12 +366,15 @@ def test_the_self_test_rejects_children_that_can_write_another_requests_director
     tmp_path: Path,
 ) -> None:
     class Leaky(ResidentLean):
+        """An unconfined child: every attempt succeeds, so every ``ok`` marker is written."""
+
         def compile(self, source, *, workdir, olean, timeout_s, cancel=None):  # type: ignore[no-untyped-def]
             from pals_agent.lean_verifier.resident.manager import CompileOutcome
 
-            text = source.read_text()
-            for path in re.findall(r'writeFile "([^"]+)"', text):
-                Path(path).write_text("x")  # an unconfined child writes everywhere
+            for path in re.findall(r'writeFile "([^"]+)"', source.read_text()):
+                Path(path).write_text("x")
+            for name in ("exec_ran", "other_wrote"):
+                (workdir / name).write_text("x")
             return CompileOutcome(0, "")
 
     import re
@@ -388,3 +391,28 @@ def test_the_self_test_rejects_children_that_can_write_another_requests_director
     )
     with pytest.raises(ResidentUnavailable, match="not confined"):
         resident._confinement_self_test()  # noqa: SLF001
+
+
+def test_the_self_test_judges_by_files_not_by_message_text(tmp_path: Path) -> None:
+    """A confined child that reports in another language is still confined."""
+
+    class Confined(ResidentLean):
+        def compile(self, source, *, workdir, olean, timeout_s, cancel=None):  # type: ignore[no-untyped-def]
+            from pals_agent.lean_verifier.resident.manager import CompileOutcome
+
+            (workdir / "ok").write_text("x")
+            (workdir / "other_denied").write_text("x")
+            (workdir / "exec_denied").write_text("x")
+            return CompileOutcome(1, "権限がありません")  # no English message at all
+
+    resident = Confined(
+        ResidentConfig(
+            lean_binary="lean",
+            lean_path="",
+            build_dir=tmp_path / "b",
+            confine=True,
+            request_root=tmp_path,
+            allow_unconfined=True,
+        )
+    )
+    resident._confinement_self_test()  # noqa: SLF001  (does not raise)

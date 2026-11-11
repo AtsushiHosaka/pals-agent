@@ -44,7 +44,17 @@ def main() -> None:
     parser.add_argument("--no-explain", action="store_true")
     parser.add_argument("--repeats", type=int, default=1)
     parser.add_argument("--ids", help="comma-separated id prefixes (overrides --items)")
+    parser.add_argument(
+        "--requests-json",
+        type=Path,
+        help="a list of {id, statement, language, tier, field} requests instead of the manifest",
+    )
     parser.add_argument("--max-usd", type=float, default=0.9)
+    parser.add_argument(
+        "--allow-unreviewed",
+        action="store_true",
+        help="development only: answers that skip the explanation review",
+    )
     parser.add_argument(
         "--review-explanation",
         action="store_true",
@@ -120,6 +130,7 @@ def main() -> None:
         speculative_gate=not args.no_speculative_gate,
         race_budget_s=args.race_budget,
         explanation_reviewer=reviewer,
+        allow_unreviewed_explanation=args.allow_unreviewed,
     )
     from pals_agent.evals.runner import estimate_usd  # noqa: PLC0415
     from pals_agent.usage import usage_scope  # noqa: PLC0415
@@ -137,7 +148,13 @@ def main() -> None:
     problems = json.loads((ROOT / "testdata/generation-eval-v1/manifest.json").read_text())[
         "problems"
     ]
-    ids = args.ids.split(",") if args.ids else SETS[args.items]
+    if args.requests_json:
+        problems = json.loads(args.requests_json.read_text())
+        ids = [p["id"] for p in problems]
+        for p in problems:
+            p.setdefault("split", "tuning")
+    else:
+        ids = args.ids.split(",") if args.ids else SETS[args.items]
     with usage_scope(add), (args.out / f"{args.name}.jsonl").open("a") as fh:
         for repeat in range(args.repeats):
             for pid in ids:

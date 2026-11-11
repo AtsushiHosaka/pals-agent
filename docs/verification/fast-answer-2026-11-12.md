@@ -106,3 +106,11 @@ D の呼びの内訳(答えた題の中央値): 統合呼び(Luna/none)2.8 s(出
 - **通常経路の同時開始**: `run_with_fallback`(1 つの期限、1 つの使用量台帳)。単体テストのみで、実パイプラインとの結合は未実施。
 - **待ちの期限・使用量**: `FastAnswer` の各待ちを `budget_s` で縛った。測定スクリプトの予算 reporter が渡っていなかった不具合を直し、費用を再計算した(各 run 0.02 ドル未満、合計約 0.2 ドル)。
 - **起動時の確認**: seccomp(exec の拒否)も実際の子で確かめる。
+
+## 8. 2 回目のレビュー対応(2026-11-13)
+
+- **解説レビューを必須に**: `FastAnswer` は `explain=True` と `explanation_reviewer` が無いと構築できない(`ValueError`)。開発用の抜け道は `allow_unreviewed_explanation=True`(名前で分かる)。却下(`explanation_rejected`)、レビューの失敗(`review_unavailable`)、予算切れ、キャンセルの各経路にテストがある。
+- **`run_with_fallback`**: 先に終わった方をすぐ返す(遅い方を待たない)。**二重回答を防ぐ契約**: 公開してよいのは `RaceOutcome.winner` の結果だけ。通常経路が自分で保存する場合は、直前に `claim.try_claim("fallback")` が True のときだけ保存する。速い経路は `answered` かつ `try_claim("fast")` に成功したときだけ勝つ。負けた側は cancel され、公開してはいけない。使用量は `UsageLedger` に、返却後に届く分も記録され、`settle()` の後に完全な合計が読める。
+- **テスト**: 各待ちが `budget_s` の残りで切れる(`budget_exhausted`)、使用量が予算に届く、遅れた呼び出しが次の題の記録に混ざらない、の 3 つを、修正を戻すと赤になることを確認した(それぞれ元に戻して失敗を確認)。
+- **起動時の自己検査**: メッセージの文字列ではなく、子が作るファイルの有無(自分のディレクトリへの書き込みは成功、他依頼の書き込みと exec は失敗)で判定する。ロケールや Lean の版に依存しない。
+- **`seed-composite_injective_implies_first`**: 集合を `Type`(宇宙 0)で書いており、厳密には `Type*` より弱い軽い特殊化。表に注記した。
