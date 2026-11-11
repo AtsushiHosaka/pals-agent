@@ -1347,6 +1347,22 @@
   {
    "id": "tests.unit.test_fast_lane::test_a_statement_outside_the_grammar_is_refused_before_lean",
    "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
+  },
+  {
+   "id": "tests.unit.test_fast_answer::test_a_true_statement_with_a_good_proof_is_answered_and_verified",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
+  },
+  {
+   "id": "tests.unit.test_fast_answer::test_a_rejecting_review_blocks_the_answer_even_when_lean_proves_it",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
+  },
+  {
+   "id": "tests.unit.test_fast_answer::test_a_false_statement_with_a_wrong_proof_is_never_answered",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
+  },
+  {
+   "id": "tests.unit.test_fast_answer::test_a_question_is_answered_no_by_proving_the_negation",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
   }
  ],
  "allowed_unexecuted_modules": [
