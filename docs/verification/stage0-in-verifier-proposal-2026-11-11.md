@@ -65,6 +65,21 @@ evidence_kind(読んだ事実): API 側の `evidence_kind` は閉じた4値 Lite
 4. agent: `PALS_STAGE0_PORTFOLIO` を検証器経路に切り替える(フラグ off のまま)。ローカルの実 Lean と実モデルで `make release-local-qualify` の枠(1 回 1 ドル以下)で測る。
 5. 内部のみで on。誤答 0 を確認、1件でも出れば `formal_source=formalised` だけ止める。
 
+## 決定と、いま作らない理由(2026-11-11、リードの判断)
+
+- **方向は案 B**: 層 1・探索・検証を検証器サービスの中で動かす。**案 A は却下**(agent ホストで model の文を elaborate することが残るため)。
+- **いまは作らない**。(1) 検証器サービスのコードは別の担当、(2) API/web に `evidence_kind` の契約が先に要る(web → API → verifier → agent の順)、(3) 常駐ワーカープールがなければ遅延の利益がない(本番の検証器は毎回 `lake env lean` を起動する)。
+
+### レビューが挙げた未決の3点(答えは未確認)
+1. **公理の収集**: 検証器の source policy は `#print axioms` を拒否する。検証器は公理をどう集めるか(policy の例外か、検証器側が環境から読むか)。
+2. **層 1 を検証器の policy で表せるか**: 105 種の構文ノードの許可リストと `resolveGlobalName` による定数の検査を、同じ policy の関数で実装できるか(別ファイルになる可能性)。
+3. **検証器の中での探索・検証の実測コスト**: コンテナ内の時間・メモリ・`MAX_CONCURRENT_COMPILES` との関係。いまの数字は Mac のローカル実測だけで、検証器内は未測定。
+
+### 既知の残る穴(段階0の現状)
+- 型が core の名前空間(`Nat`・`List` など)の外にある束縛変数へのフィールド参照は、層 1 が検査しない。
+- `setsid` する二重 fork は watchdog(プロセスグループで数える)が数えない。Mac の `sandbox-exec` は開発用の補助で境界ではない。
+- CI は実 Lean のテストを動かさない(skip 一覧)。許可リストとサンドボックスの確認はローカル(macOS)のみ。
+
 ## 未確認
 
 - 本番検証器の実際の所要時間、memory cgroup 値、`MAX_CONCURRENT_COMPILES` の運用値(コードの既定値のみ確認。Terraform は未参照)。
