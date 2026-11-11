@@ -1,5 +1,9 @@
 """Paired comparison of two arms from one or more records.jsonl files.
 
+Primary result per metric: difference of per-problem repeat means with a problem-clustered
+sign-flip permutation p-value and bootstrap interval. McNemar appears only for one repeat per
+problem, or separately per repeat index.
+
 python3 scripts/eval/compare_runs.py RUN_DIR/records.jsonl --a base --b new [--json]
 """
 
