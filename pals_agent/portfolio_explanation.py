@@ -232,3 +232,56 @@ def parse_lemma_probe(name: str, output: str, call: str = "") -> LemmaInfo:
     elif head.strip():
         type_text = " ".join(head.split())
     return LemmaInfo(name, type_text[:600], " ".join(doc.split())[:600], call[:200])
+
+
+def render_compute(
+    language: str, expression: str, value: str, *, unverified_formalisation: bool = True
+) -> str:
+    """Answer text for a computation: the value Lean found and re-proved as ``e = v``."""
+    ja = language == "ja"
+    parts = []
+    if unverified_formalisation:
+        parts.append(
+            "※ 次の式は、ご依頼から自動で作った形式化で、依頼との一致は人が確認していません。"
+            if ja
+            else "Note: the expression below is an automatic formalisation of your request; its "
+            "match with your request has not been verified by a person."
+        )
+    parts += [
+        (
+            f"式 `{expression}` の値は **{value}** です。"
+            if ja
+            else f"The value of `{expression}` is **{value}**."
+        ),
+        (
+            "Lean(Mathlib)で `式 = 値` を形式的に検証しました(数値の計算規則で式を評価)。"
+            if ja
+            else "`expression = value` was verified formally in Lean (Mathlib), by evaluating "
+            "the expression with the arithmetic rules."
+        ),
+    ]
+    return "\n\n".join(parts)
+
+
+def render_decision(
+    language: str,
+    answer: bool,
+    proved: str,
+    tactic: str,
+    lemma: LemmaInfo | None = None,
+    *,
+    unverified_formalisation: bool = True,
+) -> str | None:
+    """Yes/no answer: the verified statement (the property or its negation) with its template."""
+    body = render(
+        language, proved, tactic, lemma, unverified_formalisation=unverified_formalisation
+    )
+    if body is None:
+        return None
+    ja = language == "ja"
+    head = (
+        ("答え: **はい**(成り立ちます)。" if answer else "答え: **いいえ**(成り立ちません)。")
+        if ja
+        else ("Answer: **yes**, it holds." if answer else "Answer: **no**, it does not hold.")
+    )
+    return head + "\n\n" + body

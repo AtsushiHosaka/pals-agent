@@ -26,6 +26,7 @@ No model decides anything on the success path.  The module is inert unless
 from __future__ import annotations
 
 import hashlib
+import itertools
 import json
 import math
 import os
@@ -88,7 +89,16 @@ def same_probe(instance: str) -> str:
     )
 
 
-CLOSERS: Final = ("assumption", "fun_prop", "positivity", "norm_num", "linarith", "simp")
+# Each closer either closes its goal or fails: `norm_num`/`simp` can succeed while leaving a goal,
+# which would stop `first` from backtracking, so they carry `done`.
+CLOSERS: Final = (
+    "assumption",
+    "fun_prop",
+    "positivity",
+    "(norm_num; done)",
+    "linarith",
+    "(simp; done)",
+)
 
 
 def lane_enabled(environ: dict[str, str] | None = None) -> bool:
@@ -263,7 +273,7 @@ def rank_candidates(request: str, pool: list[PoolRecipe]) -> list[tuple[float, P
         Counter(_OPERATOR.findall(request)),
         [Counter(_OPERATOR.findall(r.target_source)) for r in pool],
     )
-    scored = [(s + 0.1 * w, r) for s, w, r in zip(strong, weak, pool, strict=True) if s + w > 0]
+    scored = [(s + 0.5 * w, r) for s, w, r in zip(strong, weak, pool, strict=True) if s + w > 0]
     scored.sort(key=lambda item: (-item[0], item[1].recipe_id))
     return scored
 
@@ -293,7 +303,49 @@ class LaneSource:
     body: str = ""  # the attempts only (no import, options or reference probe)
 
 
-def _attempt(recipe: PoolRecipe, request: str, index: int) -> Attempt:
+MAX_BOUND_ALTERNATIVES: Final = 120
+_CLOSE_GOALS: Final = "assumption | fun_prop | (norm_num; done)"
+_NUMERAL = re.compile(r"(?<![\w.])\d+(?![\w.])")
+
+
+def bound_alternatives(general: str, parameters: tuple[Any, ...], proposition: str) -> list[str]:
+    """Closers for statements that are not syntactic instances (``x * x`` for ``x ^ n``).
+
+    Numeric parameters are tried with the numerals that occur in the statement (and 0, 1, -1);
+    other explicit parameters (hypotheses) become ``?_`` goals closed by fixed closers.  Every
+    alternative applies ``general`` and leaves the declared type untouched (``convert`` only adds
+    equality goals), so it can prove the statement only through the Recipe; a bare ``simp`` is
+    deliberately not among them (it can close the goal without the Recipe).
+    """
+    numeric = [i for i, p in enumerate(parameters) if getattr(p, "kind", None)]
+    if not numeric or len(numeric) > 3 or len(parameters) > 6:
+        return []
+    found = sorted({int(m) for m in _NUMERAL.findall(proposition) if len(m) < 4})[:5]
+    derived = {d for m in found for d in (m - 1, (m - 1) // 2, m // 2) if d >= 0}
+    ordered: list[str] = []
+    for n in [*found, *sorted(derived), 0, 1, 2, 3]:
+        if str(n) not in ordered:
+            ordered.append(str(n))
+    values = [*ordered[:7], "(-1)", "(1 / 2)"]
+    alternatives: list[str] = []
+    for combo in itertools.product(values, repeat=len(numeric)):
+        chosen = dict(zip(numeric, combo, strict=True))
+        args = " ".join(chosen.get(i, "?_") for i in range(len(parameters)))
+        alternatives.append(f"(refine {general} {args} <;> first | {_CLOSE_GOALS}; done)")
+        alternatives.append(
+            f"(convert {general} {args} using 1 <;> "
+            f"first | (funext x; ring1) | {_CLOSE_GOALS}; done)"
+        )
+        if len(numeric) == len(parameters):
+            # pointwise corollaries of a global Recipe (fixed glue lemmas, G still in the term)
+            alternatives.append(f"(exact ({general} {args}).continuousAt)")
+            alternatives.append(f"(exact ({general} {args}).differentiableAt)")
+        if len(alternatives) >= MAX_BOUND_ALTERNATIVES:
+            break
+    return alternatives
+
+
+def _attempt(recipe: PoolRecipe, request: str, index: int, with_bound: bool = False) -> Attempt:
     declaration, masked = _parse(recipe.lean_code, allow_implicit=True)
     proposition = validate_proposition(closed_proposition(request))
     if re.search(rf"(?<![\w'.])({INSTANCE_NAME}|{GENERAL_NAME})(?![\w'.])", masked):
@@ -311,6 +363,8 @@ def _attempt(recipe: PoolRecipe, request: str, index: int) -> Attempt:
     closers = " | ".join(CLOSERS)
     alternatives = [f"exact {general}"]
     alternatives += ["exact " + " ".join([general] + ["_"] * k) for k in range(1, arity + 1)]
+    if with_bound:
+        alternatives += bound_alternatives(general, declaration.parameters, proposition)
     alternatives.append(f"(intros; apply {general} <;> first | {closers})")
     body = "\n".join(f"  | {alternative}" for alternative in alternatives)
     text = (
@@ -324,17 +378,25 @@ def _attempt(recipe: PoolRecipe, request: str, index: int) -> Attempt:
     return Attempt(recipe, general, instance, proposition, text)
 
 
+BOUND_CANDIDATES: Final = 8
+BOUND_MIN_SCORE: Final = 0.5  # the many-alternative stage only for a close structural match
+
+
 def build_source(
-    recipes: list[PoolRecipe], request: str
+    recipes: list[PoolRecipe], request: str, *, with_bound: bool = False
 ) -> tuple[LaneSource, list[dict[str, str]]]:
-    """One compile unit for several candidates: Mathlib is imported (and mapped) once."""
+    """One compile unit for several candidates: Mathlib is imported (and mapped) once.
+
+    ``with_bound`` adds the bound-argument closers (many alternatives, so a second stage that
+    only runs when the plain alternatives found nothing).
+    """
     attempts: list[Attempt] = []
     rejected: list[dict[str, str]] = []
     seen: set[str] = set()
     imports: list[str] = []
     for recipe in recipes:
         try:
-            attempt = _attempt(recipe, request, len(attempts))
+            attempt = _attempt(recipe, request, len(attempts), with_bound)
             if attempt.general_name in seen:
                 raise InstantiationRejected("two candidates declare the same name")
         except InstantiationRejected as error:
@@ -518,41 +580,49 @@ def answer(
         proposition = validate_proposition(closed_proposition(request_formal))
     except InstantiationRejected as error:
         return LaneResult("miss", "request_not_a_plain_proposition", tried=[{"reason": str(error)}])
-    ranked = rank_candidates(proposition, pool)[:candidates]
+    ranked_all = rank_candidates(proposition, pool)
+    ranked = ranked_all[:candidates]
     result = LaneResult("miss", "no_candidate" if not ranked else "no_instance")
     t_match = time.monotonic()
     result.timings_ms["match"] = round((t_match - t0) * 1000, 1)
     if not ranked:
         return result
-    source, rejected = build_source([recipe for _, recipe in ranked], request_formal)
-    result.tried.extend(rejected)
-    t_build = time.monotonic()
-    result.timings_ms["build"] = round((t_build - t_match) * 1000, 1)
-    if not source.attempts:
-        result.code = "no_buildable_candidate"
-        return result
-    code, output, seconds = runner.run(source.source)
-    result.timings_ms["lean"] = round(seconds * 1000, 1)
-    scores = {recipe.recipe_id: score for score, recipe in ranked}
-    for attempt in source.attempts:
-        verdict = back_check(source, attempt, output)
-        result.tried.append(
-            {
-                "recipe": attempt.recipe.recipe_id,
-                "score": round(scores[attempt.recipe.recipe_id], 3),
-                "verdict": verdict or "accepted",
-            }
+    scores = {recipe.recipe_id: score for score, recipe in ranked_all}
+    for with_bound in (False, True):
+        stage = ranked_all[:BOUND_CANDIDATES] if with_bound else ranked
+        source, rejected = build_source(
+            [recipe for _, recipe in stage], request_formal, with_bound=with_bound
         )
-        if verdict is None and result.outcome != "answered":
-            recipe = attempt.recipe
-            result.outcome, result.code = "answered", None
-            result.recipe_id, result.recipe_origin = recipe.recipe_id, recipe.origin
-            result.proposition = attempt.proposition
-            result.instance_source_sha256 = source.source_sha256
-            if recipe.answer is not None:
-                result.answer_text = render_answer(
-                    language, recipe.target_source, (), recipe.answer
-                )
+        result.tried.extend(rejected)
+        t_build = time.monotonic()
+        result.timings_ms["build"] = round((t_build - t_match) * 1000, 1)
+        if not source.attempts:
+            result.code = "no_buildable_candidate"
+            return result
+        code, output, seconds = runner.run(source.source)
+        result.timings_ms["lean"] = round(result.timings_ms.get("lean", 0.0) + seconds * 1000, 1)
+        for attempt in source.attempts:
+            verdict = back_check(source, attempt, output)
+            result.tried.append(
+                {
+                    "recipe": attempt.recipe.recipe_id,
+                    "score": round(scores[attempt.recipe.recipe_id], 3),
+                    "verdict": verdict or "accepted",
+                    "stage": "bound" if with_bound else "plain",
+                }
+            )
+            if verdict is None and result.outcome != "answered":
+                recipe = attempt.recipe
+                result.outcome, result.code = "answered", None
+                result.recipe_id, result.recipe_origin = recipe.recipe_id, recipe.origin
+                result.proposition = attempt.proposition
+                result.instance_source_sha256 = source.source_sha256
+                if recipe.answer is not None:
+                    result.answer_text = render_answer(
+                        language, recipe.target_source, (), recipe.answer
+                    )
+        if result.outcome == "answered":
+            break
     result.timings_ms["total"] = round((time.monotonic() - t0) * 1000, 1)
     if result.outcome == "miss":
         verdicts = {t.get("verdict") for t in result.tried if "verdict" in t}

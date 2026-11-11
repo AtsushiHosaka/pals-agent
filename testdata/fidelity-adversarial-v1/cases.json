@@ -64,6 +64,76 @@
    "request": "Let G be a group. For all a, b in G, (a b)^{-1} = b^{-1} a^{-1}.",
    "faithful": "∀ (G : Type*) [Group G] (a b : G), (a * b)⁻¹ = b⁻¹ * a⁻¹",
    "bad": "∀ (G : Type*) [CommGroup G] (a b : G), (a * b)⁻¹ = b⁻¹ * a⁻¹"
+  },
+  {
+   "id": "log-dropped-positivity",
+   "kind": "dropped hypothesis (x > 0)",
+   "request": "For every positive real x, log x ≤ x - 1.",
+   "faithful": "∀ x : ℝ, 0 < x → Real.log x ≤ x - 1",
+   "bad": "∀ x : ℝ, Real.log x ≤ x - 1"
+  },
+  {
+   "id": "strict-vs-weak",
+   "kind": "weaker conclusion (> to ≥)",
+   "request": "For every real x, x^2 + 1 > 0.",
+   "faithful": "∀ x : ℝ, x ^ 2 + 1 > 0",
+   "bad": "∀ x : ℝ, x ^ 2 + 1 ≥ 0"
+  },
+  {
+   "id": "nat-subtraction-no-hypothesis",
+   "kind": "dropped hypothesis (a ≥ b)",
+   "request": "For all natural numbers a and b with a ≥ b, a - b + b = a.",
+   "faithful": "∀ a b : ℕ, b ≤ a → a - b + b = a",
+   "bad": "∀ a b : ℕ, a - b + b = a"
+  },
+  {
+   "id": "quantifier-order",
+   "kind": "swapped quantifiers",
+   "request": "For every real x there exists a real y with y > x.",
+   "faithful": "∀ x : ℝ, ∃ y : ℝ, y > x",
+   "bad": "∃ y : ℝ, ∀ x : ℝ, y > x"
+  },
+  {
+   "id": "injective-vs-surjective",
+   "kind": "different property",
+   "request": "The function f(x) = 2x on the reals is injective.",
+   "faithful": "Function.Injective (fun x : ℝ => 2 * x)",
+   "bad": "Function.Surjective (fun x : ℝ => 2 * x)"
+  },
+  {
+   "id": "sum-odd-off-by-one",
+   "kind": "off-by-one range",
+   "request": "For every natural number n, the sum of the first n odd numbers is n^2.",
+   "faithful": "∀ n : ℕ, (∑ i ∈ Finset.range n, (2 * i + 1)) = n ^ 2",
+   "bad": "∀ n : ℕ, (∑ i ∈ Finset.range (n + 1), (2 * i + 1)) = n ^ 2"
+  },
+  {
+   "id": "continuous-vs-uniform",
+   "kind": "stronger property (uniform continuity)",
+   "request": "The function f(x) = x^2 is continuous on the real line.",
+   "faithful": "Continuous (fun x : ℝ => x ^ 2)",
+   "bad": "UniformContinuous (fun x : ℝ => x ^ 2)"
+  },
+  {
+   "id": "open-vs-closed-interval",
+   "kind": "open instead of closed interval",
+   "request": "Every continuous function on the closed interval [0,1] is bounded above there.",
+   "faithful": "∀ f : ℝ → ℝ, ContinuousOn f (Set.Icc 0 1) → BddAbove (Set.image f (Set.Icc 0 1))",
+   "bad": "∀ f : ℝ → ℝ, ContinuousOn f (Set.Ioo 0 1) → BddAbove (Set.image f (Set.Ioo 0 1))"
+  },
+  {
+   "id": "group-dropped-hypothesis",
+   "kind": "dropped hypothesis (a*a=1)",
+   "request": "Let G be a group in which a*a = 1 for every a. Then G is commutative.",
+   "faithful": "∀ (G : Type*) [Group G], (∀ a : G, a * a = 1) → ∀ a b : G, a * b = b * a",
+   "bad": "∀ (G : Type*) [Group G] (a b : G), a * b = b * a"
+  },
+  {
+   "id": "sqrt-domain",
+   "kind": "dropped hypothesis (x ≥ 0)",
+   "request": "For every real x ≥ 0, sqrt(x)^2 = x.",
+   "faithful": "∀ x : ℝ, 0 ≤ x → Real.sqrt x ^ 2 = x",
+   "bad": "∀ x : ℝ, Real.sqrt x ^ 2 = x"
   }
  ]
 }

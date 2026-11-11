@@ -38,6 +38,7 @@ def main() -> None:
     parser.add_argument("--budget-given", type=float, default=stage0.BUDGET_GIVEN_S)
     parser.add_argument("--budget-formalised", type=float, default=stage0.BUDGET_FORMALISED_S)
     parser.add_argument("--ids")
+    parser.add_argument("--roundtrip-mode", default="two_calls")
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     spend = [0.0]
@@ -51,7 +52,7 @@ def main() -> None:
     worker = ap.WarmWorker(runner, ROOT / "scripts/eval/warm_worker.lean")
     pool = lane.load_fixture_recipes(ROOT / "testdata")
     model = gate.openai_model_call(load_key(args.env_file))
-    s0 = stage0.Stage0(worker, pool, model, require_flags=False)
+    s0 = stage0.Stage0(worker, pool, model, require_flags=False, roundtrip_mode=args.roundtrip_mode)
     print("exact? index prewarm s", round(worker.prewarm_search(), 2), flush=True)
     load0 = os.getloadavg()
     print("load", load0, "worker start", round(worker.startup_s, 2), flush=True)

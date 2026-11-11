@@ -85,7 +85,7 @@ def test_numeric_parameter_recipe_specialises_to_x_squared_without_the_concrete_
 @pytest.mark.parametrize(
     "wrong",
     [
-        "Continuous (fun x : ℝ => x ^ 2 + 1)",  # a different function: not an instance
+        "Continuous (fun x : ℝ => x⁻¹)",  # false: never an instance of anything
         "∀ n : ℕ, (5 : ℝ) ^ n ≤ 3 ^ n",  # false direction: hypothesis 3 <= 5 turns into 5 <= 3
     ],
 )
@@ -116,3 +116,33 @@ def test_recipe_containing_sorry_is_rejected(runner):
     ]
     result = lane.answer("(1 : ℕ) = 2", bad, runner)
     assert result.outcome == "miss"
+
+
+@pytest.mark.parametrize(
+    ("statement", "recipe_prefix"),
+    [
+        ("Continuous (fun x : ℝ => x * x)", "continuity.power"),  # x*x is not x ^ 2 syntactically
+        ("Continuous (fun x : ℝ => x * x * x)", "continuity.power"),
+        ("StrictMono (fun x : ℝ => x ^ 5)", "monotonicity.power.odd"),  # 5 = 2 * 2 + 1
+        ("ContinuousAt (fun x : ℝ => x ^ 2) 1", "continuity.power"),  # pointwise corollary
+        ("Differentiable ℝ (fun x : ℝ => x * x)", "differentiability.power"),
+    ],
+)
+def test_non_syntactic_instances_use_the_recipe_with_bound_arguments(
+    statement, recipe_prefix, pool, runner
+):
+    general_only = [
+        r
+        for r in pool
+        if r.recipe_id.startswith(recipe_prefix)
+        and not r.recipe_id.endswith("square.explicit-epsilon-delta")
+    ]
+    result = lane.answer(statement, general_only, runner)
+    assert result.outcome == "answered", result.tried
+    assert result.recipe_id.startswith(recipe_prefix)
+
+
+def test_a_true_statement_outside_the_recipe_is_still_not_an_instance(pool, runner):
+    only_power = [r for r in pool if r.recipe_id.startswith("continuity.power")]
+    assert lane.answer("Continuous (fun x : ℝ => x ^ 2 + 1)", only_power, runner).outcome == "miss"
+    assert lane.answer("Continuous (fun x : ℝ => |x|)", only_power, runner).outcome == "miss"

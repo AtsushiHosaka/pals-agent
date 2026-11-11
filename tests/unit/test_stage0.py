@@ -22,8 +22,9 @@ class FakeWorker:
 
     startup_s = 0.0
 
-    def __init__(self, *, proves=True, agree=True):
+    def __init__(self, *, proves=True, agree=True, negation_provable=False, value="4"):
         self.proves, self.agreed, self.texts = proves, agree, []
+        self.negation_provable, self.value = negation_provable, value
 
     def alive(self):
         return True
@@ -43,12 +44,21 @@ class FakeWorker:
                 "'pals_agree' does not depend on any axioms\n",
                 0.01,
             )
+        if "theorem _pals_value" in source:
+            return (
+                f"theorem _pals_value : ∃ v, e = v :=\n  Exists.intro {self.value}\n"
+                "'_pals_value' does not depend on any axioms\n",
+                0.01,
+            )
         if "PALS_DOC" in source:
             return "Foo.bar : a = a\nPALS_DOC:The doc.\n", 0.01
         for line in source.splitlines():
             if line.startswith("theorem _pals_portfolio_"):
                 name = line.split()[1]
-                if self.proves and "positivity" in source:
+                negated = ": ¬ (" in line
+                if (self.proves and not negated or self.negation_provable and negated) and (
+                    "positivity" in source
+                ):
                     return f"'{name}' does not depend on any axioms\n", 0.01
                 return f"/t.lean:1:0: error: failed\n'{name}' depends on axioms: [sorryAx]\n", 0.01
         return "", 0.01
@@ -60,8 +70,11 @@ def model_factory(formal_a, formal_b, faithful=True, roundtrip=True):
     def model(prompt, schema):
         calls.append(prompt[:20])
         props = schema["properties"]
-        if "formal" in props:
-            return {"formal": formal_b if "most faithful form" in prompt else formal_a}
+        if "kind" in props:
+            f = formal_b if "most faithful form" in prompt else formal_a
+            if isinstance(f, dict):
+                return {"kind": "explain", "formal": "", "expression": "", "type": "none", **f}
+            return {"kind": "prove", "formal": f, "expression": "", "type": "none"}
         if "description" in props:
             return {"description": "plain words"}
         # review ("STATEMENT:" first) and the round-trip comparison ("DESCRIPTION:")
@@ -328,3 +341,105 @@ def test_an_injection_in_a_model_written_statement_is_refused_before_lean():
     result = make(worker, [], model_factory(bad, bad)).run("x", "en")
     assert result.outcome == "fallthrough" and result.reason == "statement_not_plain"
     assert worker.texts == []  # nothing reached Lean
+
+
+# --- computation / yes-no / explain routes -------------------------------------------------------
+def compute(expression, type_="ℝ"):
+    return {"kind": "compute", "expression": expression, "type": type_}
+
+
+def decide(formal):
+    return {"kind": "decide", "formal": formal}
+
+
+def test_explain_requests_stay_with_the_normal_pipeline():
+    result = make(FakeWorker(), [], model_factory({"kind": "explain"}, {"kind": "explain"})).run(
+        "なぜ成り立たないか説明せよ", "ja"
+    )
+    assert (result.outcome, result.reason) == ("fallthrough", "explain_request")
+
+
+def test_a_computation_is_answered_with_the_value_lean_found_and_the_label():
+    a = compute("(2 : ℝ) + 2")
+    result = make(FakeWorker(value="4"), [], model_factory(a, a)).run("2+2 を計算せよ", "ja")
+    assert result.outcome == "answered" and result.kind == "compute" and result.value == "4"
+    assert "**4**" in result.answer_text and "自動で作った形式化" in result.answer_text
+    assert result.formal == "((2 : ℝ) + 2) = ((4) : ℝ)"
+    assert result.gate.passed
+
+
+def test_two_expressions_with_different_values_do_not_agree():
+    class Two(FakeWorker):
+        def check(self, source, **k):
+            if "theorem _pals_value" in source:
+                self.value = "5" if "(3 : ℝ)" in source else "4"
+            return super().check(source, **k)
+
+    result = make(Two(), [], model_factory(compute("(2 : ℝ) + 2"), compute("(3 : ℝ) + 2"))).run(
+        "x", "en"
+    )
+    assert result.outcome == "fallthrough" and "formalisations_disagree" in result.gate.reasons
+
+
+@pytest.mark.parametrize("value", ["(2 : ℝ) + 2", "Real.pi", "x"])
+def test_a_value_that_is_not_a_numeral_is_not_used(value):
+    result = make(
+        FakeWorker(value=value), [], model_factory(compute("(2 : ℝ) + 2"), compute("(2 : ℝ) + 2"))
+    ).run("x", "en")
+    assert result.outcome == "fallthrough" and result.reason == "value_not_derived"
+
+
+def test_a_yes_no_question_needs_exactly_one_of_p_and_not_p():
+    p = "∀ x : ℝ, 0 ≤ x ^ 2"
+    yes = make(FakeWorker(), [], model_factory(decide(p), decide(p))).run("x^2 ≥ 0 か", "ja")
+    assert yes.outcome == "answered" and yes.answer == "yes" and "**はい**" in yes.answer_text
+    no = make(
+        FakeWorker(proves=False, negation_provable=True), [], model_factory(decide(p), decide(p))
+    ).run("x", "en")
+    # the fake closes with `positivity`, whose template is not honest for a negation
+    assert no.answer == "no" and no.formal_proved == f"¬ ({p})"
+    assert no.outcome == "verified_needs_explanation"
+    both = make(
+        FakeWorker(proves=True, negation_provable=True), [], model_factory(decide(p), decide(p))
+    ).run("x", "en")
+    assert both.outcome == "fallthrough" and both.reason == "both_proved"
+    neither = make(FakeWorker(proves=False), [], model_factory(decide(p), decide(p))).run("x", "en")
+    assert neither.outcome == "fallthrough" and neither.answer_text is None
+
+
+def test_the_review_and_round_trip_are_told_what_kind_of_request_it_is():
+    seen = []
+
+    def model(prompt, schema):
+        seen.append(prompt)
+        props = schema["properties"]
+        if "kind" in props:
+            return {
+                "kind": "decide",
+                "formal": "∀ x : ℝ, 0 ≤ x ^ 2",
+                "expression": "",
+                "type": "none",
+            }
+        if "description" in props:
+            return {"description": "d"}
+        return {"checks": "", "faithful": True, "issue": ""}
+
+    make(FakeWorker(), [], model).run("x", "en")
+    assert any("yes/no question" in p for p in seen)
+
+
+def test_every_check_must_have_returned_before_release():
+    class Slow(FakeWorker):
+        pass
+
+    s = "∀ x : ℝ, 0 ≤ x ^ 2"
+    model = model_factory(s, s)
+    original = model
+
+    def stuck(prompt, schema):
+        if "description" in schema["properties"]:
+            raise TimeoutError("back-translation did not return")
+        return original(prompt, schema)
+
+    result = make(Slow(), [], stuck).run("x", "en")
+    assert result.outcome == "fallthrough" and "roundtrip_unavailable" in result.gate.reasons

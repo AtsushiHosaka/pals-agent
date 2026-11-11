@@ -510,6 +510,7 @@ def solve_warm(
     portfolio: tuple[Tactic, ...] = PORTFOLIO,
     deadline: float | None = None,
     allow_header: bool = False,
+    bound_stage: bool = False,
 ) -> SolveResult:
     """Staged first-success run on a warm worker: Recipe candidates, then each tactic in turn.
 
@@ -524,7 +525,8 @@ def solve_warm(
             "miss", code="statement_not_plain", attempts=[Attempt("none", str(error), "-")]
         )
     preamble = split_preamble(request_formal)[0] if allow_header else ""
-    ranked = [] if preamble else lane.rank_candidates(proposition, pool)[:candidates]
+    ranked_all = [] if preamble else lane.rank_candidates(proposition, pool)
+    ranked = ranked_all[:candidates]
     prefix = lane.AUTO_OPTIONS + (preamble + "\n" if preamble else "")
     result = SolveResult("miss", proposition=proposition, code="no_attempt_succeeded")
     # the request's statement alone must elaborate to a closed Prop (autoImplicit is off)
@@ -533,14 +535,24 @@ def solve_warm(
         result.code = "statement_not_elaborated"
         result.total_s = time.monotonic() - t0
         return result
-    source = None
-    if ranked:
+
+    def recipe_stage(with_bound: bool) -> bool:
+        """Compile the Recipe candidates; True when one is accepted (result is filled)."""
+        stage = ranked_all[: lane.BOUND_CANDIDATES] if with_bound else ranked
         try:
-            source, _ = lane.build_source([r for _, r in ranked], proposition)
+            source, _ = lane.build_source([r for _, r in stage], proposition, with_bound=with_bound)
         except InstantiationRejected:
-            source = None  # not a plain Recipe instance request (e.g. a `let` statement)
-    if source is not None:
-        output, seconds = worker.check(source.source.split("\n\n", 1)[1])
+            return False  # not a plain Recipe instance request (e.g. outside the Recipe grammar)
+        if not source.attempts:
+            return False
+        try:
+            output, seconds = worker.check(
+                source.source.split("\n\n", 1)[1],
+                timeout_s=60.0 if deadline is None else max(1.0, deadline - time.monotonic()),
+            )
+        except TimeoutError:
+            result.code = "budget_exhausted"
+            return False
         for recipe_attempt in source.attempts:
             attempt = Attempt(
                 "recipe", recipe_attempt.recipe.recipe_id, recipe_attempt.instance_name
@@ -557,7 +569,11 @@ def solve_warm(
                 )
                 result.answered_s = round(time.monotonic() - t0, 3)
                 result.total_s = time.monotonic() - t0
-                return result
+                return True
+        return False
+
+    if recipe_stage(False):
+        return result
     for k, tactic in enumerate(portfolio):
         if deadline is not None and time.monotonic() >= deadline:
             result.code = "budget_exhausted"
@@ -603,5 +619,94 @@ def solve_warm(
             result.call = attempt.call
             result.answered_s = attempt.at_s
             break
+    # last: the many-alternative bound-argument closers (the costliest stage)
+    if (
+        bound_stage
+        and result.outcome != "answered"
+        and ranked_all
+        and ranked_all[0][0] >= lane.BOUND_MIN_SCORE
+        and result.code != "budget_exhausted"
+        and (deadline is None or time.monotonic() < deadline)
+    ):
+        recipe_stage(True)
     result.total_s = time.monotonic() - t0
     return result
+
+
+# --- values: Lean normalises, the answer is re-proved as a closed statement ----------------------
+VALUE_TYPES: Final = frozenset({"ℕ", "ℤ", "ℚ", "ℝ"})
+VALUE_TACTICS: Final = (
+    "norm_num <;> rfl",
+    "simp <;> rfl",
+    "norm_num [Matrix.det_fin_two, Nat.choose, Nat.factorial, Finset.sum_range_succ,"
+    " integral_pow] <;> rfl",
+)
+_LITERAL = re.compile(r"^-?\d+(?:\s*/\s*\d+)?$")
+
+
+def _first_term(text: str) -> str | None:
+    """The first argument of ``Exists.intro`` in printed output."""
+    text = text.lstrip()
+    if not text:
+        return None
+    if text[0] != "(":
+        return text.split()[0]
+    depth = 0
+    for index, ch in enumerate(text):
+        depth += ch == "("
+        depth -= ch == ")"
+        if depth == 0:
+            return text[: index + 1]
+    return None
+
+
+def derive_value(
+    worker: WarmWorker, expression: str, type_symbol: str, *, deadline: float | None = None
+) -> str | None:
+    """Ask Lean for the value of a closed expression by normalisation (no ``#eval``).
+
+    ``∃ v : T, e = v`` is proved by ``norm_num``/``simp`` rewriting ``e`` and closing ``n = ?v`` by
+    ``rfl``; the value is read from the printed witness and accepted only if it is a numeral or a
+    fraction of numerals different from the expression itself.  The caller re-proves ``e = v`` as
+    a closed statement, so a wrong reading can only make that proof fail.
+    """
+    if type_symbol not in VALUE_TYPES:
+        return None
+    expr = validate_proposition(expression)
+    for tactic in VALUE_TACTICS:
+        if deadline is not None and time.monotonic() >= deadline:
+            return None
+        src = (
+            lane.AUTO_OPTIONS
+            + "set_option maxHeartbeats 30000 in\n"
+            + f"theorem _pals_value : ∃ v : {type_symbol}, {expr} = v := ⟨_, by {tactic}⟩\n"
+            + "set_option pp.proofs true in\n#print _pals_value\n#print axioms _pals_value\n"
+        )
+        try:
+            out, _ = worker.check(
+                src,
+                timeout_s=15.0
+                if deadline is None
+                else max(1.0, min(15.0, deadline - time.monotonic())),
+            )
+        except (TimeoutError, RuntimeError):
+            return None
+        if lane._ERROR_LINE.search(out):
+            continue
+        match = re.search(r"'_pals_value' (?:depends on axioms: \[([^\]]*)\]|does not depend)", out)
+        if match is None or "sorryAx" in (match.group(1) or ""):
+            continue
+        marker = out.find("Exists.intro")
+        term = _first_term(out[marker + len("Exists.intro") :]) if marker >= 0 else None
+        if term is None:
+            continue
+        value = term.strip()
+        if value.startswith("(") and value.endswith(")"):
+            value = value[1:-1].strip()
+        if _LITERAL.match(value) and "".join(value.split()) != "".join(expr.split()):
+            return value
+    return None
+
+
+def closed_value_statement(expression: str, value: str, type_symbol: str) -> str:
+    return validate_proposition(f"({expression}) = (({value}) : {type_symbol})")

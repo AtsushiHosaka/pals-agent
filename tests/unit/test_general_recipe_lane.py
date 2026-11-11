@@ -188,3 +188,26 @@ def test_standalone_source_turns_autoimplicit_off_and_elaborates_the_request_alo
     assert "set_option relaxedAutoImplicit false" in source.source
     assert "theorem _pals_ref :" in source.source and "PALS_REF_OK" in source.source
     assert source.source.index("autoImplicit") < source.source.index("theorem _pals_ref")
+
+
+def test_bound_alternatives_apply_the_recipe_and_never_use_a_bare_simp():
+    from pals_agent.recipe_instantiation import _parse
+
+    declaration, _ = _parse(
+        "theorem g : ∀ (n : ℕ), Continuous (fun x : ℝ => x ^ n) := fun n => by fun_prop",
+        allow_implicit=True,
+    )
+    alternatives = lane.bound_alternatives(
+        "g", declaration.parameters, "Continuous (fun x : ℝ => x * x)"
+    )
+    assert alternatives and len(alternatives) <= lane.MAX_BOUND_ALTERNATIVES
+    assert all(alt.startswith(("(refine g", "(convert g", "(exact (g")) for alt in alternatives)
+    assert any("convert g 2 using 1" in alt for alt in alternatives)  # derived from the shape
+    assert not any(" simp" in alt.replace("(simp; done)", "") for alt in alternatives)
+    assert all("ring1" in alt or "refine" in alt or "exact" in alt for alt in alternatives)
+
+
+def test_closers_that_may_leave_goals_carry_done():
+    for closer in lane.CLOSERS:
+        if closer.strip("()").startswith(("norm_num", "simp")):
+            assert "done" in closer

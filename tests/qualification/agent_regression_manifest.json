@@ -999,6 +999,66 @@
   {
    "id": "tests.integration.test_statement_injection_real::test_the_warm_worker_runs_in_its_own_session_with_the_sandbox_applied",
    "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (and macOS sandbox-exec for the injection tests); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_a_statement_that_is_not_an_instance_is_never_answered[Continuous (fun x : \\u211d => x\\u207b\\xb9)]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, automation portfolio, injection tests; macOS sandbox-exec for the latter); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_non_syntactic_instances_use_the_recipe_with_bound_arguments[Continuous (fun x : \\u211d => x * x)-continuity.power]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, automation portfolio, injection tests; macOS sandbox-exec for the latter); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_non_syntactic_instances_use_the_recipe_with_bound_arguments[Continuous (fun x : \\u211d => x * x * x)-continuity.power]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, automation portfolio, injection tests; macOS sandbox-exec for the latter); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_non_syntactic_instances_use_the_recipe_with_bound_arguments[StrictMono (fun x : \\u211d => x ^ 5)-monotonicity.power.odd]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, automation portfolio, injection tests; macOS sandbox-exec for the latter); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_non_syntactic_instances_use_the_recipe_with_bound_arguments[ContinuousAt (fun x : \\u211d => x ^ 2) 1-continuity.power]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, automation portfolio, injection tests; macOS sandbox-exec for the latter); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_non_syntactic_instances_use_the_recipe_with_bound_arguments[Differentiable \\u211d (fun x : \\u211d => x * x)-differentiability.power]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, automation portfolio, injection tests; macOS sandbox-exec for the latter); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_lane_real::test_a_true_statement_outside_the_recipe_is_still_not_an_instance",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, automation portfolio, injection tests; macOS sandbox-exec for the latter); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_lean_derives_the_value_and_the_closed_statement_is_reproved[\\u2124-(2 : \\u2124) ^ 10 + 3-1027]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, automation portfolio, injection tests; macOS sandbox-exec for the latter); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_lean_derives_the_value_and_the_closed_statement_is_reproved[\\u211a-(1 : \\u211a) / 2 + 1 / 3-5 / 6]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, automation portfolio, injection tests; macOS sandbox-exec for the latter); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_lean_derives_the_value_and_the_closed_statement_is_reproved[\\u2115-\\u2211 k \\u2208 Finset.range 11, k-55]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, automation portfolio, injection tests; macOS sandbox-exec for the latter); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_lean_derives_the_value_and_the_closed_statement_is_reproved[\\u211d-\\u222b x in (0 : \\u211d)..(1 : \\u211d), x ^ 2-1 / 3]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, automation portfolio, injection tests; macOS sandbox-exec for the latter); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_lean_derives_the_value_and_the_closed_statement_is_reproved[\\u211d-(Matrix.det !![(1 : \\u211d), 2; 3, 5])--1]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, automation portfolio, injection tests; macOS sandbox-exec for the latter); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_lean_derives_the_value_and_the_closed_statement_is_reproved[\\u2115-Nat.choose 5 2-10]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, automation portfolio, injection tests; macOS sandbox-exec for the latter); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_a_derivative_value_that_lean_cannot_normalise_is_not_invented",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, automation portfolio, injection tests; macOS sandbox-exec for the latter); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_automation_portfolio_real::test_the_let_statement_of_the_catalog_is_hoisted_and_lean_accepts_the_same_prop",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe lane, automation portfolio, injection tests; macOS sandbox-exec for the latter); not provided on this runner."
   }
  ],
  "allowed_unexecuted_modules": [

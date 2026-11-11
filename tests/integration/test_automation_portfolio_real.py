@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import time
 from pathlib import Path
 
 import pytest
@@ -103,5 +104,67 @@ def test_a_timed_out_warm_worker_is_replaced_and_never_leaks_output_into_the_nex
         worker.restart()
         out, _ = worker.check("theorem t : (1 : ℕ) + 1 = 2 := rfl\n#print axioms t\n")
         assert "'t' does not depend on any axioms" in out and "pals_slow" not in out
+    finally:
+        worker.close()
+
+
+# --- computation, yes/no and the let hoist with the real Lean ---------------------------------
+@pytest.mark.parametrize(
+    ("type_symbol", "expression", "value"),
+    [
+        ("ℤ", "(2 : ℤ) ^ 10 + 3", "1027"),
+        ("ℚ", "(1 : ℚ) / 2 + 1 / 3", "5 / 6"),
+        ("ℕ", "∑ k ∈ Finset.range 11, k", "55"),
+        ("ℝ", "∫ x in (0 : ℝ)..(1 : ℝ), x ^ 2", "1 / 3"),
+        ("ℝ", "(Matrix.det !![(1 : ℝ), 2; 3, 5])", "-1"),
+        ("ℕ", "Nat.choose 5 2", "10"),
+    ],
+)
+def test_lean_derives_the_value_and_the_closed_statement_is_reproved(
+    type_symbol, expression, value, runner
+):
+    worker = ap.WarmWorker(runner, ROOT / "scripts/eval/warm_worker.lean")
+    try:
+        derived = ap.derive_value(worker, expression, type_symbol)
+        assert derived is not None and "".join(derived.split()) == "".join(value.split())
+        statement = ap.closed_value_statement(expression, derived, type_symbol)
+        assert ap.solve_warm(statement, [], worker).outcome == "answered"
+        # a wrong value is never provable, whoever proposed it
+        wrong = ap.closed_value_statement(expression, "7", type_symbol)
+        assert ap.solve_warm(wrong, [], worker, deadline=time.monotonic() + 8).outcome == "miss"
+    finally:
+        worker.close()
+
+
+def test_a_derivative_value_that_lean_cannot_normalise_is_not_invented(runner):
+    worker = ap.WarmWorker(runner, ROOT / "scripts/eval/warm_worker.lean")
+    try:
+        assert ap.derive_value(worker, "deriv (fun x : ℝ => x ^ 3 - 3 * x) 2", "ℝ") is None
+    finally:
+        worker.close()
+
+
+def test_the_let_statement_of_the_catalog_is_hoisted_and_lean_accepts_the_same_prop(runner):
+    import json
+
+    from pals_agent import statement_normalise as normalise
+
+    manifest = json.loads((ROOT / "testdata/generation-eval-v1/manifest.json").read_text())
+    card = next(
+        p["fixed_lean_statement"]
+        for p in manifest["problems"]
+        if p["id"] == "la_v6_nonzero_maps_zero_composite"
+    )
+    closed = ap.closed_statement(ap.split_preamble(card)[1])
+    hoisted = normalise.hoist_lets(closed)
+    assert hoisted is not None
+    worker = ap.WarmWorker(runner, ROOT / "scripts/eval/warm_worker.lean")
+    try:
+        out, _ = worker.check(normalise.equivalence_source(closed, hoisted), timeout_s=60)
+        assert "'_pals_hoist' depends on axioms" in out and "error" not in out
+        # a hoist that changes the meaning is refused by Lean
+        wrong = hoisted.replace("≠ 0 ∧", "= 0 ∧", 1)
+        bad, _ = worker.check(normalise.equivalence_source(closed, wrong), timeout_s=60)
+        assert "error" in bad
     finally:
         worker.close()
