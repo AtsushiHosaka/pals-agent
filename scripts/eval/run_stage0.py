@@ -39,6 +39,11 @@ def main() -> None:
     parser.add_argument("--budget-formalised", type=float, default=stage0.BUDGET_FORMALISED_S)
     parser.add_argument("--ids")
     parser.add_argument("--roundtrip-mode", default="two_calls")
+    parser.add_argument(
+        "--shared-worker",
+        action="store_true",
+        help="old behaviour: model statements share the long-lived worker (NOT isolated)",
+    )
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     spend = [0.0]
@@ -52,7 +57,16 @@ def main() -> None:
     worker = ap.WarmWorker(runner, ROOT / "scripts/eval/warm_worker.lean")
     pool = lane.load_fixture_recipes(ROOT / "testdata")
     model = gate.openai_model_call(load_key(args.env_file))
-    s0 = stage0.Stage0(worker, pool, model, require_flags=False, roundtrip_mode=args.roundtrip_mode)
+    s0 = stage0.Stage0(
+        worker,
+        pool,
+        model,
+        require_flags=False,
+        roundtrip_mode=args.roundtrip_mode,
+        worker_factory=None
+        if args.shared_worker
+        else lambda: ap.WarmWorker(runner, ROOT / "scripts/eval/warm_worker.lean"),
+    )
     print("exact? index prewarm s", round(worker.prewarm_search(), 2), flush=True)
     load0 = os.getloadavg()
     print("load", load0, "worker start", round(worker.startup_s, 2), flush=True)
@@ -95,6 +109,7 @@ def main() -> None:
             fh.flush()
             print(p["id"], r.outcome, r.by, r.reason, round(wall, 1), flush=True)
     print("load", load0, "->", os.getloadavg(), f"spend_est_usd={spend[0]:.4f}")
+    s0.close()
     worker.close()
 
 

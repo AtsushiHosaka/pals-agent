@@ -163,3 +163,104 @@ def new_scratch(prefix: str = "pals-lean-") -> tempfile.TemporaryDirectory[str]:
 
 def which(name: str) -> str | None:
     return shutil.which(name)
+
+
+# --- memory and CPU watchdog ---------------------------------------------------------------------
+# RLIMIT_AS is not enforced on Darwin (a statement reached 15 GB RSS in 25 s), so the limit is a
+# poll-and-kill watchdog over the whole process group: resident memory and cumulative CPU time.
+# Measured (macOS, Lean 4.32 + Mathlib): a warm worker is ~7 GiB resident right after the import
+# (mapped oleans) and ~9 GiB after the `exact?` index; an 8 GiB limit would kill every worker.
+DEFAULT_RSS_BYTES: Final = 14 * 1024**3
+DEFAULT_WORKER_CPU_SECONDS: Final = 900.0
+
+
+def default_rss_bytes() -> int:
+    raw = os.environ.get("PALS_LEAN_RSS_LIMIT_MB", "")
+    try:
+        return int(raw) * 1024 * 1024 if raw else DEFAULT_RSS_BYTES
+    except ValueError:
+        return DEFAULT_RSS_BYTES
+
+
+def default_worker_cpu_seconds() -> float:
+    raw = os.environ.get("PALS_LEAN_WORKER_CPU_S", "")
+    try:
+        return float(raw) if raw else DEFAULT_WORKER_CPU_SECONDS
+    except ValueError:
+        return DEFAULT_WORKER_CPU_SECONDS
+
+
+def _parse_cputime(text: str) -> float:
+    """``ps`` cputime: ``M:SS.cc`` or ``H:MM:SS``."""
+    parts = text.strip().split(":")
+    try:
+        if len(parts) == 3:
+            return int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
+        if len(parts) == 2:
+            return int(parts[0]) * 60 + float(parts[1])
+        return float(parts[0])
+    except ValueError:
+        return 0.0
+
+
+def group_usage(pgid: int) -> tuple[int, float]:
+    """(resident bytes, cumulative CPU seconds) summed over the process group."""
+    try:
+        out = subprocess.run(
+            ["ps", "-axo", "pgid=,rss=,time="], capture_output=True, text=True, timeout=5
+        ).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return 0, 0.0
+    rss, cpu = 0, 0.0
+    for line in out.splitlines():
+        fields = line.split()
+        if len(fields) == 3 and fields[0] == str(pgid):
+            rss += int(fields[1]) * 1024 if fields[1].isdigit() else 0
+            cpu += _parse_cputime(fields[2])
+    return rss, cpu
+
+
+class Watchdog:
+    """Poll the process group; SIGKILL it when RSS or CPU exceeds the limit.
+
+    ``reason`` is ``"rss"``, ``"cpu"`` or None.  The process must have been started with
+    ``start_new_session=True`` so that its pid is the group id.
+    """
+
+    def __init__(
+        self,
+        proc: subprocess.Popen[Any],
+        *,
+        rss_bytes: int | None = None,
+        cpu_seconds: float | None = None,
+        interval: float = 0.25,
+    ) -> None:
+        import threading
+
+        self.proc = proc
+        self.rss_bytes, self.cpu_seconds, self.interval = rss_bytes, cpu_seconds, interval
+        self.reason: str | None = None
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._thread.start()
+
+    def _run(self) -> None:
+        while not self._stop.wait(self.interval):
+            if self.proc.poll() is not None:
+                # the leader exited; stragglers in the group are still counted until gone
+                rss, _ = group_usage(self.proc.pid)
+                if rss == 0:
+                    return
+            rss, cpu = group_usage(self.proc.pid)
+            if self.rss_bytes is not None and rss > self.rss_bytes:
+                self.reason = "rss"
+            elif self.cpu_seconds is not None and cpu > self.cpu_seconds:
+                self.reason = "cpu"
+            if self.reason:
+                with contextlib.suppress(ProcessLookupError, PermissionError):
+                    os.killpg(self.proc.pid, signal.SIGKILL)
+                return
+
+    def stop(self) -> None:
+        self._stop.set()
+        self._thread.join(timeout=2)

@@ -148,6 +148,7 @@ class Attempt:
     at_s: float | None = None  # seconds since process start when its verdict arrived
     lemma: str | None = None
     call: str | None = None
+    tactic: str | None = None  # the tactic text of a portfolio attempt (for the clean re-check)
 
 
 def build_unified(
@@ -197,6 +198,7 @@ class StreamResult:
     events: list[tuple[float, str]]
     killed: bool
     seconds: float
+    reason: str | None = None  # "rss" | "cpu" when the watchdog killed the process
 
 
 def run_stream(
@@ -216,6 +218,9 @@ def run_stream(
             **sandbox.popen_kwargs(isolation, directory, cpu_seconds=int(budget_s) + 5),
         )
         os.close(slave)
+        dog = sandbox.Watchdog(
+            proc, rss_bytes=sandbox.default_rss_bytes(), cpu_seconds=budget_s + 5
+        )
         buf, out, events, killed = b"", [], [], False
         while True:
             remaining = budget_s - (time.monotonic() - t0)
@@ -243,11 +248,12 @@ def run_stream(
                     break
             elif proc.poll() is not None:
                 break
+        dog.stop()
         if killed or proc.poll() is None:
             sandbox.kill_group(proc)
         proc.wait()
         os.close(master)
-    return StreamResult("\n".join(out), events, killed, time.monotonic() - t0)
+    return StreamResult("\n".join(out), events, killed, time.monotonic() - t0, dog.reason)
 
 
 _AX = re.compile(
@@ -273,6 +279,7 @@ class SolveResult:
     by: str | None = None
     lemma: str | None = None
     call: str | None = None
+    tactic: str | None = None
     proposition: str | None = None
     source_sha256: str | None = None
     model_calls: int = 0
@@ -426,6 +433,11 @@ class WarmWorker:
         )
         t0 = time.monotonic()
         self._buf = b""
+        self._dog = sandbox.Watchdog(
+            self.proc,
+            rss_bytes=sandbox.default_rss_bytes(),
+            cpu_seconds=sandbox.default_worker_cpu_seconds(),
+        )
         if self._read_line(time.monotonic() + 120.0) != "PALS_READY":
             raise RuntimeError("warm worker did not start")
         self.startup_s = time.monotonic() - t0
@@ -437,13 +449,38 @@ class WarmWorker:
         A timeout or a dead worker kills and reaps the process (``alive()`` becomes False, the
         caller restarts it), so output of one request can never be read as the next one's.
         """
-        assert self.proc.stdin is not None
+        path = self._write(source, "lean")
+        return self._request(str(path), path, timeout_s)
+
+    def check_statement(
+        self, term: str, opens: str = "", *, mode: str = "CHECK", timeout_s: float = 30.0
+    ) -> tuple[bool, str]:
+        """Parse-only statement check inside the worker (never elaborates the statement).
+
+        Returns ``(accepted, reason)``.  ``mode="KINDS"`` returns the syntax kinds instead.
+        """
+        if "\n" in term or "\n" in opens:
+            return False, "multi-line input"
+        path = self._write(opens + "\n" + term + "\n", "txt")
+        out, _ = self._request(f"{mode} {path}", path, timeout_s)
+        if mode == "KINDS":
+            return True, out
+        if "PALS_CHECK_OK" in out and "PALS_CHECK_REFUSED" not in out:
+            return True, ""
+        reason = next((ln for ln in out.splitlines() if "PALS_CHECK_REFUSED" in ln), "no verdict")
+        return False, reason.replace("PALS_CHECK_REFUSED", "").strip()
+
+    def _write(self, text: str, suffix: str) -> Path:
         self._counter += 1
-        path = Path(self._dir.name) / f"req{self._counter}.lean"
-        path.write_text(source)
+        path = Path(self._dir.name) / f"req{self._counter}.{suffix}"
+        path.write_text(text)
+        return path
+
+    def _request(self, line: str, path: Path, timeout_s: float) -> tuple[str, float]:
+        assert self.proc.stdin is not None
         t0 = time.monotonic()
         try:
-            self.proc.stdin.write((str(path) + "\n").encode())
+            self.proc.stdin.write((line + "\n").encode())
             self.proc.stdin.flush()
         except (BrokenPipeError, OSError) as error:
             self._reap()
@@ -452,13 +489,13 @@ class WarmWorker:
         done = f"PALS_DONE {path}"
         deadline = t0 + timeout_s
         while True:
-            line = self._read_line(deadline)
-            if line is None:
+            reply = self._read_line(deadline)
+            if reply is None:
                 self._reap()
                 raise TimeoutError("warm worker timeout")
-            if line == done:
+            if reply == done:
                 break
-            out.append(line + "\n")
+            out.append(reply + "\n")
         return "".join(out), time.monotonic() - t0
 
     def _read_line(self, deadline: float) -> str | None:
@@ -473,17 +510,22 @@ class WarmWorker:
             if not ready:
                 if self.proc.poll() is not None:
                     self._reap()
-                    raise RuntimeError("warm worker exited")
+                    raise RuntimeError(f"warm worker exited ({self._dog.reason or 'died'})")
                 continue
             data = os.read(fd, 65536)
             if not data:
                 self._reap()
-                raise RuntimeError("warm worker exited")
+                raise RuntimeError(f"warm worker exited ({self._dog.reason or 'died'})")
             self._buf += data
         raw, self._buf = self._buf.split(b"\n", 1)
         return raw.decode(errors="replace")
 
+    def killed_reason(self) -> str | None:
+        """ "rss" or "cpu" when the watchdog killed the worker (it must then be replaced)."""
+        return self._dog.reason
+
     def _reap(self) -> None:
+        self._dog.stop()
         sandbox.kill_group(self.proc)
 
     def prewarm_search(self) -> float:
@@ -591,6 +633,7 @@ def solve_warm(
             break
         match = _AX.search(output)
         attempt = Attempt("portfolio", tactic.name, decl)
+        attempt.tactic = tactic.text
         attempt.at_s = round(time.monotonic() - t0, 3)
         errored = lane.errored_declarations(output)
         attempt.verdict = (
@@ -617,6 +660,7 @@ def solve_warm(
             )
             result.lemma = attempt.lemma
             result.call = attempt.call
+            result.tactic = attempt.tactic
             result.answered_s = attempt.at_s
             break
     # last: the many-alternative bound-argument closers (the costliest stage)
@@ -710,3 +754,65 @@ def derive_value(
 
 def closed_value_statement(expression: str, value: str, type_symbol: str) -> str:
     return validate_proposition(f"({expression}) = (({value}) : {type_symbol})")
+
+
+# --- clean re-check of an accepted answer in a FRESH verifier worker -----------------------------
+FINAL_NAME: Final = "_pals_final"
+
+
+def replay_tactic(solved: SolveResult) -> str | None:
+    """The tactic text to replay for an accepted portfolio answer (no search is repeated).
+
+    A closer from the fixed portfolio is replayed as is; an ``exact?`` answer is replayed as the
+    term it found (``intros; expose_names; exact <call>``), so the verifier never searches.
+    """
+    if solved.route != "portfolio" or not solved.by:
+        return None
+    if solved.by == "exact?":
+        call = (solved.call or "").strip()
+        if not call or any(ch in call for ch in "\n;"):
+            return None
+        validate_proposition(call)  # the recorded term must itself be a plain term
+        return f"intros; expose_names; exact {call}"
+    known = {t.name: t.text for t in PORTFOLIO}
+    return known.get(solved.by)
+
+
+def recheck(
+    verifier: WarmWorker, statement: str, solved: SolveResult, *, preamble: str = ""
+) -> tuple[bool, str]:
+    """Re-prove ``statement`` in a worker that never ran the search for it.
+
+    The verdict of a model- or learner-written statement is this one: a fresh process, the
+    statement elaborated once under ``autoImplicit false`` with the standard checks (reference
+    probe, no logged error, standard axioms only).  Tampering inside the search worker cannot
+    change it.
+    """
+    tactic = replay_tactic(solved)
+    if tactic is None:
+        return False, "nothing_to_replay"
+    text = (
+        lane.AUTO_OPTIONS
+        + (preamble + "\n" if preamble else "")
+        + lane.reference_probe(statement)
+        + "set_option maxHeartbeats 100000 in\n"
+        + f"theorem {FINAL_NAME} : {statement} := by\n  {tactic}\n#print axioms {FINAL_NAME}\n"
+    )
+    try:
+        output, _ = verifier.check(text, timeout_s=30.0)
+    except (TimeoutError, RuntimeError):
+        return False, "verifier_unavailable"
+    if "PALS_REF_OK=true" not in output:
+        return False, "statement_not_elaborated"
+    match = re.search(
+        rf"'{FINAL_NAME}' (?:depends on axioms: \[([^\]]*)\]|does not depend)", output
+    )
+    if match is None:
+        return False, "no_verdict"
+    errors_after_ref = [ln for ln in output.splitlines() if lane._ERROR_LINE.search(ln)]
+    if errors_after_ref:
+        return False, "error_logged"
+    axioms = {a.strip() for a in (match.group(1) or "").split(",") if a.strip()}
+    if "sorryAx" in axioms or not axioms <= lane.ALLOWED_AXIOMS:
+        return False, "nonstandard_axiom"
+    return True, ""

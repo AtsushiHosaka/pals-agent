@@ -113,6 +113,7 @@ RESERVED: Final = frozenset(
         "omit",
         "assume",
         "suffices",
+        "no_index",
         "obtain",
         "rcases",
         "rintro",
@@ -127,12 +128,34 @@ RESERVED: Final = frozenset(
     )
 )
 ALLOWED_KEYWORDS: Final = frozenset({"fun", "if", "then", "else", "in"})
-_CODE_NAMESPACES: Final = re.compile(r"^(IO|Lean|System|Elab|Meta|Tactic|Command|Std\.IO)(\.|$)")
-_CODE_PREFIXES: Final = ("unsafe", "run_", "native_")
+_CODE_NAMESPACES: Final = re.compile(
+    r"(?:^|\.)(IO|Lean|System|Elab|Meta|Tactic|Command|Parser|Macro|Std\.Internal|ST|EIO|BaseIO)"
+    r"(?:\.|$)"
+)
+_CODE_PREFIXES: Final = ("unsafe", "run_", "native_", "by_", "dbg", "ptr", "panic", "with_")
+# substrings (case-insensitive) that never occur in a mathematical statement's constants
+_CODE_SUBSTRINGS: Final = (
+    "unsafe",
+    "unchecked",
+    "elab",
+    "macro",
+    "native",
+    "extern",
+    "implemented",
+    "ptraddr",
+    "dbgtrace",
+    "dbgsleep",
+    "withptr",
+    "sorry",
+    "panic",
+    "trace",
+    "syntax",
+    "quot",
+)
 _ASCII_SYMBOLS: Final = frozenset("()[]{},:.|+-*/^=<>!%&~@")
 _BANNED_SEQUENCES: Final = ("--", "/-", "-/", ":=", "@[", "<|", "|>")
 _QUOTE_LIKE: Final = frozenset('«»‹›“”‘’„‟❝❞＂＇`$#"')
-_OPEN: Final = {"(": ")", "[": "]", "{": "}", "⟨": "⟩", "⦃": "⦄", "⟪": "⟫", "⌊": "⌋", "⌈": "⌉"}
+_OPEN: Final = {"(": ")", "[": "]", "{": "}", "⦃": "⦄", "⟪": "⟫", "⌊": "⌋", "⌈": "⌉"}
 _CLOSE: Final = {v: k for k, v in _OPEN.items()}
 _IDENT_START: Final = re.compile(r"[^\W\d]")
 _IDENT: Final = re.compile(r"[^\W\d][\w'!?]*")
@@ -145,8 +168,13 @@ def _refuse(why: str) -> StatementRejected:
 
 def _ident_ok(name: str) -> None:
     parts = name.split(".")
-    if _CODE_NAMESPACES.match(name):
+    if "_root_" in parts:
+        raise _refuse("_root_ prefix")
+    if _CODE_NAMESPACES.search(name):
         raise _refuse("code-bearing namespace")
+    lowered = name.lower()
+    if any(sub in lowered for sub in _CODE_SUBSTRINGS):
+        raise _refuse("code-bearing identifier")
     for part in parts:
         if part in RESERVED:
             raise _refuse(f"reserved word {part!r}")
@@ -156,26 +184,51 @@ def _ident_ok(name: str) -> None:
             raise _refuse("keyword used as a name component")
 
 
+# Non-ASCII characters are admitted only from explicit sets (confusables and other scripts, such as
+# Cyrillic letters, fullwidth forms or no-break spaces, are refused).  No NFKC normalisation: it
+# would turn ℝ into R.
+_EXTRA_LETTERS: Final = frozenset("ℝℕℤℚℂℍℙ𝕜𝔽ℓℏ")
+_MODIFIER_LETTERS: Final = frozenset("ᵐᵒᵖᶜ")
+_MATH_SYMBOLS: Final = frozenset(
+    "∀∃∧∨¬→↔↦←≤≥≠∈∉⊆⊂⊇⊃∪∩∘∣≡≃≅≈×•∖†ᵀ‖∑∏∫∂√∞⊤⊥⊔⊓∅⟶≫⟦⟧⟪⟫⌊⌋⌈⌉⦃⦄∗⊕⊗°′″⁻⁺≺≻⊓⊔⋃⋂∐∆∇⊢⊨∠⟂∥↑↓⇒⇔⇐↪↠≪≫≲≳⊊⊋∌⋆⋅"
+)
+
+
 def _char_class(ch: str) -> str:
     category = unicodedata.category(ch)
-    if category[0] in "LNM" or ch == "_":
-        return "word"
-    if category[0] in "SP":
+    name = unicodedata.name(ch, "")
+    if ch == "_" or ch.isascii():
+        return "word" if ch == "_" or ch.isalnum() else "bad"
+    if category[0] == "L":
+        if name.startswith(("GREEK", "LATIN")) or ch in _EXTRA_LETTERS:
+            return "word"
+        if name.startswith("MATHEMATICAL") and category == "Lu":
+            return "word"  # script/fraktur capitals such as 𝒜, 𝓝, 𝔽
+        if ch in _MODIFIER_LETTERS:
+            return "symbol"
+        return "bad"
+    if category[0] == "N":
+        return "word" if "SUBSCRIPT" in name or "SUPERSCRIPT" in name else "bad"
+    if ch in _MATH_SYMBOLS:
         return "symbol"
-    if ch == " ":
-        return "space"
     return "bad"
+
+
+def refuse_exotic_characters(text: str) -> None:
+    """Raise on control or format characters and on any whitespace other than a plain space,
+    newline or tab (call it BEFORE any whitespace normalisation)."""
+    for ch in text:
+        if ch in "\n\r\t":
+            continue  # whitespace is normalised later (a newline can only separate tokens)
+        if unicodedata.category(ch)[0] == "C" or (ch.isspace() and ch != " "):
+            raise _refuse("control, format or exotic whitespace character")
 
 
 def validate_proposition(text: str) -> str:
     """The single-line proposition if every token is allowed; else raise StatementRejected."""
     if not isinstance(text, str):
         raise _refuse("not text")
-    for ch in text:
-        if ch in "\n\r\t":
-            continue  # whitespace is normalised below (a newline can only separate tokens)
-        if unicodedata.category(ch)[0] == "C" or (ch.isspace() and ch != " "):
-            raise _refuse("control, format or exotic whitespace character")
+    refuse_exotic_characters(text)
     text = " ".join(text.split())
     if not text:
         raise _refuse("empty")
@@ -225,6 +278,12 @@ def validate_proposition(text: str) -> str:
                     break
                 j = nxt.end()
             name = text[i:j]
+            if any(
+                c != "." and c not in _MODIFIER_LETTERS and _char_class(c) != "word"
+                for c in name
+                if not c.isascii()
+            ):
+                raise _refuse("character from an unexpected script or confusable")
             if name not in ALLOWED_KEYWORDS:
                 _ident_ok(name)
             i, previous = j, "word"
@@ -280,6 +339,12 @@ def validate_proposition(text: str) -> str:
             i += 1
             previous = "close"
             continue
+        if ch == "%":
+            # `type_of% x`, `binop% f a b`, `%[ ... ]` are term-position elaborators; the modulo
+            # operator is accepted only as ` % ` with spaces on both sides
+            glued = i == 0 or text[i - 1] != " " or i + 1 >= n or text[i + 1] != " "
+            if glued:
+                raise _refuse("'%' glued to a token (term-position elaborator syntax)")
         if ch in _ASCII_SYMBOLS or (not ch.isascii() and _char_class(ch) == "symbol"):
             i += 1
             previous = "symbol"

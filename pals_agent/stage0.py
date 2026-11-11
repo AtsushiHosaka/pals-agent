@@ -19,11 +19,13 @@ Flag ``PALS_STAGE0_PORTFOLIO`` (default off).  No exception leaves ``run``.
 from __future__ import annotations
 
 import concurrent.futures as futures
+import contextlib
 import contextvars
 import hashlib
 import os
 import re
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any, Final
 
@@ -110,8 +112,23 @@ class Stage0:
         require_flags: bool = True,
         roundtrip_mode: str = "two_calls",
         bound_recipes: bool = False,
+        worker_factory: Callable[[], ap.WarmWorker] | None = None,
+        exact_in_fresh_search: bool = False,
+        prefetch: bool = True,
     ) -> None:
         self.worker, self.pool, self.model = worker, pool, model
+        # With a factory, every model- or learner-written statement gets TWO fresh sandboxed
+        # workers started while the formalisation is still running: a search worker and a clean
+        # verifier that re-checks the answer.  Without one (tests), both are `worker`.
+        self.worker_factory = worker_factory
+        self.exact_in_fresh_search = exact_in_fresh_search
+        self._search: ap.WarmWorker = worker
+        self._verify: ap.WarmWorker = worker
+        # Start-up (the Mathlib import) is paid off the request path: the next request's pair is
+        # started right after a request ends.  Each pair serves exactly ONE request, then dies.
+        self.prefetch = prefetch and worker_factory is not None
+        self._ready: list[Any] = []
+        self._starter = futures.ThreadPoolExecutor(max_workers=2)
         self.require_flags = require_flags
         self.bound_recipes = bound_recipes  # many-alternative Recipe closers (off: costly)
         self.roundtrip_mode = roundtrip_mode  # "two_calls" (blind paraphrase) | "single"
@@ -121,7 +138,7 @@ class Stage0:
         if not solved.lemma:
             return None
         try:
-            output, _ = self.worker.check(expl.lemma_probe_source(solved.lemma), timeout_s=10.0)
+            output, _ = self._verify.check(expl.lemma_probe_source(solved.lemma), timeout_s=10.0)
         except (TimeoutError, ValueError):
             return expl.LemmaInfo(solved.lemma, call=solved.call or "")
         return expl.parse_lemma_probe(solved.lemma, output, solved.call or "")
@@ -131,11 +148,57 @@ class Stage0:
             self.worker.restart()
             self.worker.prewarm_search()
 
+    def _portfolio(self) -> tuple[ap.Tactic, ...]:
+        """``exact?`` needs a ~12-15 s index build: not in a fresh per-request worker by default."""
+        if self.worker_factory is not None and not self.exact_in_fresh_search:
+            return tuple(t for t in ap.PORTFOLIO if t.name != "exact?")
+        return ap.PORTFOLIO
+
+    def _take_pair(self, submit: Any) -> list[Any]:
+        if self._ready:
+            pair, self._ready = self._ready, []
+            return pair
+        return [submit(self._spawn_search), submit(self._spawn_verify)]
+
+    def close(self) -> None:
+        """Close any prefetched, unused workers."""
+        pair, self._ready = self._ready, []
+        self._release_futures(pair)
+        self._starter.shutdown(wait=True)
+
+    def _spawn_search(self) -> ap.WarmWorker:
+        assert self.worker_factory is not None
+        search = self.worker_factory()
+        if self.exact_in_fresh_search:
+            search.prewarm_search()
+        return search
+
+    def _spawn_verify(self) -> ap.WarmWorker:
+        assert self.worker_factory is not None
+        return self.worker_factory()
+
+    def _refused_by_lean(self, *terms: str | None) -> str | None:
+        """Parse-only allow-list check of every model/user-written term, in the CLEAN worker.
+
+        Nothing the model wrote is elaborated anywhere before this returns True; the Python
+        grammar (layer 0) has already run.  Returns a refusal reason, or None when all pass.
+        """
+        for term in terms:
+            if not term:
+                continue
+            try:
+                ok, reason = self._verify.check_statement(" ".join(term.split()))
+            except (TimeoutError, RuntimeError, ValueError):
+                return "lean_check_unavailable"
+            if not ok:
+                return f"statement_refused_by_lean_check: {reason}"[:160]
+        return None
+
     def _agree(self, first: str, second: str, deadline: float) -> bool:
         text, _ = gate.equivalence_source(first, second)
         remaining = max(0.5, deadline - time.monotonic())
         try:
-            output, _ = self.worker.check(text, timeout_s=min(20.0, remaining))
+            output, _ = self._search.check(text, timeout_s=min(20.0, remaining))
         except (TimeoutError, RuntimeError):
             return False
         return gate.equivalence_verdict(output)
@@ -150,7 +213,7 @@ class Stage0:
             solved = ap.solve_warm(
                 probe,
                 [],
-                self.worker,
+                self._search,
                 portfolio=quick,
                 deadline=min(deadline, time.monotonic() + 3.0),
             )
@@ -188,7 +251,8 @@ class Stage0:
         )
         result = Stage0Result("fallthrough", formal_source="given" if given else "formalised")
         calls = 0
-        pool = futures.ThreadPoolExecutor(max_workers=5)
+        spawned: list[Any] = []
+        pool = futures.ThreadPoolExecutor(max_workers=7)
 
         def submit(fn: Any, *args: Any) -> Any:
             return pool.submit(contextvars.copy_context().run, fn, *args)
@@ -201,6 +265,8 @@ class Stage0:
                 result.reason = "no_model_for_formalisation"
                 return result
             t1 = time.monotonic()
+            if self.worker_factory is not None:  # concurrent with the formalisation call
+                spawned.extend(self._take_pair(submit))
             first_f = submit(gate.formalise_typed, self.model, request, 0)
             second_f = submit(gate.formalise_typed, self.model, request, 1)
             first = first_f.result(timeout=max(1.0, deadline - time.monotonic()))
@@ -212,7 +278,19 @@ class Stage0:
                     "explain_request" if first.kind == "explain" else "formalisation_empty"
                 )
                 return result
-            self._ensure_worker()
+            if spawned:
+                try:
+                    self._search = spawned[0].result(timeout=180.0)
+                    self._verify = spawned[1].result(timeout=180.0)
+                except Exception:  # noqa: BLE001
+                    result.reason = "worker_unavailable"
+                    return result
+            if self.worker_factory is None:  # fresh workers need no shared one
+                self._ensure_worker()
+            refused = self._refused_by_lean(first.formal, first.expression)
+            if refused is not None:
+                result.reason = refused
+                return result
             statement = self._statement(result, first, deadline)
             if statement is None:
                 return result
@@ -232,6 +310,8 @@ class Stage0:
             result.seconds["portfolio"] = round(time.monotonic() - t2, 3)
             if proved is None:
                 return result
+            if not self._recheck(result, proved):
+                return result
             self._gate(result, request, first, second_f, checks, deadline)
             if result.gate is None or not result.gate.passed:
                 result.reason = "fidelity_gate_failed"
@@ -239,9 +319,51 @@ class Stage0:
             self._explain(result, language, proved, unverified=True)
             return result
         finally:
+            self._release_fresh(spawned)
             result.model_calls = calls
             result.seconds["total"] = round(time.monotonic() - t0, 3)
             pool.shutdown(wait=False, cancel_futures=True)
+
+    @staticmethod
+    def _close(worker: ap.WarmWorker) -> None:
+        try:
+            worker.close()
+        except Exception:  # noqa: BLE001 - killing is best effort
+            with contextlib.suppress(Exception):
+                worker.proc.kill()
+                worker.proc.wait(timeout=5)
+
+    def _release_fresh(self, spawned: list[Any]) -> None:
+        """Close every per-request worker, including ones whose start-up is still running."""
+        self._release_futures(spawned)
+        self._search = self._verify = self.worker
+        if self.prefetch and not self._ready:
+            self._ready = [
+                self._starter.submit(self._spawn_search),
+                self._starter.submit(self._spawn_verify),
+            ]
+
+    def _release_futures(self, spawned: list[Any]) -> None:
+        for future in spawned:
+            if future.cancel():
+                continue
+            if future.done():
+                if not future.exception():
+                    self._close(future.result())
+            else:  # still starting: close it when it arrives
+                future.add_done_callback(
+                    lambda f: self._close(f.result()) if not f.exception() else None
+                )
+
+    def _recheck(self, result: Stage0Result, solved: ap.SolveResult) -> bool:
+        """Re-prove the accepted answer in the clean verifier worker; the verdict is THIS one."""
+        statement = result.formal_proved or ""
+        ok, reason = ap.recheck(self._verify, statement, solved)
+        if not ok:
+            result.reason = f"recheck_failed:{reason}"
+            result.outcome = "fallthrough"
+            return False
+        return True
 
     # -- routes ------------------------------------------------------------------------------
     def _roundtrip(
@@ -258,7 +380,7 @@ class Stage0:
         if first.kind != "compute":
             return first.formal
         try:
-            value = ap.derive_value(self.worker, first.expression, first.type, deadline=deadline)
+            value = ap.derive_value(self._search, first.expression, first.type, deadline=deadline)
             if value is None:
                 result.reason = "value_not_derived"
                 return None
@@ -272,14 +394,16 @@ class Stage0:
         self, result: Stage0Result, kind: str, statement: str, deadline: float
     ) -> ap.SolveResult | None:
         """Prove the statement; for a question, attempt P and not-P, exactly one may be proved."""
-        solved = ap.solve_warm(statement, [], self.worker, deadline=deadline)
+        solved = ap.solve_warm(
+            statement, [], self._search, deadline=deadline, portfolio=self._portfolio()
+        )
         if kind == "decide":
             negated = ap.solve_warm(
                 f"¬ ({statement})",
                 [],
-                self.worker,
+                self._search,
                 deadline=min(deadline, time.monotonic() + 4.0),
-                portfolio=tuple(t for t in ap.PORTFOLIO if t.name != "exact?"),
+                portfolio=tuple(t for t in self._portfolio() if t.name != "exact?"),
             )
             if solved.outcome == "answered" and negated.outcome == "answered":
                 result.reason = "both_proved"  # impossible in a consistent theory: never answer
@@ -405,6 +529,8 @@ class Stage0:
                 return default
 
         second = wait(second_f, None)
+        if second is not None and self._refused_by_lean(second.formal, second.expression):
+            second = None  # the second formalisation is model text too: refused, so no agreement
         g.numerals_signal = gate.numerals_signal(request, statement)
         g.agree = self._agrees(first, second, result.value, deadline)
         g.structure = gate.structure_check(request, statement)
@@ -447,7 +573,7 @@ class Stage0:
         if first.kind == "compute":
             try:
                 other = ap.derive_value(
-                    self.worker, second.expression, second.type, deadline=deadline
+                    self._search, second.expression, second.type, deadline=deadline
                 )
             except InstantiationRejected:
                 return False

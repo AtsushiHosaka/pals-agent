@@ -977,10 +977,12 @@ class ProofReuseRuntime:
 
     def stage0_input(self, request: dict[str, Any], *, deadline: float) -> ProofReuseResult | None:
         """Lean-automation stage 0 (gated, default off); a miss returns None, nothing is lost."""
+        if self.stage0 is None:  # default path: nothing imported, nothing evaluated
+            return None
         from pals_agent.stage0 import stage0_enabled
 
         if (
-            self.stage0 is None or not stage0_enabled()
+            not stage0_enabled()
             or request.get("context_turns") or request.get("chat_history")
             or request.get("attachment_ids") or request.get("chat_images")
             or request.get("material_context") or current_chat_images()

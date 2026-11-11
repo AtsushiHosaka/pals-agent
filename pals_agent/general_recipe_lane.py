@@ -46,7 +46,7 @@ from pals_agent.recipe_instantiation import (
     _parse,
     render_answer,
 )
-from pals_agent.statement_grammar import validate_proposition
+from pals_agent.statement_grammar import refuse_exotic_characters, validate_proposition
 
 SCHEMA_VERSION: Final = "pals.general-recipe-lane.v1"
 DEFAULT_CANDIDATES: Final = 4
@@ -110,6 +110,7 @@ def lane_enabled(environ: dict[str, str] | None = None) -> bool:
 # --- request statement -------------------------------------------------------------------------
 def closed_proposition(formal: str) -> str:
     """``example (x : T) : C`` -> ``forall (x : T), C``; a bare proposition is unchanged."""
+    refuse_exotic_characters(formal)  # before the whitespace normalisation hides them
     text = " ".join(formal.split())
     if not text.startswith("example"):
         return text
@@ -456,11 +457,20 @@ class LeanRunner:
                     isolation, directory, cpu_seconds=int(self.timeout_seconds) + 5
                 ),
             )
+            dog = sandbox.Watchdog(
+                proc,
+                rss_bytes=sandbox.default_rss_bytes(),
+                cpu_seconds=self.timeout_seconds + 5,
+            )
             try:
                 out, _ = proc.communicate(timeout=self.timeout_seconds)
             except subprocess.TimeoutExpired:
                 sandbox.kill_group(proc)
                 return 124, "timeout", time.monotonic() - started
+            finally:
+                dog.stop()
+            if dog.reason:
+                return 137, f"killed:{dog.reason}", time.monotonic() - started
             return proc.returncode, out, time.monotonic() - started
 
     @staticmethod

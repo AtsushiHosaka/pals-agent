@@ -80,8 +80,19 @@ REVIEW_SCHEMA: Final = {
 
 
 def fenced(text: str, tag: str = "request") -> str:
-    """The untrusted text as data between tags; a closing tag inside it is removed."""
-    cleaned = re.sub(rf"</?\s*{tag}\s*>", "", text, flags=re.I)
+    """The untrusted text as data between tags.
+
+    Tag-like text is removed until nothing changes (a single pass lets ``</req</request>uest>``
+    reassemble a closing tag), and any ``<`` or ``>`` that remains is replaced, so nothing inside
+    can look like a tag.
+    """
+    cleaned = text
+    for _ in range(64):
+        stripped = re.sub(rf"<\s*/?\s*{tag}\s*>", "", cleaned, flags=re.I)
+        if stripped == cleaned:
+            break
+        cleaned = stripped
+    cleaned = cleaned.replace("<", "‹").replace(">", "›")
     return f"<{tag}>\n{cleaned}\n</{tag}>\n"
 
 

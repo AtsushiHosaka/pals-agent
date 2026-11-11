@@ -1,3 +1,4 @@
+# ruff: noqa: E501  (attack payloads are single-line statements)
 """The shared allow-list grammar for propositions: hundreds of accept/refuse cases, pure Python.
 
 CI never runs the real-Lean tests (no Lean workspace on the runner), so these are the tests that
@@ -18,6 +19,45 @@ ROOT = Path(__file__).resolve().parents[2]
 
 # Each attack is a fragment that would run code, change the declaration, or hide text.
 ATTACKS = [
+    # second independent review: bypasses of the identifier deny-list (all reproduced on real Lean)
+    "_root_.IO.FS.writeFile = _root_.IO.FS.writeFile",
+    "∀ x : ℕ, _root_.Lean.Elab.Command.elabCommand x = x",
+    "_root_.IO.println = _root_.IO.println",
+    "_root_ = 1",
+    "∀ x : ℕ, x = by_elab (pure x)",
+    "∀ x : ℕ, x = by_elab Lean.Elab.Term.elabTerm x none",
+    "by_elab pure (mkNatLit 1) = 1",
+    "∀ x : ℕ, x = by_elab (_root_.IO.FS.writeFile (String.mk [Char.ofNat 112]) (String.mk [Char.ofNat 120]))",
+    "type_of% x = x",
+    "∀ x : ℕ, type_of% x = x",
+    "binop% HAdd.hAdd 1 2 = 3",
+    "binrel% Eq 1 2",
+    "unop% Neg.neg 1 = 1",
+    "leftact% HSMul.hSMul 1 2 = 2",
+    "∀ x : ℕ, x = %[x]",
+    "%[1, 2] = %[1, 2]",
+    "∀ x : ℕ, x%2 = x%2",  # a `%` glued to an identifier is how `type_of%` is written
+    "ptrAddrUnsafe 1 = ptrAddrUnsafe 1",
+    "∀ x : ℕ, x = ptrAddrUnsafe x",
+    "dbgTrace = dbgTrace",
+    "dbgTraceIfShared = dbgTraceIfShared",
+    "withPtrEq = withPtrEq",
+    "unsafeBaseIO = unsafeBaseIO",
+    "panicCore = panicCore",
+    "Lean.Elab.Command.elabCommand = Lean.Elab.Command.elabCommand",
+    "Lean.Meta.evalExpr = Lean.Meta.evalExpr",
+    "∀ x : ℕ, ⟨x, x⟩ = ⟨x, x⟩",
+    "(·) = (·)",
+    "∀ x : ℕ, (· + 1) x = x",
+    "no_index 1 = 1",
+    "∀ x : ℕ, x = x.1.2 <| x",
+    # confusables and unexpected scripts
+    "∀ х : ℕ, х = х",  # Cyrillic х
+    "∀ x : ℕ, x = x ＝ x",  # fullwidth equals
+    "∀ x : ℕ, x = 𝕩",
+    "∀ x : ℕ, x ＝ x",
+    "∀ x : ℕ, x = x ",
+    "∀ x : ℕ, x = x ∧ True",  # no-break space
     # term-level tactic blocks / code execution
     '∀ x : ℕ, (by run_tac (IO.FS.writeFile "/tmp/pwn" "x") : x = x)',
     "∀ x : ℕ, (by run_tac (pure ()) : x = x)",
@@ -52,10 +92,10 @@ ATTACKS = [
     "attribute [simp] foo",
     "@[simp] theorem t : True := trivial",
     "instance : Inhabited ℕ := ⟨0⟩",
-    "macro \"x\" : term => `(1)",
-    "syntax \"x\" : term",
-    "notation \"x\" => 1",
-    "elab \"x\" : term => pure (Lean.mkNatLit 1)",
+    'macro "x" : term => `(1)',
+    'syntax "x" : term',
+    'notation "x" => 1',
+    'elab "x" : term => pure (Lean.mkNatLit 1)',
     "macro_rules | `(x) => `(1)",
     "run_cmd IO.println 1",
     "∀ x : ℕ, run_cmd x = x",
@@ -143,32 +183,42 @@ def test_the_recipe_lane_entry_refuses_every_attack(attack):
     assert "Rejected" in type(caught.value).__name__
 
 
-@pytest.mark.parametrize("wrapper", [
-    "∀ x : ℕ, ({0})",
-    "({0}) ∧ True",
-    "Continuous (fun x : ℝ => {0})",
-    "∀ f : ℝ → ℝ, ({0}) → True",
-])
-@pytest.mark.parametrize("payload", [
-    "by simp",
-    "by run_tac (pure ())",
-    "(by exact rfl : True)",
-    "IO.println 1",
-    "do pure 1",
-    "unsafeCast 1",
-    "set_option maxHeartbeats 1 in 1",
-    "open Lean in 1",
-    "run_cmd 1",
-    '"s"',
-    "'c'",
-    "`x",
-])
+@pytest.mark.parametrize(
+    "wrapper",
+    [
+        "∀ x : ℕ, ({0})",
+        "({0}) ∧ True",
+        "Continuous (fun x : ℝ => {0})",
+        "∀ f : ℝ → ℝ, ({0}) → True",
+    ],
+)
+@pytest.mark.parametrize(
+    "payload",
+    [
+        "by simp",
+        "by run_tac (pure ())",
+        "(by exact rfl : True)",
+        "IO.println 1",
+        "do pure 1",
+        "unsafeCast 1",
+        "set_option maxHeartbeats 1 in 1",
+        "open Lean in 1",
+        "run_cmd 1",
+        '"s"',
+        "'c'",
+        "`x",
+    ],
+)
 def test_attack_payloads_are_refused_wherever_they_are_embedded(wrapper, payload):
     with pytest.raises(StatementRejected):
         validate_proposition(wrapper.format(payload))
 
 
 ACCEPT = [
+    "Real.exp 0 = 1",
+    "∀ x : ℝ, Real.sqrt x ^ 2 = x ∨ x < 0",
+    "∀ x y : ℝ, x ≤ y → x ∉ Set.Ioo y y",
+    "∀ A B : Set ℕ, A ⊆ B → A ∩ B = A",
     "∀ x : ℝ, 0 ≤ x ^ 2",
     "∀ (x y : ℝ), x * (-y) + y * x = 0",
     "Continuous (fun x : ℝ => (x ^ 2 + 1) * Real.exp x + (x ^ 2 + 1))",
@@ -238,3 +288,20 @@ def test_statement_with_a_top_level_assignment_suffix_is_not_recorded_as_a_propo
     # the earlier `let` branch let `:= by …` ride along: the declared type was only the prefix
     with pytest.raises(StatementRejected):
         validate_proposition("let x := 1; x = x := by simp")
+
+
+def test_the_allowed_kinds_file_matches_the_lean_worker_and_has_no_dangerous_kind():
+    """CI runs no real Lean: this keeps the reviewed kinds file and the worker's list in step."""
+    kinds = [
+        line.strip()
+        for line in (ROOT / "pals_agent/content_dictionaries/allowed-syntax-kinds-v1.txt")
+        .read_text()
+        .splitlines()
+        if line.strip() and not line.startswith("#")
+    ]
+    worker = (ROOT / "scripts/eval/warm_worker.lean").read_text()
+    block = worker.split("-- BEGIN ALLOWED_KINDS")[1].split("-- END ALLOWED_KINDS")[0]
+    assert kinds and all(f"`{kind}" in block for kind in kinds)
+    for bad in ("byelab", "bytactic", "typeof", "binop", "binrel", "unop", "quot", "show", ".do"):
+        assert not any(bad in kind.lower() for kind in kinds), bad
+    assert not any(kind.endswith("%") or "%[" in kind for kind in kinds)
