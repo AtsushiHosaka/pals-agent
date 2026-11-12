@@ -100,6 +100,7 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
         ),
         repeated_mismatch_window=settings.repeated_mismatch_window,
         deterministic_templates=settings.deterministic_templates_enabled,
+        signature_layout_normalisation=settings.signature_layout_normalisation_enabled,
         template_skips_retrieval=settings.template_skips_retrieval_enabled,
         lemma_alias_repair=settings.lemma_alias_repair_enabled,
         verification_mode="api_reconcile",
