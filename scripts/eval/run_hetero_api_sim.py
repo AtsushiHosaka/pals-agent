@@ -337,7 +337,8 @@ def main() -> None:
         print(
             f"{problem['id']} ok={row['verified']} first={row['first_attempt_ok']} "
             f"submits={row['submits']} wall={row['wall_s']} answer={row['answer_s']} "
-            f"usd={row['usd']} run_usd={meter.run_usd:.4f} err={error}",
+            f"usd={row['usd']} run_usd={meter.run_usd:.4f} err={error} "
+            f"carry={json.dumps(row['worker_carry_evidence'], sort_keys=True)}",
             flush=True,
         )
     resident.close()
