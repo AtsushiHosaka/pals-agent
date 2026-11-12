@@ -190,6 +190,7 @@ def test_a_broken_installation_becomes_unavailable_after_bounded_restarts(tmp_pa
             build_dir=tmp_path / "b",
             startup_timeout_s=1,
             allow_shim_compile=False,
+            allow_unconfined=True,
             prebuilt_shim=Path(__file__),
         )
     )

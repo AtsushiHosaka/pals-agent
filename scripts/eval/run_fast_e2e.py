@@ -24,6 +24,8 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts/eval"))
 
+from _resident_eval import confinement_kwargs  # noqa: E402
+
 from pals_agent import automation_portfolio as ap  # noqa: E402
 from pals_agent import fidelity_gate as gate  # noqa: E402
 from pals_agent import general_recipe_lane as lane  # noqa: E402
@@ -91,6 +93,7 @@ def main() -> None:
             project_dir=args.project,
             lean_binary=lean, lean_path=lean_path, build_dir=args.out / "resident",
             max_children=args.max_children, queue_timeout_s=30.0, warm_exact=args.warm_exact,
+            **confinement_kwargs(lean, lean_path, args.out / "scratch"),
         )
     )
     startup = resident.start()

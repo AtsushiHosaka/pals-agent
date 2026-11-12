@@ -63,7 +63,7 @@ def candidate_source(proposition: str, tactic: Tactic, name: str = THEOREM_NAME)
     """One closed theorem; ``maxHeartbeats`` is the tactic's own deterministic time limit."""
     return (
         f"{HEADER}set_option maxHeartbeats {tactic.heartbeats} in\n"
-        f"theorem {name} : {proposition} := by\n  {tactic.text}\n"
+        f"theorem {name} : {proposition} := by\n  " + "\n  ".join(tactic.text.split("\n")) + "\n"
     )
 
 

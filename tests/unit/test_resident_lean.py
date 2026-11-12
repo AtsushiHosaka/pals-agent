@@ -75,7 +75,9 @@ def test_statement_check_source_is_the_one_of_the_measurement_worker() -> None:
 
 def test_requests_fail_closed_when_not_started(tmp_path: Path) -> None:
     resident = ResidentLean(
-        ResidentConfig(lean_binary="lean", lean_path="", build_dir=tmp_path / "b")
+        ResidentConfig(
+            lean_binary="lean", lean_path="", build_dir=tmp_path / "b", allow_unconfined=True
+        )
     )
     with pytest.raises(ResidentUnavailable):
         resident.compile(tmp_path / "x.lean", workdir=tmp_path, olean=None, timeout_s=1)
@@ -94,6 +96,7 @@ def resident(tmp_path_factory: pytest.TempPathFactory):  # type: ignore[no-untyp
         max_children=4,
         queue_timeout_s=0.2,
         child_cpu_seconds=60,
+        allow_unconfined=True,
     )
     instance = ResidentLean(config)
     instance.start()
@@ -205,7 +208,9 @@ class _AliveStub:
         from types import SimpleNamespace
 
         self.config = SimpleNamespace(
-            lean_binary=lean_binary, project_dir=project_dir, output_limit_bytes=limit,
+            lean_binary=lean_binary,
+            project_dir=project_dir,
+            output_limit_bytes=limit,
             confine=True,
         )
 
@@ -257,6 +262,7 @@ def test_close_kills_running_request_children(tmp_path: Path) -> None:
         lean_path=os.environ["PALS_RESIDENT_LEAN_PATH"],
         build_dir=tmp_path / "b",
         startup_timeout_s=180,
+        allow_unconfined=True,
     )
     instance = ResidentLean(config)
     instance.start()
@@ -302,6 +308,7 @@ def test_a_prebuilt_shim_needs_no_compiler_at_run_time(tmp_path: Path) -> None:
             prebuilt_shim=shim,
             allow_shim_compile=False,
             startup_timeout_s=180,
+            allow_unconfined=True,
         )
     )
     instance.start()
@@ -313,3 +320,99 @@ def test_a_prebuilt_shim_needs_no_compiler_at_run_time(tmp_path: Path) -> None:
         )
     finally:
         instance.close()
+
+
+def test_an_unconfined_resident_cannot_be_built_on_linux_by_default(tmp_path: Path) -> None:
+    config = ResidentConfig(lean_binary="lean", lean_path="", build_dir=tmp_path / "b")
+    if sys.platform.startswith("linux"):
+        with pytest.raises(ValueError):
+            ResidentLean(config)
+    else:  # development hosts may run unconfined
+        ResidentLean(config)
+    import dataclasses
+
+    explicit = dataclasses.replace(config, allow_unconfined=True)
+    ResidentLean(explicit)  # the explicit development switch
+
+
+def test_confinement_is_reported_unavailable_without_linux(monkeypatch: pytest.MonkeyPatch) -> None:
+    from pals_agent.lean_verifier.resident import confinement_available
+
+    monkeypatch.setattr(sys, "platform", "darwin")
+    ok, reason = confinement_available()
+    assert not ok and "Linux" in reason
+
+
+def test_start_refuses_confinement_that_the_host_cannot_provide(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    import pals_agent.lean_verifier.resident.manager as manager
+
+    monkeypatch.setattr(manager, "confinement_available", lambda: (False, "no Landlock"))
+    resident = ResidentLean(
+        ResidentConfig(
+            lean_binary="lean",
+            lean_path="",
+            build_dir=tmp_path / "b",
+            confine=True,
+            request_root=tmp_path,
+        )
+    )
+    with pytest.raises(ResidentUnavailable, match="no Landlock"):
+        resident.start()
+
+
+def test_the_self_test_rejects_children_that_can_write_another_requests_directory(
+    tmp_path: Path,
+) -> None:
+    class Leaky(ResidentLean):
+        """An unconfined child: every attempt succeeds, so every ``ok`` marker is written."""
+
+        def compile(self, source, *, workdir, olean, timeout_s, cancel=None):  # type: ignore[no-untyped-def]
+            from pals_agent.lean_verifier.resident.manager import CompileOutcome
+
+            for path in re.findall(r'writeFile "([^"]+)"', source.read_text()):
+                Path(path).write_text("x")
+            for name in ("exec_ran", "other_wrote"):
+                (workdir / name).write_text("x")
+            return CompileOutcome(0, "")
+
+    import re
+
+    resident = Leaky(
+        ResidentConfig(
+            lean_binary="lean",
+            lean_path="",
+            build_dir=tmp_path / "b",
+            confine=True,
+            request_root=tmp_path,
+            allow_unconfined=True,
+        )
+    )
+    with pytest.raises(ResidentUnavailable, match="not confined"):
+        resident._confinement_self_test()  # noqa: SLF001
+
+
+def test_the_self_test_judges_by_files_not_by_message_text(tmp_path: Path) -> None:
+    """A confined child that reports in another language is still confined."""
+
+    class Confined(ResidentLean):
+        def compile(self, source, *, workdir, olean, timeout_s, cancel=None):  # type: ignore[no-untyped-def]
+            from pals_agent.lean_verifier.resident.manager import CompileOutcome
+
+            (workdir / "ok").write_text("x")
+            (workdir / "other_denied").write_text("x")
+            (workdir / "exec_denied").write_text("x")
+            return CompileOutcome(1, "権限がありません")  # no English message at all
+
+    resident = Confined(
+        ResidentConfig(
+            lean_binary="lean",
+            lean_path="",
+            build_dir=tmp_path / "b",
+            confine=True,
+            request_root=tmp_path,
+            allow_unconfined=True,
+        )
+    )
+    resident._confinement_self_test()  # noqa: SLF001  (does not raise)

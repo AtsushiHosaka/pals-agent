@@ -11,9 +11,11 @@ from pals_agent.lean_verifier.resident.manager import (
     ResidentConfig,
     ResidentLean,
     ResidentUnavailable,
+    confinement_available,
 )
 
 __all__ = [
+    "confinement_available",
     "AuditOutcome",
     "CompileOutcome",
     "ResidentBusy",
