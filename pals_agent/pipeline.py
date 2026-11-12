@@ -2147,8 +2147,10 @@ def _validate_proof_preserves_sketch(generated: GeneratedProof) -> list[Diagnost
     ):
         return []
 
-    scaffold = _sketch_scaffold_lines(sketch.lean_code)
-    proof_lines = _lean_structural_lines(generated.lean_code)
+    # The proof is laid out by ``ProofPipeline._layout`` (a line-leading ``|`` joined upward) and
+    # the sketch is not: both sides are compared in the same layout, whitespace only.
+    scaffold = _sketch_scaffold_lines(normalise_signature_layout(sketch.lean_code))
+    proof_lines = _lean_structural_lines(normalise_signature_layout(generated.lean_code))
     proof_index = 0
     for sketch_line in scaffold:
         while proof_index < len(proof_lines) and proof_lines[proof_index] != sketch_line:

@@ -322,3 +322,83 @@ def test_the_wait_for_the_alternate_is_bounded_by_the_lease_and_a_stop_request()
     started = time.monotonic()
     assert slot.take(30.0, should_stop=lambda: time.monotonic() - started > 0.3) is None
     assert time.monotonic() - started < 3.0
+
+
+# --- Layout: both race candidates take the normalised signature layout --------------------------
+
+_BAR = "import Mathlib\n\ntheorem add_zero_nat (n : Nat) :\n    |(n : ℤ)| = n ∧ n + 0 = n := by\n"
+BAR_A = _BAR + "  constructor <;> simp\n"
+BAR_B = _BAR + "  refine ⟨by simp, by simp⟩\n"
+
+
+def test_the_winner_and_the_held_candidate_both_take_the_normalised_layout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A held candidate submitted unnormalised would be rejected by the deployed verifier's
+    statement audit (``lean.statement_mismatch``): both go through ``_layout`` first."""
+    from pals_agent.lean_layout import normalise_signature_layout
+
+    _flags(monkeypatch, **ON)
+    joined = {normalise_signature_layout(BAR_A), normalise_signature_layout(BAR_B)}
+    assert all("\n    |" not in code for code in joined) and len(joined) == 2
+    generator = EffortGenerator([BAR_A, BAR_B], proof_delays=[0.0, 0.1])
+    result, _ = _run(_api_pipeline(tmp_path, generator))
+
+    assert result.generated.lean_code in joined
+    assert result.background is not None and result.background.alternate is not None
+    held = result.background.alternate.take(1.0)
+    assert held is not None and held.lean_code in joined
+    assert {result.generated.lean_code, held.lean_code} == joined
+    # Submitted after a failed compile, the held source is still in the normalised layout.
+    slot = t2_lane.AlternateSlot(1)
+    slot.offer(held)
+    slot.finished_one()
+    with t2_lane.alternate_for_repair(slot):
+        seeded = _repair_run(tmp_path, Generator([]), _seed(result.generated.lean_code))
+    assert seeded.generated.lean_code == held.lean_code
+
+
+def test_the_alternate_is_normalised_before_the_preflight_and_the_hold(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(monkeypatch, **ON)
+    seen: list[str] = []
+    real = t2_lane.current_preflight
+
+    def spy():
+        inner = real()
+
+        def check(code: str):
+            seen.append(code)
+            return inner(code) if inner is not None else []
+
+        return check
+
+    monkeypatch.setattr(t2_lane, "current_preflight", spy)
+    result, _ = _run(
+        _api_pipeline(tmp_path, EffortGenerator([BAR_A, BAR_B], proof_delays=[0.0, 0.1]))
+    )
+    assert seen and all("\n    |" not in code for code in seen)
+    assert result.background is not None and result.background.alternate is not None
+
+
+def test_sketch_adherence_compares_both_sides_in_the_same_layout() -> None:
+    from pals_agent.lean_layout import normalise_signature_layout
+    from pals_agent.models import GeneratedSketch
+    from pals_agent.pipeline import _sketch_adherence
+
+    sketch_code = (
+        "theorem add_zero_nat (n : Nat) :\n    |(n : ℤ)| = n ∧ n + 0 = n := by\n"
+        "  have h : n + 0 = n := by\n    sorry\n  sorry\n"
+    )
+    proof = (
+        "theorem add_zero_nat (n : Nat) :\n    |(n : ℤ)| = n ∧ n + 0 = n := by\n"
+        "  have h : n + 0 = n := by\n    simp\n  exact ⟨by simp, h⟩\n"
+    )
+    sketch = GeneratedSketch(lean_code=sketch_code, model="m", raw_model_output=sketch_code)
+    before = GeneratedProof(lean_code=proof, model="m", raw_model_output="", sketch=sketch)
+    assert _sketch_adherence(before) is True  # both unnormalised
+    laid_out = GeneratedProof(
+        lean_code=normalise_signature_layout(proof), model="m", raw_model_output="", sketch=sketch
+    )
+    assert _sketch_adherence(laid_out) is True  # the pipeline lays out only the proof
