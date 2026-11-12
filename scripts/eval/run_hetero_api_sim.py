@@ -158,8 +158,18 @@ def main() -> None:
         pipeline=None, explainer=None, proof_reviewer=None, output_reviewer=None,
     )
     nested: dict[str, Any] = {}
+    # Evidence that the worker's carry path ran (not bypassed): what the carry scope yielded and
+    # what the worker's resume handed to the repair run (the alternate seen there).
+    evidence: dict[str, Any] = {}
 
     def repair_run(self: Any, proof_job_id: str, **_kw: Any) -> bool:
+        seen = t2_lane.repair_alternate()
+        evidence["resume_calls"] = evidence.get("resume_calls", 0) + 1
+        evidence["repair_alternate_seen"] = seen is not None
+        evidence["repair_alternate_is_carry_slot"] = bool(
+            seen is not None and seen is getattr(
+                getattr(nested.get("carry"), "background", None), "alternate", None)
+        )
         with t2_lane.alternate_limits(lease_deadline=None, should_stop=None):
             nested["res"] = pipeline.run_statement(
                 statement=nested["problem"]["statement"],
@@ -195,6 +205,8 @@ def main() -> None:
         sink["on_usage"] = on_usage
         carry_stack = ExitStack()
         carry = None
+        evidence.clear()
+        nested["carry"] = None
         final = None
         seed = None
         attempt = 1
@@ -214,6 +226,12 @@ def main() -> None:
                         )
                         carry = carry_stack.enter_context(
                             worker._t2_carry_scope(res, proof_job_id=base_id, claim_id="claim")
+                        )
+                        nested["carry"] = carry
+                        evidence["carry_scope_yielded"] = carry is not None
+                        evidence["held_alternate_in_carry"] = bool(
+                            getattr(getattr(carry, "background", None), "alternate", None)
+                            is not None
                         )
                     else:
                         nested.update(problem=problem, run_id=run_id, seed=seed)
@@ -304,6 +322,7 @@ def main() -> None:
             "api_overhead_s": API_OVERHEAD_S,
             "flags": env,
             "submits_detail": submits,
+            "worker_carry_evidence": dict(evidence),
         }
         with (args.out / "records.jsonl").open("a") as fh:
             fh.write(json.dumps(row) + "\n")
