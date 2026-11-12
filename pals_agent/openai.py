@@ -55,6 +55,8 @@ class OpenAIResponsesClient:
         compare=False,
     )
     reasoning_effort: ReasoningEffort | None = None
+    # Routes requests with the same key (and prefix) to the same cache; None leaves the field out.
+    prompt_cache_key: str | None = None
     # Total tries per generation request (1 disables retries). A transport failure or a
     # 408/429/5xx is retried after retry_delays[n], all within the one `timeout_seconds` budget;
     # a request that hit the hard deadline is never retried.
@@ -140,6 +142,8 @@ class OpenAIResponsesClient:
         }
         if store is not None:
             payload["store"] = store
+        if self.prompt_cache_key:
+            payload["prompt_cache_key"] = self.prompt_cache_key
         if model in {RELEASE_MODEL, ESCALATION_MODEL, "gpt-6.1-sol", "gpt-5.6-terra"}:
             # Reasoning models reject temperature/top_p; effort is the only
             # sampling-related control. Never retry with a different model here.
