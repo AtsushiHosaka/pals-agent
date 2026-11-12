@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts/eval"))
 
+from _resident_eval import confinement_kwargs  # noqa: E402
 from run_fast_variants import SETS, Recorder, instrumented_model  # noqa: E402
 
 from pals_agent.fast_answer import FastAnswer  # noqa: E402
@@ -58,7 +59,7 @@ def main() -> None:
     parser.add_argument(
         "--review-explanation",
         action="store_true",
-        help="pass the explanation through the existing explanation review (explanations.py)",
+        help="kept for old command lines: the explanation review is now the default",
     )
     parser.add_argument(
         "--toolchain", default=str(Path.home() / ".elan/toolchains/leanprover--lean4---v4.32.0-rc1")
@@ -86,6 +87,7 @@ def main() -> None:
             max_children=8,
             queue_timeout_s=30.0,
             warm_exact=True,
+            **confinement_kwargs(lean, lean_path, args.out / "scratch"),
         )
     )
     print("resident startup s", round(resident.start(), 2), "load", os.getloadavg(), flush=True)
@@ -105,7 +107,7 @@ def main() -> None:
     key = load_key(args.env_file)
     model = instrumented_model(key, recorder, args.default, overrides)
     reviewer = None
-    if args.review_explanation:
+    if not args.allow_unreviewed:  # the explanation review is on unless development opts out
         import dataclasses  # noqa: PLC0415
 
         from pals_agent.fast_answer import existing_explanation_reviewer  # noqa: PLC0415

@@ -66,20 +66,24 @@ def main() -> None:
             try:
                 ok, seconds = job.result()
             except Exception:  # noqa: BLE001
-                ok, seconds = False, None
+                ok, seconds = None, None  # a failed call is not a verdict
             rows.append({"id": it[0], "label": it[1], "variant": name, "approved": ok,
-                         "seconds": seconds})
+                         "seconds": seconds, "error": ok is None})
     (args.out / f"gate_{args.effort}.jsonl").write_text(
         "\n".join(json.dumps(r, ensure_ascii=False) for r in rows) + "\n"
     )
     for name in variants:
-        bad = [r for r in rows if r["variant"] == name and r["label"] == "bad"]
-        good = [r for r in rows if r["variant"] == name and r["label"] == "faithful"]
-        secs = sorted(r["seconds"] for r in rows if r["variant"] == name and r["seconds"])
-        print(args.effort, name, "false-accept", sum(r["approved"] for r in bad), "/", len(bad),
+        done = [r for r in rows if r["variant"] == name and not r["error"]]  # real verdicts only
+        errors = sum(1 for r in rows if r["variant"] == name and r["error"])
+        bad = [r for r in done if r["label"] == "bad"]
+        good = [r for r in done if r["label"] == "faithful"]
+        secs = sorted(r["seconds"] for r in done if r["seconds"])
+        p50 = secs[len(secs) // 2] if secs else None
+        p90 = secs[int(len(secs) * 0.9)] if secs else None
+        print(args.effort, name, "false-accept",
+              sum(bool(r["approved"]) for r in bad), "/", len(bad),
               "false-reject", sum(not r["approved"] for r in good), "/", len(good),
-              "p50", secs[len(secs) // 2], "p90", secs[int(len(secs) * 0.9)], flush=True)
-
+              "p50", p50, "p90", p90, "call-errors", errors, flush=True)
 
 if __name__ == "__main__":
     main()
