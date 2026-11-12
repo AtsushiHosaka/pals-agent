@@ -402,3 +402,53 @@ def test_sketch_adherence_compares_both_sides_in_the_same_layout() -> None:
         lean_code=normalise_signature_layout(proof), model="m", raw_model_output="", sketch=sketch
     )
     assert _sketch_adherence(laid_out) is True  # the pipeline lays out only the proof
+
+
+# --- Switch off: nothing of the heterogeneous race changes a run ---------------------------------
+
+
+def _flags_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    _flags(monkeypatch, **{k: v for k, v in ON.items() if k != t2_lane.HETERO_RACE_ENV})
+    monkeypatch.delenv(t2_lane.HETERO_RACE_ENV, raising=False)
+
+
+def test_with_the_switch_off_there_is_no_slot_and_the_limits_do_nothing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``alternate_limits`` (the worker wraps every run in it) only matters to a held alternate,
+    which exists only with the switch on."""
+    _flags_off(monkeypatch)
+    generator = EffortGenerator([GOOD, BAD], proof_delays=[0.0, 0.1])
+    with t2_lane.alternate_limits(lease_deadline=0.0, should_stop=lambda: True):
+        result, _ = _run(_api_pipeline(tmp_path, generator))
+    assert result.generated.lean_code == GOOD
+    assert result.background is not None and result.background.alternate is None
+    assert generator.efforts == [None, None]
+
+
+def test_with_the_switch_off_the_race_result_is_the_races_own_best(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The nd_k2_par race alone (switch off): the lowest-index candidate that passed is returned
+    even when the other one claimed first, exactly as before the heterogeneous race existed."""
+    _flags_off(monkeypatch)
+
+    def sequential(tasks, *, is_win, rank):
+        outcome: dict[int, Any] = {}
+        for index in (1, 0):  # candidate 1 claims first, then candidate 0 also passes
+            with t2_lane.candidate_variant(index):
+                outcome[index] = tasks[index](threading.Event())
+        candidates = [t2_lane.Candidate(i, value=outcome[i], done=True) for i in (0, 1)]
+        return t2_lane.RaceResult(
+            winner=None, best=candidates[0], candidates=candidates, cancelled=0
+        )
+
+    monkeypatch.setattr(t2_lane, "race_candidates", sequential)
+
+    class ByIndex(Generator):
+        def generate_direct_proof(self, request, draft):
+            code = GOOD if t2_lane._variant.get() == 1 else BAD
+            return GeneratedProof(lean_code=code, model="m", raw_model_output=code)
+
+    result, _ = _run(_api_pipeline(tmp_path, ByIndex([], [])))
+    assert result.generated.lean_code == BAD  # the race's best (index 0), not the first claimer

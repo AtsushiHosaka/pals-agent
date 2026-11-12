@@ -1668,7 +1668,10 @@ class ProofPipeline:
         assert result.best.value is not None
         # The candidate that took the race is the one submitted, even when a rival with a lower
         # index had finished by the time the result was read (that rival is the held alternate).
-        return winner if winner is not None else result.best.value.generated
+        # Off (the nd_k2_par race alone), the result is unchanged: the race's own best.
+        if winner is not None and slot is not None:
+            return winner
+        return result.best.value.generated
 
     def _lemma_alias_table(self) -> LemmaAliasTable:
         return self.lemma_alias_table or default_lemma_alias_table()

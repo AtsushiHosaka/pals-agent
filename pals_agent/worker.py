@@ -937,9 +937,14 @@ class SqsProofWorker:
                                 theorem_statement=statement,
                                 lean_code=lean_code,
                                 language=language,
-                                # The same bound the visibility extension reserves: a direct
-                                # review may make three schema attempts, each up to the timeout.
-                                wait_seconds=3 * math.ceil(timeout_seconds) + 30,
+                                # Heterogeneous race only: the same bound the visibility
+                                # extension reserves (a direct review may make three schema
+                                # attempts, each up to the timeout). Off, the old value.
+                                wait_seconds=(
+                                    3 * math.ceil(timeout_seconds) + 30
+                                    if t2_lane.hetero_race_enabled()
+                                    else timeout_seconds
+                                ),
                             )
                             if carry is not None and carry.review is not None
                             else None
@@ -1380,7 +1385,11 @@ class SqsProofWorker:
                 if fixed_enabled and fixed_explanation_for(lean_code, rest["language"]) is not None:
                     raise RuntimeError("fixed_explanation_covers_this_source")
                 configured = getattr(self.settings, "explanation_model_timeout_seconds", None)
-                if isinstance(configured, (int, float)) and configured > 0:
+                if (
+                    t2_lane.hetero_race_enabled()
+                    and isinstance(configured, (int, float))
+                    and configured > 0
+                ):
                     # A direct call would use the configured timeout; so must the early one,
                     # or a slow but successful explanation would fail only when started early.
                     rest["timeout_seconds"] = float(configured)

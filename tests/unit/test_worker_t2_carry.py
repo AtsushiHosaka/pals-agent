@@ -364,10 +364,12 @@ def test_resuming_after_the_compile_does_not_wait_for_a_race_loser(
     assert waited == []  # the loser reports its own usage when it ends; the review is not held
 
 
-def test_the_early_explanation_uses_the_configured_timeout(
-    tmp_path: Any, monkeypatch: pytest.MonkeyPatch
+@pytest.mark.parametrize("hetero,expected", [(True, [300.0]), (False, [120.0])])
+def test_the_early_explanation_uses_the_configured_timeout_only_with_the_hetero_race(
+    tmp_path: Any, monkeypatch: pytest.MonkeyPatch, hetero: bool, expected: list[float]
 ) -> None:
     monkeypatch.setenv(t2_lane.PARALLEL_EXPLANATION_ENV, "true")
+    monkeypatch.setenv(t2_lane.HETERO_RACE_ENV, "true" if hetero else "false")
     seen: list[Any] = []
     worker = SqsProofWorker(
         settings=cast(
@@ -388,7 +390,7 @@ def test_the_early_explanation_uses_the_configured_timeout(
         language="ja", deadline=1.0, timeout_seconds=120.0,
     )
 
-    assert seen == [300.0]
+    assert seen == expected
 
 
 def test_the_review_adoption_waits_for_the_reviewers_whole_attempt_budget() -> None:
@@ -396,6 +398,11 @@ def test_the_review_adoption_waits_for_the_reviewers_whole_attempt_budget() -> N
     from pathlib import Path
 
     source = Path(__file__).resolve().parents[2].joinpath("pals_agent/worker.py").read_text()
-    # The adopt wait equals the visibility extension's bound (3 attempts + margin).
-    assert re.search(r"wait_seconds=3 \* math\.ceil\(timeout_seconds\) \+ 30", source)
+    # With the heterogeneous race on, the adopt wait equals the visibility extension's bound
+    # (3 attempts + margin); off, it stays the review's timeout (the pre-race value).
+    assert re.search(
+        r"wait_seconds=\(\s*3 \* math\.ceil\(timeout_seconds\) \+ 30\s*"
+        r"if t2_lane\.hetero_race_enabled\(\)\s*else timeout_seconds\s*\)",
+        source,
+    )
     assert "extend_visibility(3 * math.ceil(timeout_seconds) + 30)" in source
