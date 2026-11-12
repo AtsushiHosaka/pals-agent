@@ -25,6 +25,8 @@ import json
 import os
 import subprocess
 import sys
+from contextlib import ExitStack
+from types import SimpleNamespace
 import time
 from pathlib import Path
 from tempfile import mkdtemp
@@ -51,6 +53,14 @@ def main() -> None:
     ap.add_argument("--max-output-tokens", type=int, default=12000)
     ap.add_argument("--max-repairs", type=int, default=6)
     ap.add_argument("--no-answer", action="store_true")
+    ap.add_argument(
+        "--problems-file", type=Path,
+        help="JSON {'problems': [...]} of dev_unseen items only; replaces the generation-eval-v1 tuning set",
+    )
+    ap.add_argument("--first-attempt-only", action="store_true",
+                    help="stop after the first submitted candidate (first-attempt rate and time)")
+    ap.add_argument("--efforts", help="override the race's two efforts, e.g. none,low")
+    ap.add_argument("--pin-effort", help="pin one effort on the prove client (single candidate arms)")
     for name in ("lean", "lake", "project", "elan-home"):
         ap.add_argument(f"--{name}", required=True)
     args = ap.parse_args()
@@ -68,9 +78,24 @@ def main() -> None:
     from pals_agent.pipeline import ApiRepairSeed, ProofPipeline
     from pals_agent.usage import usage_scope
 
-    problems = run_stages.select(
-        json.loads(run_stages.DEFAULT_MANIFEST.read_text()), args.ids, args.n
-    )
+    if args.problems_file is not None:
+        problems = json.loads(args.problems_file.read_text())["problems"]
+        # The freshman-v1 held_out split is for the final check only: never loaded here.
+        if any(p["split"] != "dev_unseen" for p in problems):
+            raise SystemExit("problems-file must contain dev_unseen items only")
+        if args.ids:
+            wanted = args.ids.split(",")
+            problems = [next(p for p in problems if p["id"] == i) for i in wanted]
+        problems = problems[: args.n]
+    else:
+        problems = run_stages.select(
+            json.loads(run_stages.DEFAULT_MANIFEST.read_text()), args.ids, args.n
+        )
+    if args.efforts:
+        t2_lane.HETERO_EFFORTS = tuple(args.efforts.split(","))
+    steps_path = args.out / "steps.jsonl"
+    os.environ["PALS_STEP_TIMING_JSONL"] = str(steps_path)
+    from pals_agent import step_timing
     lean_path = subprocess.run(
         [args.lake, "env", "printenv", "LEAN_PATH"],
         cwd=args.project, capture_output=True, text=True, check=True,
@@ -101,6 +126,7 @@ def main() -> None:
         base_url=os.environ.get("PALS_OPENAI_BASE_URL", "https://api.openai.com/v1"),
         timeout_seconds=args.model_timeout,
         max_output_tokens=args.max_output_tokens,
+        reasoning_effort=args.pin_effort,
     )
     generator = HybridLeanGenerator(
         model="gpt-6.1-terra", provider="openai", client=client, use_release_role_bindings=True
@@ -118,6 +144,43 @@ def main() -> None:
         explanation_language="ja",
         accounting_wait_seconds=0.0,
     )
+    # The worker's own carry/resume code runs the hand-off: _t2_carry_scope keeps what the first
+    # run left running, _resume_with_carry settles it and gives a failed compile the held
+    # alternate. Only the API client (usage sink) and the nested repair run are stand-ins.
+    from pals_agent.worker import SqsProofWorker
+
+    sink: dict[str, Any] = {"on_usage": None}
+    worker = SqsProofWorker(
+        settings=SimpleNamespace(explanation_model_timeout_seconds=120),  # type: ignore[arg-type]
+        api_client=SimpleNamespace(  # type: ignore[arg-type]
+            record_usage=lambda **kw: sink["on_usage"](kw["usage"])
+        ),
+        pipeline=None, explainer=None, proof_reviewer=None, output_reviewer=None,
+    )
+    nested: dict[str, Any] = {}
+    # Evidence that the worker's carry path ran (not bypassed): what the carry scope yielded and
+    # what the worker's resume handed to the repair run (the alternate seen there).
+    evidence: dict[str, Any] = {}
+
+    def repair_run(self: Any, proof_job_id: str, **_kw: Any) -> bool:
+        seen = t2_lane.repair_alternate()
+        evidence["resume_calls"] = evidence.get("resume_calls", 0) + 1
+        evidence["repair_alternate_seen"] = seen is not None
+        evidence["repair_alternate_is_carry_slot"] = bool(
+            seen is not None and seen is getattr(
+                getattr(nested.get("carry"), "background", None), "alternate", None)
+        )
+        with t2_lane.alternate_limits(lease_deadline=None, should_stop=None):
+            nested["res"] = pipeline.run_statement(
+                statement=nested["problem"]["statement"],
+                formal_statement=nested["problem"].get("fixed_lean_statement"),
+                proof_job_id=nested["run_id"], api_repair_seed=nested["seed"],
+                routine=nested["problem"].get("tier") == "easy",
+                on_status=lambda *_a: None,
+            )
+        return True
+
+    SqsProofWorker.process_proof_job = repair_run  # type: ignore[method-assign,assignment]
     meter = run_stages.Meter(args.spend_ledger, args.out.name, args.max_usd, args.total_cap)
     meter.arm = args.arm
     PROBE = run_stages.PROBE_CODE
@@ -134,12 +197,16 @@ def main() -> None:
             usage.append(row)
             meter.add(row)
 
+        step_offset = steps_path.stat().st_size if steps_path.exists() else 0
         base_id = f"hsim-{args.arm}-{problem['id']}"
         t0 = time.monotonic()
         load_start = os.getloadavg()[0]
         submits: list[dict[str, Any]] = []
-        slot = None
-        held_handles: list[Any] = []
+        sink["on_usage"] = on_usage
+        carry_stack = ExitStack()
+        carry = None
+        evidence.clear()
+        nested["carry"] = None
         final = None
         seed = None
         attempt = 1
@@ -148,15 +215,31 @@ def main() -> None:
             with usage_scope(on_usage):
                 while True:
                     run_id = base_id if seed is None else f"{base_id}.repair-{seed.attempt + 1}"
-                    with t2_lane.alternate_for_repair(slot if seed is not None else None):
+                    if seed is None:
                         res = pipeline.run_statement(
                             statement=problem["statement"],
                             formal_statement=problem.get("fixed_lean_statement"),
                             proof_job_id=run_id,
-                            api_repair_seed=seed,
+                            api_repair_seed=None,
                             routine=problem.get("tier") == "easy",
                             on_status=lambda *_a: None,
                         )
+                        carry = carry_stack.enter_context(
+                            worker._t2_carry_scope(res, proof_job_id=base_id, claim_id="claim")
+                        )
+                        nested["carry"] = carry
+                        evidence["carry_scope_yielded"] = carry is not None
+                        evidence["held_alternate_in_carry"] = bool(
+                            getattr(getattr(carry, "background", None), "alternate", None)
+                            is not None
+                        )
+                    else:
+                        nested.update(problem=problem, run_id=run_id, seed=seed)
+                        worker._resume_with_carry(
+                            carry, {"state": "repairing"}, proof_job_id=base_id,
+                            claim_id="claim", extend_visibility=None,
+                        )
+                        res = nested["res"]
                     if not res.verification_pending:
                         break  # the pipeline gave up (budget, early stop, preflight exhausted)
                     code = res.generated.lean_code
@@ -171,16 +254,13 @@ def main() -> None:
                             "alternate": _used_alternate(res),
                         }
                     )
-                    if attempt == 1:
-                        slot = getattr(res.background, "alternate", None)
                     if ver.success:
                         final = dataclasses.replace(
                             res, verification=ver, verification_pending=False
                         )
                         break
-                    for handle in (res.speculative_explanation, res.speculative_review):
-                        if handle is not None:
-                            held_handles.append(handle)
+                    if args.first_attempt_only:
+                        break
                     # The API's compile failure: the verifier_compile_failed marker the seed
                     # requires, then the compiler's own diagnostics as repair feedback.
                     failed = dataclasses.replace(
@@ -205,8 +285,7 @@ def main() -> None:
                         final, problem, explainer, reviewer
                     )
                 answer_s = time.monotonic() - t0
-                for handle in held_handles:
-                    t2_lane.settle_unadopted(handle, timeout=10.0)
+                carry_stack.close()  # the worker settles what nobody adopted
                 undrained = (
                     res.background.drain(180) if getattr(res, "background", None) else 0
                 )
@@ -214,8 +293,15 @@ def main() -> None:
             error = type(exc).__name__
             wall_s = answer_s = time.monotonic() - t0
             answer, undrained = {}, 0
+        step_timing._queue.join()  # the writer thread is asynchronous
+        steps: list[dict[str, Any]] = []
+        if steps_path.exists():
+            with steps_path.open("rb") as fh:
+                fh.seek(step_offset)
+                steps = [json.loads(x) for x in fh.read().decode().splitlines() if x.strip()]
         row = {
             "problem_id": problem["id"],
+            "steps": steps,
             "arm": args.arm,
             "verified": final is not None,
             "first_attempt_ok": bool(submits and submits[0]["ok"]),
@@ -236,6 +322,7 @@ def main() -> None:
             "api_overhead_s": API_OVERHEAD_S,
             "flags": env,
             "submits_detail": submits,
+            "worker_carry_evidence": dict(evidence),
         }
         with (args.out / "records.jsonl").open("a") as fh:
             fh.write(json.dumps(row) + "\n")
