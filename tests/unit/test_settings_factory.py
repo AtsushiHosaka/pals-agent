@@ -70,6 +70,24 @@ def test_factory_passes_the_lemma_alias_switch_to_the_pipeline(
     assert build_pipeline(AgentSettings.from_env()).lemma_alias_repair is False
 
 
+def test_factory_passes_the_signature_layout_switch_to_the_pipeline(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _pin_embedding(monkeypatch)
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+    monkeypatch.setenv("PALS_ARTIFACTS_BUCKET", "pals-artifacts")
+    monkeypatch.delenv("PALS_SIGNATURE_LAYOUT_NORMALISATION_ENABLED", raising=False)
+    assert AgentSettings.from_env().signature_layout_normalisation_enabled is True
+    assert build_pipeline(AgentSettings.from_env()).signature_layout_normalisation is True
+
+    monkeypatch.setenv("PALS_SIGNATURE_LAYOUT_NORMALISATION_ENABLED", "false")
+    assert build_pipeline(AgentSettings.from_env()).signature_layout_normalisation is False
+
+    monkeypatch.setenv("PALS_SIGNATURE_LAYOUT_NORMALISATION_ENABLED", "False")
+    with pytest.raises(ValueError):
+        AgentSettings.from_env()
+
+
 def test_settings_reject_partial_recipe_selection_configuration(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

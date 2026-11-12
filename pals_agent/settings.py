@@ -71,6 +71,7 @@ class AgentSettings:
     observe_repeated_statement_mismatch_enabled: bool = False
     repeated_mismatch_window: int = 2
     deterministic_templates_enabled: bool = True
+    signature_layout_normalisation_enabled: bool = True
     template_skips_retrieval_enabled: bool = True
     speculative_explanation_enabled: bool = False
     fast_candidate_poll_enabled: bool = False
@@ -239,6 +240,9 @@ class AgentSettings:
             ),
             repeated_mismatch_window=_bounded_ascii_int_env(
                 "PALS_REPEATED_MISMATCH_WINDOW", 2, minimum=2, maximum=3
+            ),
+            signature_layout_normalisation_enabled=_strict_bool_env_default(
+                "PALS_SIGNATURE_LAYOUT_NORMALISATION_ENABLED", True
             ),
             deterministic_templates_enabled=_strict_bool_env_default(
                 "PALS_DETERMINISTIC_TEMPLATES_ENABLED", True

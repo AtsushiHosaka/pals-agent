@@ -18,6 +18,7 @@ from pals_agent.artifacts import (
 )
 from pals_agent.draft_catalog import DraftCatalog, DraftSearchResult
 from pals_agent.explanations import target_matches_statement
+from pals_agent.lean_layout import normalise_signature_layout
 from pals_agent.lean_profiles import LibraryProfileNotEnabled, ProfileRoutedVerifier
 from pals_agent.lean_source_policy import (
     strip_lean_comments_and_strings as _strip_lean_comments_and_strings,
@@ -266,6 +267,11 @@ class ProofPipeline:
     # are rendered without a model call. The result is compiled like any candidate; a failure
     # repairs through the model as usual.
     deterministic_templates: bool = False
+    # ``signature_layout_normalisation`` joins a line-leading ``|`` of a theorem conclusion (an
+    # absolute value) to the line before it, in every source the model or a repair produces. The
+    # deployed verifier's statement audit reads such a bar as a pattern-matching alternative and
+    # rejects the whole file. Whitespace only (pals_agent/lean_layout.py); False is the old layout.
+    signature_layout_normalisation: bool = True
     # A request-linked first attempt whose wording alone selects such a template does not need the
     # Draft retrieval (three sequential model/API steps) that would only feed a model prompt the
     # template replaces. The template, its compile, the semantic review and the explanation
@@ -965,7 +971,38 @@ class ProofPipeline:
             attempt += 1
             repairs_used += 1
 
+    def _layout(self, generated: GeneratedProof) -> GeneratedProof:
+        """The one place a produced source takes its normalised layout (idempotent)."""
+        if not self.signature_layout_normalisation or not generated.lean_code:
+            return generated
+        code = normalise_signature_layout(generated.lean_code)
+        return generated if code == generated.lean_code else replace(generated, lean_code=code)
+
     def _generate_attempt(
+        self,
+        *,
+        request: ProofRequest,
+        problem_id: str,
+        attempt: int,
+        repairs_used: int,
+        diagnostics: list[Diagnostic],
+        feedback: GenerationFeedback | None,
+        on_status: StatusCallback | None,
+    ) -> GeneratedProof:
+        """Every first attempt and model repair, in the layout the deployed verifier can audit."""
+        return self._layout(
+            self._generate_attempt_spliced(
+                request=request,
+                problem_id=problem_id,
+                attempt=attempt,
+                repairs_used=repairs_used,
+                diagnostics=diagnostics,
+                feedback=feedback,
+                on_status=on_status,
+            )
+        )
+
+    def _generate_attempt_spliced(
         self,
         *,
         request: ProofRequest,
@@ -1062,7 +1099,11 @@ class ProofPipeline:
                 sketch_parallel=self.sketch_parallel,
                 deterministic_templates=self.deterministic_templates,
                 race=(
-                    (lambda prove_once: self._race_first_attempt(request, prove_once))
+                    (
+                        lambda prove_once: self._race_first_attempt(
+                            request, lambda: self._layout(prove_once())
+                        )
+                    )
                     if feedback is None
                     and t2_lane.parallel_candidates_enabled()
                     and (
@@ -1398,6 +1439,7 @@ class ProofPipeline:
         patched = patcher(request, feedback)
         if patched is None or not patched.lean_code.strip():
             return None
+        patched = self._layout(patched)
         decision = RepairRouteDecision(
             route="prove",
             rationale="T2 patch repair from a sanitised failure summary.",
@@ -1613,6 +1655,7 @@ class ProofPipeline:
             sketch=seed.generated.sketch,
             provider="pals-deterministic",
         )
+        generated = self._layout(generated)
         route = RepairRouteDecision(
             route="prove",
             rationale="Deterministic substitution of a known wrong Mathlib lemma name.",
