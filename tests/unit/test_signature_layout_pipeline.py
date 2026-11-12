@@ -77,7 +77,7 @@ def test_the_race_memo_and_the_main_loop_see_the_same_source(
 ) -> None:
     _flags(monkeypatch, **{t2_lane.NO_SKETCH_ENV: True, t2_lane.PARALLEL_CANDIDATES_ENV: True})
     verifier = ScriptedVerifier({ABS_JOINED})
-    result = _local(tmp_path, Generator([ABS, ABS]), verifier)
+    result = _local(tmp_path, Generator([ABS, ABS], proof_delays=[0.0, 0.6]), verifier)
     assert result.state == "verified" and result.generated.lean_code == ABS_JOINED
     assert set(verifier.compiled) == {ABS_JOINED}  # never the raw layout
     assert len(verifier.compiled) == 1  # the memo served the main loop: no second compile
