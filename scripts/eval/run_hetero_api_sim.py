@@ -25,6 +25,8 @@ import json
 import os
 import subprocess
 import sys
+from contextlib import ExitStack
+from types import SimpleNamespace
 import time
 from pathlib import Path
 from tempfile import mkdtemp
@@ -55,6 +57,8 @@ def main() -> None:
         "--problems-file", type=Path,
         help="JSON {'problems': [...]} of dev_unseen items only; replaces the generation-eval-v1 tuning set",
     )
+    ap.add_argument("--first-attempt-only", action="store_true",
+                    help="stop after the first submitted candidate (first-attempt rate and time)")
     ap.add_argument("--efforts", help="override the race's two efforts, e.g. none,low")
     ap.add_argument("--pin-effort", help="pin one effort on the prove client (single candidate arms)")
     for name in ("lean", "lake", "project", "elan-home"):
@@ -140,6 +144,33 @@ def main() -> None:
         explanation_language="ja",
         accounting_wait_seconds=0.0,
     )
+    # The worker's own carry/resume code runs the hand-off: _t2_carry_scope keeps what the first
+    # run left running, _resume_with_carry settles it and gives a failed compile the held
+    # alternate. Only the API client (usage sink) and the nested repair run are stand-ins.
+    from pals_agent.worker import SqsProofWorker
+
+    sink: dict[str, Any] = {"on_usage": None}
+    worker = SqsProofWorker(
+        settings=SimpleNamespace(explanation_model_timeout_seconds=120),  # type: ignore[arg-type]
+        api_client=SimpleNamespace(  # type: ignore[arg-type]
+            record_usage=lambda **kw: sink["on_usage"](kw["usage"])
+        ),
+        pipeline=None, explainer=None, proof_reviewer=None, output_reviewer=None,
+    )
+    nested: dict[str, Any] = {}
+
+    def repair_run(self: Any, proof_job_id: str, **_kw: Any) -> bool:
+        with t2_lane.alternate_limits(lease_deadline=None, should_stop=None):
+            nested["res"] = pipeline.run_statement(
+                statement=nested["problem"]["statement"],
+                formal_statement=nested["problem"].get("fixed_lean_statement"),
+                proof_job_id=nested["run_id"], api_repair_seed=nested["seed"],
+                routine=nested["problem"].get("tier") == "easy",
+                on_status=lambda *_a: None,
+            )
+        return True
+
+    SqsProofWorker.process_proof_job = repair_run  # type: ignore[method-assign,assignment]
     meter = run_stages.Meter(args.spend_ledger, args.out.name, args.max_usd, args.total_cap)
     meter.arm = args.arm
     PROBE = run_stages.PROBE_CODE
@@ -161,8 +192,9 @@ def main() -> None:
         t0 = time.monotonic()
         load_start = os.getloadavg()[0]
         submits: list[dict[str, Any]] = []
-        slot = None
-        held_handles: list[Any] = []
+        sink["on_usage"] = on_usage
+        carry_stack = ExitStack()
+        carry = None
         final = None
         seed = None
         attempt = 1
@@ -171,15 +203,25 @@ def main() -> None:
             with usage_scope(on_usage):
                 while True:
                     run_id = base_id if seed is None else f"{base_id}.repair-{seed.attempt + 1}"
-                    with t2_lane.alternate_for_repair(slot if seed is not None else None):
+                    if seed is None:
                         res = pipeline.run_statement(
                             statement=problem["statement"],
                             formal_statement=problem.get("fixed_lean_statement"),
                             proof_job_id=run_id,
-                            api_repair_seed=seed,
+                            api_repair_seed=None,
                             routine=problem.get("tier") == "easy",
                             on_status=lambda *_a: None,
                         )
+                        carry = carry_stack.enter_context(
+                            worker._t2_carry_scope(res, proof_job_id=base_id, claim_id="claim")
+                        )
+                    else:
+                        nested.update(problem=problem, run_id=run_id, seed=seed)
+                        worker._resume_with_carry(
+                            carry, {"state": "repairing"}, proof_job_id=base_id,
+                            claim_id="claim", extend_visibility=None,
+                        )
+                        res = nested["res"]
                     if not res.verification_pending:
                         break  # the pipeline gave up (budget, early stop, preflight exhausted)
                     code = res.generated.lean_code
@@ -194,16 +236,13 @@ def main() -> None:
                             "alternate": _used_alternate(res),
                         }
                     )
-                    if attempt == 1:
-                        slot = getattr(res.background, "alternate", None)
                     if ver.success:
                         final = dataclasses.replace(
                             res, verification=ver, verification_pending=False
                         )
                         break
-                    for handle in (res.speculative_explanation, res.speculative_review):
-                        if handle is not None:
-                            held_handles.append(handle)
+                    if args.first_attempt_only:
+                        break
                     # The API's compile failure: the verifier_compile_failed marker the seed
                     # requires, then the compiler's own diagnostics as repair feedback.
                     failed = dataclasses.replace(
@@ -228,8 +267,7 @@ def main() -> None:
                         final, problem, explainer, reviewer
                     )
                 answer_s = time.monotonic() - t0
-                for handle in held_handles:
-                    t2_lane.settle_unadopted(handle, timeout=10.0)
+                carry_stack.close()  # the worker settles what nobody adopted
                 undrained = (
                     res.background.drain(180) if getattr(res, "background", None) else 0
                 )
