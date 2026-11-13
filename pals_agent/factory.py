@@ -74,6 +74,7 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
     natural = NaturalDspDraftRetriever(ApiProofReuseCatalog(settings))
     typed = build_profile_routed_runtime(settings) if settings.typed_catalog_enabled else None
     return ProofPipeline(
+        fast_first_attempt=build_fast_first_attempt(settings),
         generator=generator,
         verifier=None,
         artifact_store=build_artifact_store(settings),
@@ -111,6 +112,37 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
             else None
         ),
     )
+
+
+def build_fast_first_attempt(settings: AgentSettings) -> object | None:
+    """None unless PALS_FAST_FIRST_ATTEMPT_ENABLED=true (default off: nothing is imported)."""
+    import os as _os
+
+    if _os.environ.get("PALS_FAST_FIRST_ATTEMPT_ENABLED", "false") != "true":
+        if _os.environ.get("PALS_FAST_FIRST_ATTEMPT_ENABLED", "false") != "false":
+            raise ValueError("PALS_FAST_FIRST_ATTEMPT_ENABLED must be true or false")
+        return None
+    import json as _json
+
+    from pals_agent.fast_first_attempt import FastFirstAttempt, deadline_seconds
+
+    binding = fixed_model_default(ModelRole.PROVE)
+    client = _release_openai_client(settings)
+
+    def model(prompt: str, schema: dict[str, object]) -> dict[str, object]:
+        import dataclasses
+
+        scoped = dataclasses.replace(client, reasoning_effort=binding.reasoning_effort)
+        raw = scoped.generate(
+            model=binding.model, prompt=prompt, response_schema=schema,
+            timeout_seconds=deadline_seconds(),
+        )
+        value = _json.loads(raw)
+        if not isinstance(value, dict):
+            raise ValueError("model reply is not an object")
+        return value
+
+    return FastFirstAttempt(model, deadline_s=deadline_seconds())
 
 
 def build_recipe_attempt_planner(settings: AgentSettings) -> RecipeAttemptPlannerV1 | None:
