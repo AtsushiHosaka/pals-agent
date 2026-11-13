@@ -47,6 +47,9 @@ NAME_SAFETY_ENV = "PALS_T2_NAME_SAFETY_ENABLED"
 HETERO_RACE_ENV = "PALS_T2_HETERO_RACE_ENABLED"
 SOURCE_HYGIENE_ENV = "PALS_T2_SOURCE_HYGIENE_ENABLED"
 CHEAP_FIRST_ENV = "PALS_T2_CHEAP_FIRST_ENABLED"
+# Unset: the first attempt runs at HETERO_EFFORTS[0] ("low"). Set (none|low|medium): that effort
+# instead, for the cheap-first un-raced first attempt only; repairs never take it.
+FIRST_EFFORT_ENV = "PALS_T2_FIRST_EFFORT"
 # Reasoning effort of each race candidate when HETERO_RACE_ENV is on: a fast one and a strong one.
 HETERO_EFFORTS = ("low", "medium")
 # How long a failed compile waits for the held alternate candidate to finish generating. A model
@@ -74,6 +77,15 @@ def parallel_candidates_enabled() -> bool:
 
 def hetero_race_enabled() -> bool:
     return _flag(HETERO_RACE_ENV)
+
+
+def first_effort() -> str:
+    value = os.environ.get(FIRST_EFFORT_ENV)
+    if value is None or value == "":
+        return HETERO_EFFORTS[0]
+    if value not in {"none", "low", "medium"}:
+        raise ValueError(f"{FIRST_EFFORT_ENV} must be none, low or medium")
+    return value
 
 
 def cheap_first_enabled() -> bool:
@@ -138,6 +150,7 @@ def validate_flags() -> None:
         hetero_race_enabled,
         source_hygiene_enabled,
         cheap_first_enabled,
+        first_effort,
         lean_slots,
         lean_process_slots,
     ):
@@ -317,7 +330,7 @@ def variant_effort() -> str | None:
     # Cheap-first sets variant 0 for the one un-raced first attempt only; a race thread (which
     # sets its own variants) never takes an effort from it.
     if cheap_first_enabled() and index == 0 and not parallel_candidates_enabled():
-        return HETERO_EFFORTS[0]
+        return first_effort()
     return None
 
 

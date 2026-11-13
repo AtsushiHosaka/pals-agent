@@ -228,8 +228,14 @@ def build_answer_stage(args: argparse.Namespace):
 
     explain = fixed_model_default(ModelRole.EXPLAIN)
     review = fixed_model_default(ModelRole.PROOF_REVIEW)
+    explain_client = client()
+    effort = getattr(args, "explain_effort", None)
+    if effort:  # measurement of PALS_EXPLAIN_EFFORT; unset keeps the release binding's effort
+        import dataclasses
+
+        explain_client = dataclasses.replace(explain_client, reasoning_effort=effort)
     explainer = LeanProofExplainer(
-        client=client(), model=explain.model, provider=explain.provider, max_attempts=3
+        client=explain_client, model=explain.model, provider=explain.provider, max_attempts=3
     )
     reviewer = LeanProofSemanticReviewer(
         client=client(), model=review.model, provider=review.provider, max_attempts=2
@@ -237,7 +243,9 @@ def build_answer_stage(args: argparse.Namespace):
     return explainer, reviewer
 
 
-def answer_stage(result: Any, problem: dict, explainer: Any, reviewer: Any) -> dict[str, Any]:
+def answer_stage(
+    result: Any, problem: dict, explainer: Any, reviewer: Any, output_reviewer: Any = None
+) -> dict[str, Any]:
     """After a verified proof: the semantic review and the explanation, timed.
 
     With an explanation already started beside verification (``result.speculative_explanation``)
@@ -299,6 +307,19 @@ def answer_stage(result: Any, problem: dict, explainer: Any, reviewer: Any) -> d
         out["explain_error"] = type(exc).__name__
     out["explain_wait_s"] = round(time.monotonic() - t, 3)
     out["explained_in_parallel"] = handle is not None
+    if output_reviewer is not None and out.get("explain_ok") and explanation is not None:
+        # The second call after the explanation (production reviews every explanation before
+        # showing it); timed here so the budget has no hidden stage.
+        t = time.monotonic()
+        try:
+            verdict = output_reviewer.review_explanation(
+                theorem_statement=statement, lean_code=code, explanation=explanation,
+                language="ja", deadline=time.monotonic() + 120, timeout_seconds=60,
+            )
+            out["output_review_approved"] = getattr(verdict, "decision", None) == "approved"
+        except Exception as exc:  # noqa: BLE001
+            out["output_review_error"] = type(exc).__name__
+        out["output_review_s"] = round(time.monotonic() - t, 3)
     return out
 
 
