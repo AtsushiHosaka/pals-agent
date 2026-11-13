@@ -59,6 +59,24 @@ def approve(request: str, source: str, parts: dict, language: str) -> tuple[bool
     return True, ""
 
 
+def test_the_reserved_word_lambda_is_renamed_when_it_is_a_variable() -> None:
+    reply = {
+        "kind": "prove",
+        "formal": "∀ λ : ℝ, λ = λ",
+        "tactics": ["intro λ\nrfl"],
+        "negation_tactics": [],
+    }
+    merged = fa.merged_call(lambda prompt, schema: reply, "q")
+    assert "λ" not in merged.formal and "lam" in merged.formal and "λ" not in merged.tactics[0]
+    as_lambda = dict(reply, formal="Continuous (fun x : ℝ => x)", tactics=["exact fun x => x"])
+    kept = fa.merged_call(lambda prompt, schema: dict(as_lambda, formal="(λ x => x) 1 = 1"), "q")
+    assert "λ" in kept.formal  # used as the lambda keyword: left alone
+
+
+def test_the_merged_prompt_asks_for_qualified_names() -> None:
+    assert "WITHOUT relying on `open`" in fa.MERGED_PROMPT and "Filter.Tendsto" in fa.MERGED_PROMPT
+
+
 def test_unknown_gate_modes_are_refused() -> None:
     with pytest.raises(ValueError):
         fa.FastAnswer(  # type: ignore[arg-type]
@@ -432,3 +450,51 @@ def test_at_most_one_path_publishes_even_when_both_finish_together() -> None:
         # exactly the winner publishes: the fallback only after winning the claim, the caller
         # publishes the fast answer only when the winner is "fast"
         assert published + fast_published == [outcome.winner]
+
+
+@REAL
+def test_a_rejected_explanation_is_written_again_with_the_objection(fast) -> None:  # type: ignore[no-untyped-def]
+    resident, verifier, scratch = fast
+    seen: list[str] = []
+    prompts: list[str] = []
+    base = fake_model({"merged": GOOD_MERGED})
+
+    def model(prompt: str, schema: dict) -> dict:  # type: ignore[type-arg]
+        if prompt.startswith("Write the explanation"):
+            prompts.append(prompt)
+        return base(prompt, schema)
+
+    def review_once_then_approve(request, source, parts, language):  # type: ignore[no-untyped-def]
+        seen.append("review")
+        return (len(seen) > 1), "format: math outside $...$"
+
+    answer = fa.FastAnswer(
+        resident,
+        verifier,
+        model,
+        scratch,
+        calls=2,
+        gate_mode="terse2",
+        explanation_reviewer=review_once_then_approve,
+        explanation_retries=1,
+    )
+    result = answer.run("Show n + 0 = n for every natural n.", "en")
+    assert result.outcome == "answered" and result.explanation_retries_used == 1
+    assert len(prompts) == 2 and "rejected the previous version" in prompts[1]
+    assert "math outside" in prompts[1] and "rejected the previous" not in prompts[0]
+
+
+@REAL
+def test_without_retries_a_rejected_explanation_stays_rejected(fast) -> None:  # type: ignore[no-untyped-def]
+    resident, verifier, scratch = fast
+    answer = fa.FastAnswer(
+        resident,
+        verifier,
+        fake_model({"merged": GOOD_MERGED}),
+        scratch,
+        calls=2,
+        gate_mode="terse2",
+        explanation_reviewer=lambda *a: (False, "rejected:x"),
+    )
+    result = answer.run("Show n + 0 = n for every natural n.", "en")
+    assert result.reason == "explanation_rejected" and result.explanation_retries_used == 0
