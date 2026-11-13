@@ -8,8 +8,8 @@ import threading
 import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from contextvars import copy_context
 from contextlib import nullcontext
+from contextvars import copy_context
 from dataclasses import asdict, dataclass, replace
 from typing import Any, Final, Literal, Protocol, cast
 

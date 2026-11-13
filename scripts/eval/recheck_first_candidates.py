@@ -73,7 +73,8 @@ def main() -> None:
                 "errors": [{"code": d.code, "message": d.message[:600]} for d in errors[:4]],
                 "n_errors": len(errors),
             })
-            print(rec["problem_id"], "ok" if result.success else f"{len(errors)} errors", flush=True)
+            status = "ok" if result.success else f"{len(errors)} errors"
+            print(rec["problem_id"], status, flush=True)
     args.out.write_text(json.dumps(rows, ensure_ascii=False, indent=1))
     resident.close()
 
