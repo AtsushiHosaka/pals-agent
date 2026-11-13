@@ -24,6 +24,13 @@ from typing import Final
 FRONTIER_PROOF_PROFILE: Final = "stacks-frontier-4.35"
 FRONTIER_DEFS_PROFILE: Final = "stacks-frontier-defs-4.35"
 
+# Words that only mean something here in the setting of schemes and sheaves; anywhere else
+# ("line bundle on a manifold", "cohomology of groups", "acyclic graph") they must not select a
+# Frontier profile, so the setting is required in addition to the term.
+_SCHEME_SETTING: Final = re.compile(
+    r"\b(?:schemes?|sheaf|sheaves|quasi-?coherent|structure\s+sheaf|Spec|Proj|"
+    r"affine\s+morphisms?|morphisms?\s+of\s+schemes)\b|スキーム|構造層|準連接|アフィン射",
+)
 _NEEDS_DEFINITIONS: Final = re.compile(
     r"\b(?:picard\s+group|ample|very\s+ample|invertible\s+(?:sheaf|sheaves)|line\s+bundles?|"
     r"cartier\s+divisors?|blow-?ups?|algebraic\s+(?:space|stack)s?)\b|豊富|ピカール|可逆層|"
@@ -32,9 +39,9 @@ _NEEDS_DEFINITIONS: Final = re.compile(
 )
 _NEEDS_LEMMAS: Final = re.compile(
     r"\b(?:sheaf\s+cohomology|cohomology\s+(?:of|on|with)|derived\s+(?:functors?|pushforward)|"
-    r"higher\s+direct\s+images?|R\^?\s*[nip]\s*f_\*|right\s+derived|ext\s+groups?|"
-    r"cech\s+cohomology|čech\s+cohomology|flasque|acyclic)\b|層(?:の)?コホモロジー|高次順像|"
-    r"導来関手|チェックコホモロジー",
+    r"higher\s+direct\s+images?|right\s+derived|ext\s+groups?|"
+    r"cech\s+cohomology|čech\s+cohomology|flasque|acyclic)\b|"
+    r"\bR\s*\^?\s*[A-Za-z0-9]+\s*f_\*|層(?:の)?コホモロジー|高次順像|導来関手|チェックコホモロジー",
     re.IGNORECASE,
 )
 _NUMERICAL: Final = re.compile(
@@ -45,6 +52,8 @@ _NUMERICAL: Final = re.compile(
 def select_library_profile(request_text: str) -> str | None:
     """The non-default profile this request needs, or ``None`` for the default library."""
     if not request_text or _NUMERICAL.search(request_text):
+        return None
+    if not _SCHEME_SETTING.search(request_text):
         return None
     if _NEEDS_DEFINITIONS.search(request_text):
         return FRONTIER_DEFS_PROFILE

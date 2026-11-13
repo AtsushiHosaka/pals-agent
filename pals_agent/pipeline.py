@@ -354,7 +354,10 @@ class ProofPipeline:
         if self.verification_mode != "local" or self.profile_verifiers is None:
             raise LibraryProfileNotEnabled("this pipeline does not route library profiles")
         return replace(
-            self, verifier=self.profile_verifiers.verifier_for(name), profile_verifiers=None
+            self,
+            verifier=self.profile_verifiers.verifier_for(name),
+            profile_verifiers=None,
+            route_library_profile=False,  # already routed: the bound pipeline must not route again
         )
 
     def run_problem(

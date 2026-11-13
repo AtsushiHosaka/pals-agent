@@ -91,6 +91,7 @@ library: if the request needs it, say so in the Draft rather than formalizing a 
 _EQUIVALENCE_CUE: Final = re.compile(
     r"\b(?:if\s+and\s+only\s+if|iff|equivalent|equivalence)\b|同値|必要十分|⇔|↔", re.IGNORECASE
 )
+_CATEGORY_EQUIVALENCE: Final = re.compile(r"\bcateg(?:ory|ories)\b|圏", re.IGNORECASE)
 _EQUIVALENCE_GUIDANCE: Final = """\
 The request is an equivalence between a property of a scheme (or of `Spec R`, or of its
 topological space) and a property of a ring. State ONE theorem `A ↔ B` whose two sides are
@@ -132,7 +133,15 @@ def scheme_guidance(*parts: str | None) -> str:
         and "AlgebraicGeometry" in text
         and not _NOT_SCHEME_THEORY.search(text)
     ):
-        if _EQUIVALENCE_CUE.search(text):
+        # Only the question itself decides (a pinned statement's own `↔` does not), and an
+        # equivalence of categories is not an equivalence of properties.
+        question = parts[0] or ""
+        pinned = len(parts) > 1 and bool(parts[1])
+        if (
+            not pinned
+            and _EQUIVALENCE_CUE.search(question)
+            and not _CATEGORY_EQUIVALENCE.search(question)
+        ):
             return _GUIDANCE + _EQUIVALENCE_GUIDANCE
         return _GUIDANCE
     return ""
