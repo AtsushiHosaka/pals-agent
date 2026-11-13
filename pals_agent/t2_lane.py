@@ -45,6 +45,8 @@ PARALLEL_REVIEW_ENV = "PALS_T2_PARALLEL_REVIEW_ENABLED"
 NO_DRAFT_ENV = "PALS_T2_NO_DRAFT_ENABLED"
 NAME_SAFETY_ENV = "PALS_T2_NAME_SAFETY_ENABLED"
 HETERO_RACE_ENV = "PALS_T2_HETERO_RACE_ENABLED"
+SOURCE_HYGIENE_ENV = "PALS_T2_SOURCE_HYGIENE_ENABLED"
+CHEAP_FIRST_ENV = "PALS_T2_CHEAP_FIRST_ENABLED"
 # Reasoning effort of each race candidate when HETERO_RACE_ENV is on: a fast one and a strong one.
 HETERO_EFFORTS = ("low", "medium")
 # How long a failed compile waits for the held alternate candidate to finish generating. A model
@@ -72,6 +74,18 @@ def parallel_candidates_enabled() -> bool:
 
 def hetero_race_enabled() -> bool:
     return _flag(HETERO_RACE_ENV)
+
+
+def cheap_first_enabled() -> bool:
+    """The first attempt's proof runs at the fast effort (``HETERO_EFFORTS[0]``); every repair
+    (a patch, a full repair) runs at the role's own, stronger effort. One candidate, no race: a
+    plain compile failure escalates instead of paying for a second candidate up front."""
+    return _flag(CHEAP_FIRST_ENV)
+
+
+def source_hygiene_enabled() -> bool:
+    """Drop redundant ``import Mathlib.*`` lines and add the ``open`` a notation needs."""
+    return _flag(SOURCE_HYGIENE_ENV)
 
 
 def patch_repair_enabled() -> bool:
@@ -117,6 +131,8 @@ def validate_flags() -> None:
         no_draft_enabled,
         name_safety_enabled,
         hetero_race_enabled,
+        source_hygiene_enabled,
+        cheap_first_enabled,
         lean_slots,
         lean_process_slots,
     ):
@@ -232,7 +248,9 @@ NAME_SAFETY_GUIDANCE = (
     "namespace (Lean 4 Mathlib: `Nat.succ_le_iff`, `Real.sqrt_nonneg`, `abs_nonneg`; never "
     "Lean 3 style such as `nat.succ_le_iff` or `real.sqrt`). Otherwise build the fact "
     "yourself with `have`, or use `nlinarith [sq_nonneg (a - b), ...]`, `positivity`, "
-    "`norm_num`, `simp`, `omega`, `gcongr`, `field_simp` or `ring`."
+    "`norm_num`, `simp`, `omega`, `gcongr`, `field_simp` or `ring`. Import only `import Mathlib` "
+    "(never a submodule such as `Mathlib.Tactic.Omega`), write `open Topology` before using `𝓝`, "
+    "and never name a variable `λ` (it is the lambda keyword; use `lam` or `μ`)."
 )
 
 
@@ -286,7 +304,7 @@ def variant_effort() -> str | None:
     """The reasoning effort of the race candidate running in this context (None outside a
     heterogeneous race): candidate 0 is the fast one, candidate 1 the strong one."""
     index = _variant.get()
-    if index is None or not hetero_race_enabled():
+    if index is None or not (hetero_race_enabled() or cheap_first_enabled()):
         return None
     return HETERO_EFFORTS[index % len(HETERO_EFFORTS)]
 

@@ -41,6 +41,8 @@ FLAG_NAMES = {
     "nodraft": "PALS_T2_NO_DRAFT_ENABLED",
     "names": "PALS_T2_NAME_SAFETY_ENABLED",
     "hetero": "PALS_T2_HETERO_RACE_ENABLED",
+    "hygiene": "PALS_T2_SOURCE_HYGIENE_ENABLED",
+    "cheapfirst": "PALS_T2_CHEAP_FIRST_ENABLED",
 }
 ARM_FLAGS: dict[str, set[str]] = {
     "base": set(),
@@ -57,6 +59,12 @@ ARM_FLAGS: dict[str, set[str]] = {
     "nd_k2_names": {"nodraft", "race", "names"},
     # production shape (run_hetero_api_sim.py): fast + strong candidate, held alternate
     "hetero_par": {"nodraft", "race", "pexpl", "preview", "hetero"},
+    # one candidate (the effort is pinned by --pin-effort) + patch repair + header fixes + names
+    "single_fix": {"nodraft", "pexpl", "preview", "patch", "names", "hygiene"},
+    # low first, a patch at the role's own effort on a compile failure (no race, no alternate)
+    "cheap_first": {"nodraft", "pexpl", "preview", "patch", "names", "hygiene", "cheapfirst"},
+    # hetero_par + patch repair after the alternate + deterministic header fixes + name guidance
+    "hetero_fix": {"nodraft", "race", "pexpl", "preview", "hetero", "patch", "names", "hygiene"},
     # nd_k2 plus the explanation and the semantic review started when a candidate enters Lean
     "nd_k2_par": {"nodraft", "race", "pexpl", "preview"},
     # nd_k2 with the fixed-statement template and the layout splice (see ARM_PIPELINE)
