@@ -79,7 +79,12 @@ def hetero_race_enabled() -> bool:
 def cheap_first_enabled() -> bool:
     """The first attempt's proof runs at the fast effort (``HETERO_EFFORTS[0]``); every repair
     (a patch, a full repair) runs at the role's own, stronger effort. One candidate, no race: a
-    plain compile failure escalates instead of paying for a second candidate up front."""
+    plain compile failure escalates instead of paying for a second candidate up front.
+
+    The first attempt also receives candidate 0's style instruction (``variant_instruction``: a
+    short proof that closes routine goals with automation), exactly as the fast candidate of the
+    heterogeneous race does; the measured effect is that of both together, not of the effort
+    alone."""
     return _flag(CHEAP_FIRST_ENV)
 
 
@@ -249,7 +254,8 @@ NAME_SAFETY_GUIDANCE = (
     "Lean 3 style such as `nat.succ_le_iff` or `real.sqrt`). Otherwise build the fact "
     "yourself with `have`, or use `nlinarith [sq_nonneg (a - b), ...]`, `positivity`, "
     "`norm_num`, `simp`, `omega`, `gcongr`, `field_simp` or `ring`. Import only `import Mathlib` "
-    "(never a submodule such as `Mathlib.Tactic.Omega`), write `open Topology` before using `𝓝`, "
+    "(never a submodule such as `Mathlib.Tactic.Omega`, unless the theorem harness below gives "
+    "its own header), write `open Topology` before using `𝓝`, "
     "and never name a variable `λ` (it is the lambda keyword; use `lam` or `μ`)."
 )
 
