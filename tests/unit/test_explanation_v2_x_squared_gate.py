@@ -54,3 +54,39 @@ def test_chain_that_never_reaches_epsilon_is_rejected() -> None:
     cut = CHAIN.replace(r"<\frac{\varepsilon}{2|a|+1}(2|a|+1)=\varepsilon$", r"$")
     assert cut != CHAIN
     assert not _has_x_squared_epsilon_delta(cut)
+
+
+@pytest.mark.parametrize(
+    "bound",
+    [
+        r"$|f(x)-f(a)|<\varepsilon$",
+        r"$\vert x^2-a^2\vert<\varepsilon$",
+        r"$|a^2-x^2|<\varepsilon$",
+    ],
+)
+def test_final_bound_written_with_other_notations_is_accepted(bound: str) -> None:
+    text = VALID.replace(r"$|x^2-a^2|<\varepsilon$", bound)
+    assert text != VALID
+    assert _has_x_squared_epsilon_delta(text)
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        r"この $\delta$ の選び方は正しいです。",
+        r"ここで $\delta$ は正とは限りませんが、先へ進みます。",
+    ],
+)
+def test_positivity_is_not_inferred_from_words_that_only_start_like_it(sentence: str) -> None:
+    no_positivity = VALID.replace(
+        r"$2|a|+1>0$ なので、$\delta=\min\left(1,\frac{\varepsilon}{2|a|+1}\right)$ は正です。", sentence
+    )
+    assert no_positivity != VALID
+    assert not _has_x_squared_epsilon_delta(no_positivity)
+
+
+@pytest.mark.parametrize("cut", [r"<\varepsilon\cdot(2|a|+1)", r"<\varepsilon^2"])
+def test_a_bound_that_is_not_epsilon_itself_is_rejected(cut: str) -> None:
+    text = VALID.replace(r"$|x^2-a^2|<\varepsilon$", "$|x^2-a^2|" + cut + "$")
+    assert text != VALID
+    assert not _has_x_squared_epsilon_delta(text)
