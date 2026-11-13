@@ -301,6 +301,28 @@ def test_a_failed_compile_settles_the_carry_before_the_repair_starts(
     assert [r["usage"]["input_tokens"] for r in api.recorded] == [5]  # exactly once
 
 
+def test_a_failed_compile_hands_the_held_alternate_to_the_repair_and_only_then(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    slot = t2_lane.AlternateSlot(0)
+    background = t2_lane.RunBackground()
+    background.alternate = slot
+    seen: list[Any] = []
+    monkeypatch.setattr(
+        SqsProofWorker, "process_proof_job",
+        lambda self, *a, **k: seen.append(t2_lane.repair_alternate()) or True,
+    )
+    worker = _worker(_Recorder(), RecordingSemanticReviewer())
+    for state in ("drafting", "semantic_review"):
+        worker._resume_with_carry(
+            _T2Carry(background=background), {"state": state}, proof_job_id="j", claim_id="c",
+            extend_visibility=None,
+        )
+
+    assert seen == [slot, None]  # the repair gets it; the review path never does
+    assert t2_lane.repair_alternate() is None  # and it does not leak out of the call
+
+
 def test_an_explanation_is_not_started_when_the_summary_path_could_not_adopt_it(
     tmp_path: Any, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -340,3 +362,47 @@ def test_resuming_after_the_compile_does_not_wait_for_a_race_loser(
     )
 
     assert waited == []  # the loser reports its own usage when it ends; the review is not held
+
+
+@pytest.mark.parametrize("hetero,expected", [(True, [300.0]), (False, [120.0])])
+def test_the_early_explanation_uses_the_configured_timeout_only_with_the_hetero_race(
+    tmp_path: Any, monkeypatch: pytest.MonkeyPatch, hetero: bool, expected: list[float]
+) -> None:
+    monkeypatch.setenv(t2_lane.PARALLEL_EXPLANATION_ENV, "true")
+    monkeypatch.setenv(t2_lane.HETERO_RACE_ENV, "true" if hetero else "false")
+    seen: list[Any] = []
+    worker = SqsProofWorker(
+        settings=cast(
+            AgentSettings,
+            SimpleNamespace(
+                template_fixed_explanation_enabled=False, explanation_model_timeout_seconds=300,
+            ),
+        ),
+        api_client=cast(Any, SemanticReviewApi()),
+        pipeline=None,
+        explainer=cast(Any, SimpleNamespace(explain=lambda **k: seen.append(k["timeout_seconds"]))),
+        proof_reviewer=cast(Any, RecordingSemanticReviewer()),
+        output_reviewer=cast(Any, object()),
+    )
+    explain = worker._with_t2_calls(_real_pipeline(tmp_path), "ja").explainer.explain
+    explain(
+        theorem_statement="s", lean_code="theorem t : True := by trivial", verified=True,
+        language="ja", deadline=1.0, timeout_seconds=120.0,
+    )
+
+    assert seen == expected
+
+
+def test_the_review_adoption_waits_for_the_reviewers_whole_attempt_budget() -> None:
+    import re
+    from pathlib import Path
+
+    source = Path(__file__).resolve().parents[2].joinpath("pals_agent/worker.py").read_text()
+    # With the heterogeneous race on, the adopt wait equals the visibility extension's bound
+    # (3 attempts + margin); off, it stays the review's timeout (the pre-race value).
+    assert re.search(
+        r"wait_seconds=\(\s*3 \* math\.ceil\(timeout_seconds\) \+ 30\s*"
+        r"if t2_lane\.hetero_race_enabled\(\)\s*else timeout_seconds\s*\)",
+        source,
+    )
+    assert "extend_visibility(3 * math.ceil(timeout_seconds) + 30)" in source

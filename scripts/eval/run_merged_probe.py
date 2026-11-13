@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts/eval"))
 
+from _resident_eval import confinement_kwargs  # noqa: E402
 from run_fast_variants import SETS, Recorder, instrumented_model  # noqa: E402
 
 from pals_agent import automation_portfolio as ap  # noqa: E402
@@ -67,6 +68,7 @@ def main() -> None:
             max_children=8,
             queue_timeout_s=30.0,
             warm_exact=True,
+            **confinement_kwargs(lean, lean_path, args.out),
         )
     )
     resident.start()

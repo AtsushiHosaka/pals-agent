@@ -512,6 +512,7 @@ class _AcquisitionResult:
     permit: _GenerationPermit | None
     acquired: bool = False
     acquired_state: str | None = None
+    lease_deadline: float | None = None  # self.monotonic() time the generation lease ends
 
 
 class WorkerSqsUnavailableError(RuntimeError):
@@ -936,7 +937,14 @@ class SqsProofWorker:
                                 theorem_statement=statement,
                                 lean_code=lean_code,
                                 language=language,
-                                wait_seconds=timeout_seconds,
+                                # Heterogeneous race only: the same bound the visibility
+                                # extension reserves (a direct review may make three schema
+                                # attempts, each up to the timeout). Off, the old value.
+                                wait_seconds=(
+                                    3 * math.ceil(timeout_seconds) + 30
+                                    if t2_lane.hetero_race_enabled()
+                                    else timeout_seconds
+                                ),
                             )
                             if carry is not None and carry.review is not None
                             else None
@@ -1223,7 +1231,13 @@ class SqsProofWorker:
                 run_kwargs["prepared_request"] = prepared
             with usage_scope(lambda usage: self.api_client.record_usage(
                 proof_job_id=proof_job_id, claim_id=claim_id, usage=usage
-            )), latency_stage("proof_pipeline"):
+            )), latency_stage("proof_pipeline"), t2_lane.alternate_limits(
+                lease_deadline=(
+                    None if generation.lease_deadline is None
+                    else time.monotonic() + (generation.lease_deadline - self.monotonic())
+                ),
+                should_stop=self.stop_requested,
+            ):
                 run_result = pipeline.run_statement(**run_kwargs)
         except OpenMathStructuringError:
             on_status(
@@ -1370,6 +1384,15 @@ class SqsProofWorker:
             def explain(*, theorem_statement: str, lean_code: str, **rest: Any) -> Any:
                 if fixed_enabled and fixed_explanation_for(lean_code, rest["language"]) is not None:
                     raise RuntimeError("fixed_explanation_covers_this_source")
+                configured = getattr(self.settings, "explanation_model_timeout_seconds", None)
+                if (
+                    t2_lane.hetero_race_enabled()
+                    and isinstance(configured, (int, float))
+                    and configured > 0
+                ):
+                    # A direct call would use the configured timeout; so must the early one,
+                    # or a slow but successful explanation would fail only when started early.
+                    rest["timeout_seconds"] = float(configured)
                 return inner.explain(
                     theorem_statement=theorem_statement, lean_code=lean_code, **rest
                 )
@@ -1423,7 +1446,10 @@ class SqsProofWorker:
         review = getattr(run_result, "speculative_review", None)
         background = getattr(run_result, "background", None)
         pending = getattr(background, "pending", None)
-        if background is not None and callable(pending) and pending() == 0:
+        if (
+            background is not None and callable(pending) and pending() == 0
+            and getattr(background, "alternate", None) is None  # a held second candidate
+        ):
             background = None
         if explanation is None and review is None and background is None:
             yield None
@@ -1454,8 +1480,16 @@ class SqsProofWorker:
             self._settle_t2_carry(carry, proof_job_id=proof_job_id, claim_id=claim_id)
         reporter = self._claim_usage_reporter(proof_job_id, claim_id)
         token = _T2_CARRY.set(carry if usable else None)
+        # A failed compile of the winner may be answered by the race's other candidate instead of
+        # a model repair (heterogeneous race only; the slot is None otherwise).
+        alternate = (
+            getattr(getattr(carry, "background", None), "alternate", None)
+            if carry is not None and not usable else None
+        )
         try:
-            with usage_scope(reporter) if reporter is not None and usable else ExitStack():
+            with (
+                usage_scope(reporter) if reporter is not None and usable else ExitStack()
+            ), t2_lane.alternate_for_repair(alternate):
                 return self.process_proof_job(
                     proof_job_id,
                     claim_id=claim_id,
@@ -2328,6 +2362,7 @@ class SqsProofWorker:
             permit=None,
             acquired=True,
             acquired_state=raw_response["resource"]["state"],
+            lease_deadline=request_started_at + envelope.lease_remaining_ms / 1000.0,
         )
 
     def _write_explanation_failure(

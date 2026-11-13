@@ -215,7 +215,11 @@ class ResidentLean:
         while time.monotonic() < deadline:
             if self._first_ready.wait(0.2):
                 if self.config.confine:
-                    self._confinement_self_test()  # closes and raises if a child is not confined
+                    try:
+                        self._confinement_self_test()
+                    except BaseException:
+                        self.close()  # whatever the self-test raised, do not leave a worker behind
+                        raise
                 self.startup_s = time.monotonic() - started
                 return self.startup_s
             if self._given_up:

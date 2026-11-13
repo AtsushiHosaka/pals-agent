@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import contextlib
 import json
+import logging
 import re
 import threading
+import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextvars import copy_context
@@ -18,6 +20,7 @@ from pals_agent.artifacts import (
 )
 from pals_agent.draft_catalog import DraftCatalog, DraftSearchResult
 from pals_agent.explanations import target_matches_statement
+from pals_agent.lean_layout import normalise_signature_layout
 from pals_agent.lean_profiles import LibraryProfileNotEnabled, ProfileRoutedVerifier
 from pals_agent.lean_source_policy import (
     strip_lean_comments_and_strings as _strip_lean_comments_and_strings,
@@ -117,6 +120,8 @@ TerminationReason = Literal[
 EARLY_STOP_REASON: Final = "repair_stopped_repeated_statement_mismatch"
 EARLY_STOP_DIAGNOSTIC_CODE: Final = "pals.repair_stopped_repeated_statement_mismatch"
 EARLY_STOP_RULE: Final = "repeated_statement_mismatch"
+
+_logger = logging.getLogger(__name__)
 
 
 class LeanGenerator(Protocol):
@@ -266,6 +271,11 @@ class ProofPipeline:
     # are rendered without a model call. The result is compiled like any candidate; a failure
     # repairs through the model as usual.
     deterministic_templates: bool = False
+    # ``signature_layout_normalisation`` joins a line-leading ``|`` of a theorem conclusion (an
+    # absolute value) to the line before it, in every source the model or a repair produces. The
+    # deployed verifier's statement audit reads such a bar as a pattern-matching alternative and
+    # rejects the whole file. Whitespace only (pals_agent/lean_layout.py); False is the old layout.
+    signature_layout_normalisation: bool = True
     # A request-linked first attempt whose wording alone selects such a template does not need the
     # Draft retrieval (three sequential model/API steps) that would only feed a model prompt the
     # template replaces. The template, its compile, the semantic review and the explanation
@@ -965,7 +975,38 @@ class ProofPipeline:
             attempt += 1
             repairs_used += 1
 
+    def _layout(self, generated: GeneratedProof) -> GeneratedProof:
+        """The one place a produced source takes its normalised layout (idempotent)."""
+        if not self.signature_layout_normalisation or not generated.lean_code:
+            return generated
+        code = normalise_signature_layout(generated.lean_code)
+        return generated if code == generated.lean_code else replace(generated, lean_code=code)
+
     def _generate_attempt(
+        self,
+        *,
+        request: ProofRequest,
+        problem_id: str,
+        attempt: int,
+        repairs_used: int,
+        diagnostics: list[Diagnostic],
+        feedback: GenerationFeedback | None,
+        on_status: StatusCallback | None,
+    ) -> GeneratedProof:
+        """Every first attempt and model repair, in the layout the deployed verifier can audit."""
+        return self._layout(
+            self._generate_attempt_spliced(
+                request=request,
+                problem_id=problem_id,
+                attempt=attempt,
+                repairs_used=repairs_used,
+                diagnostics=diagnostics,
+                feedback=feedback,
+                on_status=on_status,
+            )
+        )
+
+    def _generate_attempt_spliced(
         self,
         *,
         request: ProofRequest,
@@ -1062,7 +1103,11 @@ class ProofPipeline:
                 sketch_parallel=self.sketch_parallel,
                 deterministic_templates=self.deterministic_templates,
                 race=(
-                    (lambda prove_once: self._race_first_attempt(request, prove_once))
+                    (
+                        lambda prove_once: self._race_first_attempt(
+                            request, lambda: self._layout(prove_once())
+                        )
+                    )
                     if feedback is None
                     and t2_lane.parallel_candidates_enabled()
                     and (
@@ -1227,6 +1272,18 @@ class ProofPipeline:
             previous_draft=generated.draft,
             previous_sketch=generated.sketch,
         )
+        alternate = self._try_alternate_candidate(
+            request=request,
+            feedback=base_feedback,
+            cumulative_diagnostics=cumulative_diagnostics,
+            problem_id=problem_id,
+            attempt=attempt,
+            repairs_used=repairs_used,
+            attempt_evidence=attempt_evidence,
+            on_status=on_status,
+        )
+        if alternate is not None:
+            return alternate
         if t2_lane.patch_repair_enabled():
             patched = self._try_patch_repair(
                 request=request,
@@ -1344,6 +1401,71 @@ class ProofPipeline:
         )
         return RepairGeneration(generated=repaired, route_decision=route_decision)
 
+    def _try_alternate_candidate(
+        self,
+        *,
+        request: ProofRequest,
+        feedback: GenerationFeedback,
+        cumulative_diagnostics: list[Diagnostic],
+        problem_id: str,
+        attempt: int,
+        repairs_used: int,
+        attempt_evidence: dict[str, Any],
+        on_status: StatusCallback | None,
+    ) -> RepairGeneration | None:
+        """T2 heterogeneous race: the other candidate of the first attempt, instead of a repair.
+
+        The API compile of the submitted candidate failed. The race kept the candidate that did
+        not win (it passed the same preflight); submitting it is the next attempt, counted as one
+        repair exactly like a model repair, with no model call. Only for a plain compile failure
+        and only once per delivery; a source identical to the failed one, a still-running call that
+        misses the wait, or no alternate falls through to the ordinary repair.
+        """
+        slot = t2_lane.repair_alternate()
+        if slot is None or not feedback.previous_lean_code.strip():
+            return None
+        codes = {d.code for d in feedback.diagnostics if d.severity == "error" and d.code}
+        if (
+            codes & _MODEL_DECIDES_CODES
+            or _HARNESS_MISMATCH_CODE in codes
+            or any(code.startswith("pals.") for code in codes)
+        ):
+            return None
+        started = time.monotonic()
+        wait, should_stop = t2_lane.alternate_wait()
+        held = slot.take(wait, should_stop)
+        if (
+            held is None
+            or not held.lean_code.strip()
+            or held.lean_code == feedback.previous_lean_code
+        ):
+            return None
+        _emit(
+            on_status,
+            "repairing",
+            cumulative_diagnostics,
+            None,
+            feedback.previous_lean_code,
+            {
+                **_request_context(request, problem_id=problem_id),
+                "failed_attempt": attempt,
+                "repair_attempt": repairs_used + 1,
+                "repair_route": "prove",
+                "t2_alternate_candidate": True,
+                "attempt_evidence": attempt_evidence,
+                "max_repair_attempts": self.max_repair_attempts,
+            },
+        )
+        decision = RepairRouteDecision(
+            route="prove",
+            rationale="T2 heterogeneous race: the held second candidate.",
+            raw_model_output="",
+            model=held.model,
+            provider="pals-t2-alternate",
+            elapsed_ms=int((time.monotonic() - started) * 1000),
+        )
+        return RepairGeneration(generated=held, route_decision=decision)
+
     def _try_patch_repair(
         self,
         *,
@@ -1398,6 +1520,7 @@ class ProofPipeline:
         patched = patcher(request, feedback)
         if patched is None or not patched.lean_code.strip():
             return None
+        patched = self._layout(patched)
         decision = RepairRouteDecision(
             route="prove",
             rationale="T2 patch repair from a sanitised failure summary.",
@@ -1490,25 +1613,49 @@ class ProofPipeline:
         """
         decided = threading.Lock()
         claimed = False
+        winner: GeneratedProof | None = None
+        background = t2_lane.current_background()
+        slot: t2_lane.AlternateSlot | None = None
+        if t2_lane.hetero_race_enabled():
+            efforts = getattr(self.generator, "hetero_prove_efforts", lambda: None)()
+            if efforts is None or None in efforts or len(set(efforts)) < 2:
+                # Two candidates at the same effort are one candidate paid twice (a request's
+                # chosen effort, the release model's fixed one, or no role bindings): no race.
+                _logger.warning(
+                    "t2_hetero_race_skipped reason=efforts_not_distinct efforts=%s", efforts
+                )
+                return prove_once()
+        if t2_lane.hetero_race_enabled() and background is not None:
+            # The candidate that does not win is kept: a failed API compile submits it instead of
+            # asking the model for a repair.
+            slot = background.alternate = t2_lane.AlternateSlot(t2_lane.CANDIDATE_COUNT)
 
         def task(cancel: threading.Event) -> _RacedCandidate:
-            nonlocal claimed
-            generated = prove_once()
-            code = generated.lean_code
-            if not code.strip():
-                return _RacedCandidate(generated, None, preflight_errors=1_000)
-            errors = sum(d.severity == "error" for d in preflight(code))
-            if errors == 0 and not _aligned_with_request(request.prompt, code):
-                # A statement the worker would reject after the API compile (for example `True` for
-                # an x²-continuity request) is a loser, so a correct rival can still win.
-                errors = 1
-            if errors == 0:
-                with decided:
-                    if claimed or cancel.is_set():
-                        return _RacedCandidate(generated, None, preflight_errors=0)
-                    claimed = True
-                    cancel.set()
-            return _RacedCandidate(generated, None, preflight_errors=errors)
+            nonlocal claimed, winner
+            try:
+                generated = prove_once()
+                code = generated.lean_code
+                if not code.strip():
+                    return _RacedCandidate(generated, None, preflight_errors=1_000)
+                errors = sum(d.severity == "error" for d in preflight(code))
+                if errors == 0 and not _aligned_with_request(request.prompt, code):
+                    # A statement the worker would reject after the API compile (for example
+                    # `True` for an x²-continuity request) is a loser, so a correct rival can
+                    # still win.
+                    errors = 1
+                if errors == 0:
+                    with decided:
+                        if claimed or cancel.is_set():
+                            if slot is not None:
+                                slot.offer(generated)
+                            return _RacedCandidate(generated, None, preflight_errors=0)
+                        claimed = True
+                        winner = generated
+                        cancel.set()
+                return _RacedCandidate(generated, None, preflight_errors=errors)
+            finally:
+                if slot is not None:
+                    slot.finished_one()
 
         result = t2_lane.race_candidates(
             [task] * t2_lane.CANDIDATE_COUNT,
@@ -1519,6 +1666,11 @@ class ProofPipeline:
             errors_raised = [c.error for c in result.candidates if c.error is not None]
             raise errors_raised[0] if errors_raised else RuntimeError("no candidate finished")
         assert result.best.value is not None
+        # The candidate that took the race is the one submitted, even when a rival with a lower
+        # index had finished by the time the result was read (that rival is the held alternate).
+        # Off (the nd_k2_par race alone), the result is unchanged: the race's own best.
+        if winner is not None and slot is not None:
+            return winner
         return result.best.value.generated
 
     def _lemma_alias_table(self) -> LemmaAliasTable:
@@ -1613,6 +1765,7 @@ class ProofPipeline:
             sketch=seed.generated.sketch,
             provider="pals-deterministic",
         )
+        generated = self._layout(generated)
         route = RepairRouteDecision(
             route="prove",
             rationale="Deterministic substitution of a known wrong Mathlib lemma name.",
@@ -1997,8 +2150,10 @@ def _validate_proof_preserves_sketch(generated: GeneratedProof) -> list[Diagnost
     ):
         return []
 
-    scaffold = _sketch_scaffold_lines(sketch.lean_code)
-    proof_lines = _lean_structural_lines(generated.lean_code)
+    # The proof is laid out by ``ProofPipeline._layout`` (a line-leading ``|`` joined upward) and
+    # the sketch is not: both sides are compared in the same layout, whitespace only.
+    scaffold = _sketch_scaffold_lines(normalise_signature_layout(sketch.lean_code))
+    proof_lines = _lean_structural_lines(normalise_signature_layout(generated.lean_code))
     proof_index = 0
     for sketch_line in scaffold:
         while proof_index < len(proof_lines) and proof_lines[proof_index] != sketch_line:
