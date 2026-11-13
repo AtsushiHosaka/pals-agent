@@ -47,6 +47,7 @@ NAME_SAFETY_ENV = "PALS_T2_NAME_SAFETY_ENABLED"
 HETERO_RACE_ENV = "PALS_T2_HETERO_RACE_ENABLED"
 SOURCE_HYGIENE_ENV = "PALS_T2_SOURCE_HYGIENE_ENABLED"
 CHEAP_FIRST_ENV = "PALS_T2_CHEAP_FIRST_ENABLED"
+CHEAP_PATCH_ROUNDS_ENV = "PALS_T2_CHEAP_PATCH_ROUNDS"
 # Reasoning effort of each race candidate when HETERO_RACE_ENV is on: a fast one and a strong one.
 HETERO_EFFORTS = ("low", "medium")
 # How long a failed compile waits for the held alternate candidate to finish generating. A model
@@ -81,6 +82,22 @@ def cheap_first_enabled() -> bool:
     (a patch, a full repair) runs at the role's own, stronger effort. One candidate, no race: a
     plain compile failure escalates instead of paying for a second candidate up front."""
     return _flag(CHEAP_FIRST_ENV)
+
+
+def cheap_patch_rounds() -> int:
+    """How many of the first patch repairs also run at the fast effort (0 = none, the default).
+
+    Only with cheap-first: a patch at the role's own (medium) effort took 20 s at the median, so a
+    one-repair success rarely fits in 30 s. Later patches and the full repair keep the strong
+    effort, so a repair that the fast one cannot make still escalates."""
+    raw = os.environ.get(CHEAP_PATCH_ROUNDS_ENV)
+    if raw is None:
+        return 0
+    if not raw.isdigit() or int(raw) > PATCH_REPAIR_MAX_ROUNDS:
+        raise ValueError(
+            f"{CHEAP_PATCH_ROUNDS_ENV} must be an integer from 0 to {PATCH_REPAIR_MAX_ROUNDS}"
+        )
+    return int(raw)
 
 
 def source_hygiene_enabled() -> bool:
@@ -133,6 +150,7 @@ def validate_flags() -> None:
         hetero_race_enabled,
         source_hygiene_enabled,
         cheap_first_enabled,
+        cheap_patch_rounds,
         lean_slots,
         lean_process_slots,
     ):

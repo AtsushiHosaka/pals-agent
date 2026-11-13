@@ -63,6 +63,8 @@ ARM_FLAGS: dict[str, set[str]] = {
     "single_fix": {"nodraft", "pexpl", "preview", "patch", "names", "hygiene"},
     # low first, a patch at the role's own effort on a compile failure (no race, no alternate)
     "cheap_first": {"nodraft", "pexpl", "preview", "patch", "names", "hygiene", "cheapfirst"},
+    # cheap_first, and the first patch repair also at the fast effort
+    "cheap_patch1": {"nodraft", "pexpl", "preview", "patch", "names", "hygiene", "cheapfirst"},
     # hetero_par + patch repair after the alternate + deterministic header fixes + name guidance
     "hetero_fix": {"nodraft", "race", "pexpl", "preview", "hetero", "patch", "names", "hygiene"},
     # nd_k2 plus the explanation and the semantic review started when a candidate enters Lean
@@ -87,7 +89,10 @@ _UNKNOWN_ID = re.compile(r"unknown (identifier|constant|namespace)|unknown ident
 
 
 # Extra environment of an arm (not a boolean flag).
-ARM_ENV: dict[str, dict[str, str]] = {"nd_k2_slot1": {"PALS_T2_LEAN_SLOTS": "1"}}
+ARM_ENV: dict[str, dict[str, str]] = {
+    "nd_k2_slot1": {"PALS_T2_LEAN_SLOTS": "1"},
+    "cheap_patch1": {"PALS_T2_CHEAP_PATCH_ROUNDS": "1"},
+}
 
 
 def set_arm(arm: str) -> dict[str, str]:
@@ -95,6 +100,7 @@ def set_arm(arm: str) -> dict[str, str]:
     env = {name: ("true" if key in on else "false") for key, name in FLAG_NAMES.items()}
     os.environ.update(env)
     os.environ.pop("PALS_T2_LEAN_SLOTS", None)
+    os.environ.pop("PALS_T2_CHEAP_PATCH_ROUNDS", None)
     extra = ARM_ENV.get(arm, {})
     os.environ.update(extra)
     return {**env, **extra}

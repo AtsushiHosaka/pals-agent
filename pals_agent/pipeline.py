@@ -1535,7 +1535,11 @@ class ProofPipeline:
                 "max_repair_attempts": self.max_repair_attempts,
             },
         )
-        patched = patcher(request, feedback)
+        cheap_patch = (
+            t2_lane.cheap_first_enabled() and repairs_used < t2_lane.cheap_patch_rounds()
+        )
+        with t2_lane.candidate_variant(0) if cheap_patch else nullcontext():
+            patched = patcher(request, feedback)
         if patched is None or not patched.lean_code.strip():
             return None
         patched = self._layout(patched, request)

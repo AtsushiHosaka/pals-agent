@@ -129,3 +129,59 @@ def test_the_effort_the_client_really_gets(monkeypatch: pytest.MonkeyPatch) -> N
     monkeypatch.delenv(t2_lane.CHEAP_FIRST_ENV)
     with t2_lane.candidate_variant(0):
         assert _prove_effort(terra) == "medium"  # switch off
+
+
+def _failed_seed(repairs_used: int) -> ApiRepairSeed:
+    return ApiRepairSeed(
+        generated=GeneratedProof(lean_code=BAD, model="m", raw_model_output=BAD),
+        verification=VerificationResult(
+            success=False, stdout="", stderr="", elapsed_ms=1,
+            diagnostics=[Diagnostic(
+                severity="error", code="verifier_compile_failed", message="Compiler rejected it.",
+            )],
+        ),
+        attempt=repairs_used + 1, repairs_used=repairs_used,
+    )
+
+
+@pytest.mark.parametrize(
+    "rounds,repairs_used,expected",
+    [("1", 0, ["low"]), ("1", 1, [None]), (None, 0, [None]), ("2", 1, ["low"])],
+)
+def test_the_first_patch_rounds_may_take_the_fast_effort(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    rounds: str | None, repairs_used: int, expected: list[str | None],
+) -> None:
+    _flags(monkeypatch, **BASE, **{t2_lane.CHEAP_FIRST_ENV: True, t2_lane.PATCH_REPAIR_ENV: True})
+    if rounds is None:
+        monkeypatch.delenv(t2_lane.CHEAP_PATCH_ROUNDS_ENV, raising=False)
+    else:
+        monkeypatch.setenv(t2_lane.CHEAP_PATCH_ROUNDS_ENV, rounds)
+    generator = EffortGenerator([GOOD], patches=[GOOD])
+    _api_pipeline(tmp_path, generator, max_repair_attempts=4).run_statement(
+        statement=STATEMENT, proof_job_id="job-1", api_repair_seed=_failed_seed(repairs_used),
+        on_status=lambda *_a: None,
+    )
+    assert generator.calls[0] == "patch"
+    assert generator.repair_efforts[:1] == expected
+
+
+def test_a_patch_never_takes_the_fast_effort_without_cheap_first(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _flags(monkeypatch, **BASE, **{t2_lane.PATCH_REPAIR_ENV: True})
+    monkeypatch.delenv(t2_lane.CHEAP_FIRST_ENV, raising=False)
+    monkeypatch.setenv(t2_lane.CHEAP_PATCH_ROUNDS_ENV, "2")
+    generator = EffortGenerator([GOOD], patches=[GOOD])
+    _api_pipeline(tmp_path, generator, max_repair_attempts=4).run_statement(
+        statement=STATEMENT, proof_job_id="job-1", api_repair_seed=_failed_seed(0),
+        on_status=lambda *_a: None,
+    )
+    assert generator.repair_efforts[:1] == [None]
+
+
+def test_the_patch_rounds_setting_is_validated(monkeypatch: pytest.MonkeyPatch) -> None:
+    for bad in ("x", "3", "-1"):
+        monkeypatch.setenv(t2_lane.CHEAP_PATCH_ROUNDS_ENV, bad)
+        with pytest.raises(ValueError):
+            t2_lane.validate_flags()
