@@ -299,6 +299,9 @@ class ProofReuseRuntime:
     grammar_instantiation: bool = True
     # Optional stage 0 (pals_agent.stage0.Stage0), default None; also needs PALS_STAGE0_PORTFOLIO.
     stage0: Any = None
+    # Optional general-Recipe lane (pals_agent.general_recipe_stage.GeneralRecipeStage), default
+    # None; also needs PALS_GENERAL_RECIPE_LANE. Zero model calls, real Lean, every miss falls on.
+    general_lane: Any = None
 
     def answer(
         self, request: dict[str, Any], recipe_lookup: RecipeLookup | None = None, *,
@@ -328,6 +331,11 @@ class ProofReuseRuntime:
             )
             if grammar is not None:
                 return grammar
+            general = self.general_recipe_input(
+                request, recipe_search=recipe_search, deadline=deadline,
+            )
+            if general is not None:
+                return general
             stage0 = self.stage0_input(request, deadline=deadline)
             if stage0 is not None:
                 return stage0
@@ -996,6 +1004,48 @@ class ProofReuseRuntime:
         if result.outcome != "answered" or not result.answer_text:
             return None
         answer = {"text": result.answer_text, "evidence_kind": "lean_portfolio", "sources": []}
+        return ProofReuseResult("answered", None, answer, None, result.evidence())
+
+    def general_recipe_input(
+        self, request: dict[str, Any], *, recipe_search: RecipeSearch | None, deadline: float,
+    ) -> ProofReuseResult | None:
+        """A request that is a specialisation of a stored GENERAL Recipe, decided by real Lean.
+
+        The proposition comes from the vocabulary table (no model), the candidates from the same
+        Recipe search; the lane compiles ``theorem inst : P := by exact G ..`` and accepts only
+        when Lean accepts, the declared statement is P, only standard axioms are used and the
+        general theorem is in the proof term. Default off; every miss returns None so the request
+        continues on the established route.
+        """
+        if self.general_lane is None:  # default path: nothing imported, nothing evaluated
+            return None
+        from pals_agent.general_recipe_stage import EVIDENCE_KIND, stage_enabled
+
+        if (
+            not stage_enabled() or recipe_search is None
+            or request.get("context_turns") or request.get("chat_history")
+            or request.get("attachment_ids") or request.get("chat_images")
+            or request.get("material_context") or current_chat_images()
+            or _conversation_history(request)
+        ):
+            return None
+        statement, language, _ = _request_input(request)
+        parsed = parse_request(statement)
+        if parsed is None or not parsed.search_query:
+            return None
+        try:
+            recipes = validate_recipe_candidates(
+                recipe_search(parsed.search_query, language), language=language,
+            )
+        except ValueError:
+            return None
+        result = self.general_lane.run(
+            parsed.proposition, recipes, language,
+            budget_s=min(30.0, deadline - time.monotonic() - 30.0),
+        )
+        if result.outcome != "answered" or not result.answer_text:
+            return None
+        answer = {"text": result.answer_text, "evidence_kind": EVIDENCE_KIND, "sources": []}
         return ProofReuseResult("answered", None, answer, None, result.evidence())
 
     def grammar_recipe_input(

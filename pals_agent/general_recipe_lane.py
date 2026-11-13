@@ -521,6 +521,62 @@ def _axioms(output: str, name: str) -> set[str] | None:
     return None
 
 
+_RELATIONS: Final = ("↔", "≠", "≤", "≥", "⊆", "∣", "∈", "<", ">", "=")
+_HEAD_IDENTIFIER = re.compile(r"[^\W\d][\w'.]*")
+
+
+def conclusion_head(statement: str) -> str:
+    """What a statement finally asserts: its top-level relation, else its head constant.
+
+    ``∀ n, 0 ≤ a → a ^ n ≤ b ^ n`` -> ``≤``; ``Continuous (fun x => x ^ 2)`` -> ``Continuous``.
+    Binders, hypotheses (``→``) and everything inside parentheses are skipped.
+    """
+    text = " ".join(statement.split())
+    while text.startswith(("∀", "∃")):
+        depth = 0
+        for index, character in enumerate(text):
+            depth += character in "([{⟨⦃"
+            depth -= character in ")]}⟩⦄"
+            if character == "," and depth == 0:
+                text = text[index + 1 :].strip()
+                break
+        else:
+            break
+    depth, last = 0, 0
+    for index, character in enumerate(text):
+        depth += character in "([{⟨⦃"
+        depth -= character in ")]}⟩⦄"
+        if depth == 0 and character == "→":
+            last = index + 1
+    text = text[last:].strip()
+    depth = 0
+    for character in text:
+        depth += character in "([{⟨⦃"
+        depth -= character in ")]}⟩⦄"
+        if depth == 0 and character in "↔≠≤≥⊆∣∈<>=":
+            return character
+    match = _HEAD_IDENTIFIER.search(text)
+    return match.group(0).rsplit(".", 1)[-1] if match else ""
+
+
+def related(proposition: str, recipe: PoolRecipe) -> bool:
+    """The request asserts the same kind of thing as the Recipe's conclusion.
+
+    Lean's acceptance already makes the request true; this is about *credit*.  The bound-argument
+    closers use ``convert`` and can close a goal of a different kind through ``propext`` while the
+    Recipe stays in the term (``(2 : ℝ) + 2 = 4`` "proved" by a differentiability Recipe), so a
+    Recipe that concludes something else is not credited with the instance.
+    """
+    head, asked = conclusion_head(recipe.target_source), conclusion_head(proposition)
+    if not head or not asked:
+        return False
+    if head == asked:
+        return True
+    # pointwise corollaries of a global Recipe: ContinuousAt / Continuous, DifferentiableAt / ...
+    short, long_ = sorted((head, asked), key=len)
+    return short[0].isalpha() and len(short) >= 4 and long_.startswith(short)
+
+
 def back_check(source: LaneSource, attempt: Attempt, output: str) -> str | None:
     """None when every deterministic check passes for this candidate, else a rejection code.
 
@@ -613,6 +669,8 @@ def answer(
         result.timings_ms["lean"] = round(result.timings_ms.get("lean", 0.0) + seconds * 1000, 1)
         for attempt in source.attempts:
             verdict = back_check(source, attempt, output)
+            if verdict is None and with_bound and not related(attempt.proposition, attempt.recipe):
+                verdict = "unrelated_conclusion"
             result.tried.append(
                 {
                     "recipe": attempt.recipe.recipe_id,
