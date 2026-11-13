@@ -8,8 +8,8 @@ would double the cost; the replay keeps the claim/cancel/deadline logic real and
 time and cost measured.  Reported per item: fast outcome and reason, seconds to verified and to
 shown, the winner and the total, and the usd of both paths.
 
-Safety: the input must be a manifest that contains ONLY dev_unseen or tuning items (never held_out) (the file built from
-docs/generation-eval-freshman-v1/manifest.json); any other split aborts before any call.
+Safety: the input must be a manifest that contains ONLY dev_unseen or tuning items (never
+held_out), built from docs/generation-eval-freshman-v1/manifest.json); any other split aborts before any call.
 
     python scripts/eval/run_freshman_fast.py --manifest DEV.json --out DIR --normal-log LOG ...
 """
