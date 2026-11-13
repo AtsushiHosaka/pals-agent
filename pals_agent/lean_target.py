@@ -39,16 +39,32 @@ def extract_single_target_declaration(source: str) -> LeanTargetDeclaration | No
     return _parse_declaration(executable, declarations[0])
 
 
-def target_propositions(source: str) -> list[str]:
-    """The propositions of every top-level theorem, lemma or example (empty if none parse)."""
+def target_headers(source: str) -> tuple[int, list[str]]:
+    """(number of top-level theorem/lemma/example declarations, their headers).
+
+    A header is the text between the declaration keyword and its top-level ``:=``: the name, all
+    binders and hypotheses, and the proposition. A declaration whose header cannot be delimited
+    is counted but contributes no header, so a caller never mistakes "unparseable" for "absent".
+    """
     if not isinstance(source, str) or not source.strip():
-        return []
+        return 0, []
     executable = _without_lean_comments_and_literals(source)
-    parsed = (
-        _parse_declaration(executable, match)
-        for match in _top_level_proof_declarations(executable)
-    )
-    return [declaration.proposition for declaration in parsed if declaration is not None]
+    matches = _top_level_proof_declarations(executable)
+    headers: list[str] = []
+    for match in matches:
+        depth = 0
+        index = match.end()
+        while index < len(executable):
+            character = executable[index]
+            if character in "([{":
+                depth += 1
+            elif character in ")]}":
+                depth = max(0, depth - 1)
+            elif depth == 0 and executable.startswith(":=", index):
+                headers.append(" ".join(executable[match.end() : index].split()))
+                break
+            index += 1
+    return len(matches), headers
 
 
 def _top_level_proof_declarations(source: str) -> list[re.Match[str]]:

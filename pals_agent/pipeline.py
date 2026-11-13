@@ -25,7 +25,7 @@ from pals_agent.lean_profiles import LibraryProfileNotEnabled, ProfileRoutedVeri
 from pals_agent.lean_source_policy import (
     strip_lean_comments_and_strings as _strip_lean_comments_and_strings,
 )
-from pals_agent.lean_target import extract_single_target_declaration, target_propositions
+from pals_agent.lean_target import extract_single_target_declaration, target_headers
 from pals_agent.lean_templates import template_proof_for_request, template_proof_for_sketch
 from pals_agent.lemma_repair import (
     LemmaAliasTable,
@@ -2084,11 +2084,14 @@ def validate_generated_lean(
         )
         if formal_diagnostics:
             return formal_diagnostics
-    scheme_diagnostics = scheme_statement_diagnostics(
-        f"{request.prompt}\n{request.formal_statement or ''}", target_propositions(lean_code)
-    )
-    if scheme_diagnostics:
-        return scheme_diagnostics
+    if formal_statement is None:
+        # With a pinned formal statement the harness check above already fixed the claim.
+        declaration_count, headers = target_headers(lean_code)
+        scheme_diagnostics = scheme_statement_diagnostics(
+            request.prompt, declaration_count, headers
+        )
+        if scheme_diagnostics:
+            return scheme_diagnostics
     return _validate_requested_proof_method(request, lean_code)
 
 

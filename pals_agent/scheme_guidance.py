@@ -25,24 +25,41 @@ SCHEME_STATEMENT_CODE: Final = "pals.scheme_statement_weakened"
 
 # Request cues. Strong cues drive the check; weak cues only add guidance.
 _STRONG_CUE: Final = re.compile(
-    r"\b(?:(?:affine|projective|noetherian|integral|reduced|separated|quasi-?compact|"
-    r"algebraic)\s+schemes?|(?:of|between)\s+schemes|Spec\s*\(?\w|structure\s+sheaf|"
-    r"quasi-?coherent|affine\s+morphism|closed\s+immersion|open\s+immersion|"
-    r"proper\s+morphism|scheme\s+morphism)\b"
-    r"|スキーム|構造層|準連接|アフィン射|閉埋め込み|開埋め込み|固有射",
+    r"\b(?:(?:affine|projective|noetherian|integral|reduced|separated|quasi-?compact)\s+"
+    r"schemes?|morphisms?\s+(?:of|between)\s+schemes|(?:sheaf|sheaves|cohomology)\s+on\s+"
+    r"(?:a\s+|an\s+)?schemes?|structure\s+sheaf|quasi-?coherent|affine\s+morphism|"
+    r"closed\s+immersion|open\s+immersion|scheme\s+morphism)\b"
+    r"|構造層|準連接|アフィン射|閉埋め込み|開埋め込み|固有射",
+    re.IGNORECASE,
+)
+# "Spec" with a capital S only: the spectrum functor, not "specific" or "spec".
+_SPEC_CUE: Final = re.compile(r"\bSpec(?:\s+|\s*\()[A-Za-z]")
+# Japanese "スキーム" also means a numerical or cryptographic scheme: it counts only beside a
+# word from algebraic geometry or commutative algebra.
+_JA_SCHEME: Final = re.compile(r"スキーム")
+_JA_GEOMETRY: Final = re.compile(r"環|Spec|アフィン|射|層|代数幾何|準コンパクト|可換")
+# Requests about numerical analysis or cryptography are never scheme-theory requests.
+_NOT_SCHEME_THEORY: Final = re.compile(
+    r"\b(?:numerical|finite[- ]difference|difference\s+scheme|euler|runge|heat\s+equation|"
+    r"hash|signature\s+scheme|encryption)\b|数値|差分|ハッシュ|認証|暗号|離散化",
     re.IGNORECASE,
 )
 _WEAK_CUE: Final = re.compile(
     r"\b(?:sheaf|sheaves|stalk|quasi-?compact|separated\s+morphism|base\s+change)\b|茎|層",
     re.IGNORECASE,
 )
-# A statement that talks about schemes uses at least one of these constants or notations.
+# A statement header that talks about schemes uses at least one of these constants or notations.
+# Bare ring-level or topological words (``IsIntegral``, ``IsReduced``, ``Opens``, ``stalk``) are
+# left out: they also occur in statements about rings and topological spaces.
 _STATEMENT_VOCABULARY: Final = re.compile(
     r"\b(?:Scheme|Spec|Proj|AlgebraicGeometry|IsAffine|IsAffineHom|IsAffineOpen|QuasiCompact|"
     r"QuasiSeparated|IsSeparated|IsProper|UniversallyClosed|IsClosedImmersion|IsOpenImmersion|"
-    r"IsIntegral|IsReduced|LocallyOfFiniteType|StructureSheaf|presheaf|Opens|SheafOfModules|"
-    r"IsQuasicoherent|LocallyRingedSpace|stalk)\b|Γ\(|Spec\.",
+    r"IsImmersion|LocallyOfFiniteType|LocallyOfFinitePresentation|StructureSheaf|Sheaf|"
+    r"SheafOfModules|LocallyRingedSpace)\b|Γ\(|Spec\.",
 )
+# A request that itself speaks of the topological space may be answered about ``PrimeSpectrum``.
+_TOPOLOGICAL_REQUEST: Final = re.compile(r"topolog|位相", re.IGNORECASE)
+_TOPOLOGICAL_VOCABULARY: Final = re.compile(r"\bPrimeSpectrum\b")
 
 _GUIDANCE: Final = """\
 Scheme theory (AlgebraicGeometry). The theorem MUST be stated about schemes, not about a ring,
@@ -74,39 +91,66 @@ def _cue_text(*parts: str | None) -> str:
 
 def is_scheme_request(*parts: str | None) -> bool:
     """True when the request text names schemes (strong cue)."""
-    return _STRONG_CUE.search(_cue_text(*parts)) is not None
+    text = _cue_text(*parts)
+    if _NOT_SCHEME_THEORY.search(text):
+        return False
+    return bool(
+        _STRONG_CUE.search(text)
+        or _SPEC_CUE.search(text)
+        or (_JA_SCHEME.search(text) and _JA_GEOMETRY.search(text))
+    )
 
 
 def scheme_guidance(*parts: str | None) -> str:
     """The guidance block for a scheme-theory request, else the empty string."""
     text = _cue_text(*parts)
-    if _STRONG_CUE.search(text) or (_WEAK_CUE.search(text) and "AlgebraicGeometry" in text):
+    if is_scheme_request(text) or (
+        _WEAK_CUE.search(text)
+        and "AlgebraicGeometry" in text
+        and not _NOT_SCHEME_THEORY.search(text)
+    ):
         return _GUIDANCE
     return ""
 
 
-def scheme_statement_diagnostics(request_text: str, statements: list[str]) -> list[Diagnostic]:
-    """Error diagnostics when a scheme request got statements with no scheme vocabulary.
+def scheme_statement_diagnostics(
+    request_text: str, declaration_count: int, headers: list[str]
+) -> list[Diagnostic]:
+    """Error diagnostics when a scheme request got a candidate with no scheme vocabulary.
 
-    ``statements`` are the propositions of the candidate's top-level theorem declarations.
-    A scheme request whose candidate has no theorem at all (only comments or definitions) is
-    rejected the same way: such a file compiles and would otherwise count as verified.
+    ``headers`` are the full headers (binders, hypotheses and proposition) of the candidate's
+    top-level theorem declarations, ``declaration_count`` how many there are. A candidate with
+    no theorem at all (only comments or definitions) is rejected, since such a file compiles and
+    would otherwise count as verified. A declaration whose header cannot be delimited is not
+    judged: the check holds back rather than guess.
     """
     if not is_scheme_request(request_text):
         return []
-    if any(_STATEMENT_VOCABULARY.search(statement) for statement in statements):
+    if declaration_count > 0 and not headers:
         return []
+    if declaration_count > len(headers):
+        return []
+    if any(_STATEMENT_VOCABULARY.search(header) for header in headers):
+        return []
+    if _TOPOLOGICAL_REQUEST.search(request_text) and any(
+        _TOPOLOGICAL_VOCABULARY.search(header) for header in headers
+    ):
+        return []
+    message = (
+        "The request is about schemes, but the candidate has no theorem."
+        if declaration_count == 0
+        else "The request is about schemes, but no theorem statement mentions a scheme, "
+        "`Spec`, a morphism property or another AlgebraicGeometry object: the candidate "
+        "proves a weaker algebraic or topological statement."
+    )
     return [
         Diagnostic(
             severity="error",
             code=SCHEME_STATEMENT_CODE,
             message=(
-                "The request is about schemes, but no theorem statement mentions a scheme, "
-                "`Spec`, a morphism property or another AlgebraicGeometry object: the candidate "
-                "proves a weaker algebraic or topological statement. State and prove the "
-                "requested claim itself about `AlgebraicGeometry.Scheme` (for a ring `R` use "
-                "`Spec (CommRingCat.of R)`). Do not replace it by a lemma about rings, "
-                "`PrimeSpectrum` or topological spaces."
+                f"{message} State and prove the requested claim itself about "
+                "`AlgebraicGeometry.Scheme` (for a ring `R` use `Spec (CommRingCat.of R)`). "
+                "Do not replace it by a lemma about rings, `PrimeSpectrum` or topological spaces."
             ),
         )
     ]
