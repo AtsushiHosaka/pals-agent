@@ -94,7 +94,7 @@ def test_a_proposed_source_is_the_first_candidate_and_the_generator_is_not_calle
     assert result.verification_pending  # the API's compile and the reviews decide, not this lane
     assert result.generated.model == "fast-first-attempt"
     assert "theorem" in result.generated.lean_code and "simp" in result.generated.lean_code
-    assert generator.proof_calls == 0 if hasattr(generator, "proof_calls") else True
+    assert generator.proofs == [GOOD]  # never consumed: the ordinary generation did not run
 
 
 def test_a_slow_model_hands_over_to_the_ordinary_path_at_the_deadline(tmp_path: Path) -> None:
@@ -175,3 +175,56 @@ def test_the_observer_sees_the_stage_times() -> None:
     lane = ffa.FastFirstAttempt(Model(), observer=events.append)
     lane.propose("For every natural number n, n + 0 = n.", formal_statement=None)
     assert events[0]["reason"] == "proposed_unchecked" and "model" in events[0]["seconds"]
+
+
+def test_a_failed_api_compile_of_the_fast_candidate_repairs_through_the_ordinary_flow(
+    tmp_path: Path,
+) -> None:
+    from pals_agent.models import Diagnostic, VerificationResult
+    from pals_agent.pipeline import ApiRepairSeed
+    from tests.unit.test_t2_pipeline import STATEMENT
+
+    pipeline = _pipeline(tmp_path, ffa.FastFirstAttempt(Model()), Generator([GOOD, GOOD, GOOD]))
+    first, _ = _run(pipeline)
+    assert first.generated.model == "fast-first-attempt"
+    failed = VerificationResult(
+        success=False,
+        diagnostics=[Diagnostic(severity="error", code="verifier_compile_failed",
+                                message="The Lean compiler rejected the candidate.")],
+        stdout="", stderr="", elapsed_ms=1,
+    )
+    seed = ApiRepairSeed(generated=first.generated, verification=failed, attempt=1,
+                         repairs_used=0)
+    repaired = pipeline.run_statement(
+        statement=STATEMENT, proof_job_id="job-1.repair-2", api_repair_seed=seed,
+        on_status=lambda *_a: None,
+    )
+    assert repaired.generated.model != "fast-first-attempt"  # the model repair ran, no draft needed
+
+
+def test_the_hook_is_inert_outside_api_reconcile(tmp_path: Path) -> None:
+    from pals_agent.artifacts import FileArtifactStore
+    from pals_agent.pipeline import ProofPipeline
+    from tests.unit.test_t2_pipeline import ScriptedVerifier
+
+    model = Model()
+    pipeline = ProofPipeline(
+        generator=Generator([GOOD]), verifier=ScriptedVerifier({GOOD}),
+        artifact_store=FileArtifactStore(tmp_path), fast_first_attempt=ffa.FastFirstAttempt(model),
+    )
+    pipeline.run_statement(statement="For every natural number n, n + 0 = n.",
+                           proof_job_id="j", on_status=lambda *_a: None)
+    assert model.calls == 0
+
+
+def test_the_gate_deadline_hands_over() -> None:
+    class SlowGate(Model):
+        def __call__(self, prompt, schema):  # type: ignore[no-untyped-def]
+            if "faithful" in schema.get("properties", {}):
+                time.sleep(1.0)
+            return super().__call__(prompt, schema)
+
+    proposal = ffa.FastFirstAttempt(SlowGate(), deadline_s=0.3).propose(
+        "For every natural number n, n + 0 = n.", formal_statement=None
+    )
+    assert proposal.sources == [] and proposal.reason == "gate_deadline"

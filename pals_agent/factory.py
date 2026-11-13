@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import os
 from dataclasses import replace
 
@@ -126,23 +127,23 @@ def build_fast_first_attempt(settings: AgentSettings) -> object | None:
 
     from pals_agent.fast_first_attempt import FastFirstAttempt, deadline_seconds
 
-    binding = fixed_model_default(ModelRole.PROVE)
-    client = _release_openai_client(settings)
+    # The model measured for this lane: the release's light model (the PROOF_REUSE_JUDGE binding,
+    # gpt-6-luna) with reasoning off.  The strong Lean-generation binding is too slow for the
+    # deadline (merged call and both fidelity reviews must fit in it).
+    binding = fixed_model_default(ModelRole.PROOF_REUSE_JUDGE)
+    deadline = deadline_seconds()
+    client = dataclasses.replace(_release_openai_client(settings), reasoning_effort="none")
 
     def model(prompt: str, schema: dict[str, object]) -> dict[str, object]:
-        import dataclasses
-
-        scoped = dataclasses.replace(client, reasoning_effort=binding.reasoning_effort)
-        raw = scoped.generate(
-            model=binding.model, prompt=prompt, response_schema=schema,
-            timeout_seconds=deadline_seconds(),
+        raw = client.generate(
+            model=binding.model, prompt=prompt, response_schema=schema, timeout_seconds=deadline,
         )
         value = _json.loads(raw)
         if not isinstance(value, dict):
             raise ValueError("model reply is not an object")
         return value
 
-    return FastFirstAttempt(model, deadline_s=deadline_seconds())
+    return FastFirstAttempt(model, deadline_s=deadline)
 
 
 def build_recipe_attempt_planner(settings: AgentSettings) -> RecipeAttemptPlannerV1 | None:
