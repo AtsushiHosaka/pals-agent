@@ -7,7 +7,7 @@ import pytest
 from pals_agent import t2_lane
 from pals_agent.lean_hygiene import normalise_source_header
 from tests.unit.test_t2_api_reconcile import _api_pipeline, _run
-from tests.unit.test_t2_pipeline import GOOD, Generator, _flags
+from tests.unit.test_t2_pipeline import GOOD, STATEMENT, Generator, _flags
 
 
 def test_a_stale_submodule_import_next_to_the_full_import_is_dropped() -> None:
@@ -64,3 +64,25 @@ def test_the_switch_is_validated_with_the_other_t2_flags(monkeypatch: pytest.Mon
     monkeypatch.setenv(t2_lane.SOURCE_HYGIENE_ENV, "maybe")
     with pytest.raises(ValueError):
         t2_lane.validate_flags()
+
+
+def test_ennreal_does_not_ask_for_nnreal() -> None:
+    src = "import Mathlib\nopen ENNReal\n\ntheorem t (x : ℝ≥0∞) : x ≤ x := le_rfl\n"
+    assert normalise_source_header(src) == src
+    mixed = "import Mathlib\n\ntheorem t (x : ℝ≥0) (y : ℝ≥0∞) : True := trivial\n"
+    both = normalise_source_header(mixed)
+    assert "open NNReal" in both and "open ENNReal" in both
+
+
+def test_a_request_with_its_own_header_is_never_rewritten(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The harness check needs the request's header verbatim in the output."""
+    _flags(monkeypatch)
+    monkeypatch.setenv(t2_lane.SOURCE_HYGIENE_ENV, "true")
+    code = GOOD.replace("import Mathlib", "import Mathlib\nimport Mathlib.Tactic.Omega", 1)
+    result = _api_pipeline(tmp_path, Generator([code])).run_statement(
+        statement=STATEMENT, formal_statement=code.split(":= by")[0].rstrip() + " := by\n  simp\n",
+        proof_job_id="job-1", on_status=lambda *_a: None,
+    )
+    assert "import Mathlib.Tactic.Omega" in result.generated.lean_code

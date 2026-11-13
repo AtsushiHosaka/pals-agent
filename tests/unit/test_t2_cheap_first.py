@@ -16,11 +16,22 @@ class EffortGenerator(Generator):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.efforts: list[str | None] = []
+        self.repair_efforts: list[str | None] = []
 
     def generate_direct_proof(self, request, draft):
         with self.lock:
             self.efforts.append(t2_lane.variant_effort())
         return super().generate_direct_proof(request, draft)
+
+    def generate_proof(self, request, draft, sketch, feedback=None):
+        with self.lock:
+            self.repair_efforts.append(t2_lane.variant_effort())
+        return super().generate_proof(request, draft, sketch, feedback)
+
+    def generate_patch(self, request, feedback):
+        with self.lock:
+            self.repair_efforts.append(t2_lane.variant_effort())
+        return super().generate_patch(request, feedback)
 
 
 BASE = {t2_lane.NO_DRAFT_ENV: True}
@@ -51,7 +62,7 @@ def test_a_repair_never_takes_the_fast_effort(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _flags(monkeypatch, **BASE, **{t2_lane.CHEAP_FIRST_ENV: True})
-    generator = EffortGenerator([GOOD, GOOD])
+    generator = EffortGenerator([GOOD, GOOD, GOOD], patches=[GOOD])
     seed = ApiRepairSeed(
         generated=GeneratedProof(lean_code=BAD, model="m", raw_model_output=BAD),
         verification=VerificationResult(
@@ -66,6 +77,8 @@ def test_a_repair_never_takes_the_fast_effort(
         statement=STATEMENT, proof_job_id="job-1", api_repair_seed=seed,
         on_status=lambda *_a: None,
     )
+    # A repair did run (a patch, or the full route to a proof), and none of it took the fast effort.
+    assert generator.repair_efforts and "low" not in generator.repair_efforts
     assert "low" not in generator.efforts
 
 
@@ -73,3 +86,46 @@ def test_the_switch_is_validated_with_the_other_t2_flags(monkeypatch: pytest.Mon
     monkeypatch.setenv(t2_lane.CHEAP_FIRST_ENV, "yes")
     with pytest.raises(ValueError):
         t2_lane.validate_flags()
+
+
+def test_cheap_first_never_reaches_a_race_thread(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A homogeneous race sets its own variants; cheap-first must not hand them efforts."""
+    _flags(monkeypatch, **BASE, **{
+        t2_lane.CHEAP_FIRST_ENV: True, t2_lane.PARALLEL_CANDIDATES_ENV: True,
+    })
+    monkeypatch.delenv(t2_lane.HETERO_RACE_ENV, raising=False)
+    generator = EffortGenerator([GOOD, GOOD], proof_delays=[0.0, 0.05])
+    _run(_api_pipeline(tmp_path, generator))
+    assert generator.efforts == [None, None]
+
+
+def _hybrid(model: str = "gpt-6.1-terra", *, effort: str | None = None):
+    from pals_agent.generator import HybridLeanGenerator
+    from pals_agent.openai import OpenAIResponsesClient
+
+    return HybridLeanGenerator(
+        model=model, provider="openai", use_release_role_bindings=True,
+        client=OpenAIResponsesClient(api_key="k", reasoning_effort=effort),  # type: ignore[arg-type]
+    )
+
+
+def _prove_effort(generator: Any) -> str | None:
+    from pals_agent.model_roles import ModelRole
+
+    return generator._stage_endpoint(ModelRole.PROVE)[3]
+
+
+def test_the_effort_the_client_really_gets(monkeypatch: pytest.MonkeyPatch) -> None:
+    _flags(monkeypatch)
+    monkeypatch.setenv(t2_lane.CHEAP_FIRST_ENV, "true")
+    terra = _hybrid()
+    with t2_lane.candidate_variant(0):
+        assert _prove_effort(terra) == "low"  # the first attempt
+    assert _prove_effort(terra) == "medium"  # a repair: the role's own effort
+    with t2_lane.candidate_variant(0):
+        assert _prove_effort(_hybrid("gpt-6-luna")) == "low"  # the release model is fixed low
+    monkeypatch.delenv(t2_lane.CHEAP_FIRST_ENV)
+    with t2_lane.candidate_variant(0):
+        assert _prove_effort(terra) == "medium"  # switch off

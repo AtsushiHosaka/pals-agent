@@ -59,7 +59,7 @@ ARM_FLAGS: dict[str, set[str]] = {
     "nd_k2_names": {"nodraft", "race", "names"},
     # production shape (run_hetero_api_sim.py): fast + strong candidate, held alternate
     "hetero_par": {"nodraft", "race", "pexpl", "preview", "hetero"},
-    # one candidate (the effort is pinned by --pin-effort) + patch repair + header fixes + names
+    # one candidate (run_hetero_api_sim.py --pin-effort) + patch repair + header fixes + names
     "single_fix": {"nodraft", "pexpl", "preview", "patch", "names", "hygiene"},
     # low first, a patch at the role's own effort on a compile failure (no race, no alternate)
     "cheap_first": {"nodraft", "pexpl", "preview", "patch", "names", "hygiene", "cheapfirst"},

@@ -20,9 +20,8 @@ _ANY_IMPORT = re.compile(r"^import\s+\S+\s*$")
 # Notation symbol -> the namespace whose ``open`` activates it.
 _NOTATION_NAMESPACE: tuple[tuple[str, str], ...] = (
     ("𝓝", "Topology"),
-    ("𝓝[", "Topology"),
     ("ℝ≥0∞", "ENNReal"),
-    ("ℝ≥0", "NNReal"),
+    ("ℝ≥0(?!∞)", "NNReal"),
 )
 
 
@@ -61,7 +60,7 @@ def normalise_source_header(source: str) -> str:
     needed = []
     seen: set[str] = set()
     for symbol, namespace in _NOTATION_NAMESPACE:
-        if namespace in seen or symbol not in body:
+        if namespace in seen or re.search(symbol, body) is None:
             continue
         seen.add(namespace)
         if not _opens(lines, namespace):

@@ -304,9 +304,15 @@ def variant_effort() -> str | None:
     """The reasoning effort of the race candidate running in this context (None outside a
     heterogeneous race): candidate 0 is the fast one, candidate 1 the strong one."""
     index = _variant.get()
-    if index is None or not (hetero_race_enabled() or cheap_first_enabled()):
+    if index is None:
         return None
-    return HETERO_EFFORTS[index % len(HETERO_EFFORTS)]
+    if hetero_race_enabled():
+        return HETERO_EFFORTS[index % len(HETERO_EFFORTS)]
+    # Cheap-first sets variant 0 for the one un-raced first attempt only; a race thread (which
+    # sets its own variants) never takes an effort from it.
+    if cheap_first_enabled() and index == 0 and not parallel_candidates_enabled():
+        return HETERO_EFFORTS[0]
+    return None
 
 
 def variant_instruction() -> str:

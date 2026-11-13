@@ -977,12 +977,14 @@ class ProofPipeline:
             attempt += 1
             repairs_used += 1
 
-    def _layout(self, generated: GeneratedProof) -> GeneratedProof:
+    def _layout(self, generated: GeneratedProof, request: ProofRequest) -> GeneratedProof:
         """The one place a produced source takes its normalised layout (idempotent)."""
         if not self.signature_layout_normalisation or not generated.lean_code:
             return generated
         code = normalise_signature_layout(generated.lean_code)
-        if t2_lane.source_hygiene_enabled():
+        # A request with a formal statement carries its own header, which the output must contain
+        # verbatim (the harness check): its imports and opens are never rewritten.
+        if t2_lane.source_hygiene_enabled() and not request.formal_statement:
             code = normalise_source_header(code)
         return generated if code == generated.lean_code else replace(generated, lean_code=code)
 
@@ -1014,7 +1016,8 @@ class ProofPipeline:
                     diagnostics=diagnostics,
                     feedback=feedback,
                     on_status=on_status,
-                )
+                ),
+                request,
             )
 
     def _generate_attempt_spliced(
@@ -1116,7 +1119,7 @@ class ProofPipeline:
                 race=(
                     (
                         lambda prove_once: self._race_first_attempt(
-                            request, lambda: self._layout(prove_once())
+                            request, lambda: self._layout(prove_once(), request)
                         )
                     )
                     if feedback is None
@@ -1531,7 +1534,7 @@ class ProofPipeline:
         patched = patcher(request, feedback)
         if patched is None or not patched.lean_code.strip():
             return None
-        patched = self._layout(patched)
+        patched = self._layout(patched, request)
         decision = RepairRouteDecision(
             route="prove",
             rationale="T2 patch repair from a sanitised failure summary.",
@@ -1776,7 +1779,7 @@ class ProofPipeline:
             sketch=seed.generated.sketch,
             provider="pals-deterministic",
         )
-        generated = self._layout(generated)
+        generated = self._layout(generated, request)
         route = RepairRouteDecision(
             route="prove",
             rationale="Deterministic substitution of a known wrong Mathlib lemma name.",
