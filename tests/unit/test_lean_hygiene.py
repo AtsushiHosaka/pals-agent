@@ -86,3 +86,15 @@ def test_a_request_with_its_own_header_is_never_rewritten(
         proof_job_id="job-1", on_status=lambda *_a: None,
     )
     assert "import Mathlib.Tactic.Omega" in result.generated.lean_code
+
+
+def test_hygiene_does_not_depend_on_the_signature_layout_setting(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stale = GOOD.replace("import Mathlib", "import Mathlib\nimport Mathlib.Tactic.Omega", 1)
+    _flags(monkeypatch)
+    monkeypatch.setenv(t2_lane.SOURCE_HYGIENE_ENV, "true")
+    result, _ = _run(
+        _api_pipeline(tmp_path, Generator([stale]), signature_layout_normalisation=False)
+    )
+    assert result.generated.lean_code == GOOD

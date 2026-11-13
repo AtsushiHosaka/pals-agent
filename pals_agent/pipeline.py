@@ -979,9 +979,13 @@ class ProofPipeline:
 
     def _layout(self, generated: GeneratedProof, request: ProofRequest) -> GeneratedProof:
         """The one place a produced source takes its normalised layout (idempotent)."""
-        if not self.signature_layout_normalisation or not generated.lean_code:
+        if not generated.lean_code:
             return generated
-        code = normalise_signature_layout(generated.lean_code)
+        code = generated.lean_code
+        # Two independent fixes: the whitespace-only signature layout (its own setting) and the
+        # source hygiene (its own flag).
+        if self.signature_layout_normalisation:
+            code = normalise_signature_layout(code)
         # A request with a formal statement carries its own header, which the output must contain
         # verbatim (the harness check): its imports and opens are never rewritten.
         if t2_lane.source_hygiene_enabled() and not request.formal_statement:
