@@ -1058,6 +1058,13 @@ class ProofReuseRuntime:
         budget = min(30.0, deadline - time.monotonic() - INSTANCE_REVIEW_MIN_SECONDS)
         if not eligible or budget < 10.0:
             return None
+        if (
+            self.grammar_instantiation
+            and deterministic_instance_proposal(statement, eligible) is not None
+        ):
+            # The grammar stage already put this request to the independent review (and it did
+            # not answer): a rejection is final, the review is never asked a second time.
+            return None
         found = self.general_lane.run(
             parsed.proposition, eligible, language, budget_s=budget, bound=False,
         )

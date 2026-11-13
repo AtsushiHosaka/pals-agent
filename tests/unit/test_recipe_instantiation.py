@@ -194,11 +194,16 @@ def test_elaborated_wrapper_closes_hypotheses_with_a_fixed_closer_list():
     proposition = "∀ n : ℕ, (3 : ℝ) ^ n ≤ 5 ^ n"
     instance = elaborate(HYPOTHESIS_RECIPE, proposition)
     assert "exact pow_le_pow_general _ _ _ _ _" in instance.source
-    last = instance.source.rstrip().splitlines()[-1]
-    assert last == (
+    lines = instance.source.rstrip().splitlines()
+    apply_at = next(i for i, line in enumerate(lines) if "intros; apply" in line)
+    assert lines[apply_at] == (
         "  | (intros; apply pow_le_pow_general <;> first | assumption | fun_prop | positivity"
         " | (norm_num; done) | linarith | (simp; done))"
     )
+    # before every `(by ..)` alternative: a `by` inside a term logs instead of throwing, so
+    # `first` could not fall back to the apply alternative from behind it
+    assert all("(by " not in line for line in lines[:apply_at])
+    assert any("(by norm_num)" in line for line in lines[apply_at + 1 :])
     assert instance.bindings == () and check_alignment(HYPOTHESIS_RECIPE, instance)
     # the closers never leave the declared statement: it is the request, nothing else
     assert f"theorem pals_recipe_instance : {proposition} := by" in instance.source

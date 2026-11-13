@@ -14,8 +14,8 @@
 
 ## 変更
 
-- agent: `general_recipe_input` は、lane(モデル呼び出し 0 回、agent 側の Lean)が plain 段で受理した Recipe を、提案として既存の `_recipe_instantiation` に渡す。独立審査と API 再導出は変えない。lane は「API が再導出できる範囲」である plain 段だけを使う(`bound=False`)。bound 段(`convert` 系の閉じ手)は、「一般定理が証明項にある」ことを `#print` で確かめる必要があり、API の source policy は `#` コマンドを拒否するので、API は再導出できない。使わない。
-- 共通モジュール `recipe_instantiation.py`(pals-agent と pals-api でバイト同一): `elaborate` の alternatives の最後に、一般定理の前提を閉じる固定の閉じ手 `(intros; apply G <;> first | assumption | fun_prop | positivity | (norm_num; done) | linarith | (simp; done))` を足した(Mathlib を import する Recipe のみ)。宣言する型は依頼の命題そのものなので、閉じ手は前提を閉じるだけで命題は変えられない。`module_sha256` を両リポジトリのベクトルで更新。
+- agent: `general_recipe_input` は、文法の段が既に独立審査にかけた依頼には走らない(却下は最終で、審査を二度かけない)。lane(モデル呼び出し 0 回、agent 側の Lean)が plain 段で受理した Recipe を、提案として既存の `_recipe_instantiation` に渡す。独立審査と API 再導出は変えない。lane は「API が再導出できる範囲」である plain 段だけを使う(`bound=False`)。bound 段(`convert` 系の閉じ手)は、「一般定理が証明項にある」ことを `#print` で確かめる必要があり、API の source policy は `#` コマンドを拒否するので、API は再導出できない。使わない。
+- 共通モジュール `recipe_instantiation.py`(pals-agent と pals-api でバイト同一): `elaborate` の alternatives の最後に、一般定理の前提を閉じる固定の閉じ手 `(intros; apply G <;> first | assumption | fun_prop | positivity | (norm_num; done) | linarith | (simp; done))` を足した(Mathlib を import する Recipe のみ)。**`(by norm_num)` を引数に持つ既存の alternative より前**に置く。項の中の `by` は、goal が残っても例外を投げずに「unsolved goals」をログに出すだけなので、`first` がその後ろの alternative に戻れない。後ろに置くと、lane が受理した命題(例: `0 < √(exp 1 + 1)`)を API のラッパーが compile できなかった(独立レビューで再現、実 Lean の回帰テストを追加)。これで lane の plain 段が受理するもの ⊆ API のラッパーが compile できるもの、が成り立つ。宣言する型は依頼の命題そのものなので、閉じ手は前提を閉じるだけで命題は変えられない。`module_sha256` を両リポジトリのベクトルで更新。
 - 整数リテラル以外の束縛: lane は束縛を出さない(引数は Lean の単一化が決める)ので、新たに必要な束縛の型はない。有理数・変数名の付け替え・式の代入は、Lean の高階単一化がそのまま扱う(例: `f := x^2+1`、`3x-5` の引き算の吸収)。hint は従来どおり、任意で未検証。
 
 ## 通しの確認(手元、モデル呼び出しなし)

@@ -559,17 +559,19 @@ def _alternatives(
         alternatives.append(f"exact {general} {named} _")
     for count in range(arity, -1, -1):
         alternatives.append("exact " + " ".join([general] + ["_"] * count))
+    if mathlib:
+        # Hypotheses of the general theorem that the request itself does not state: `apply` leaves
+        # them as side goals, closed only by this fixed list.  The declared type is the request's
+        # proposition, so the closers can discharge premises but never change the statement.
+        # It sits BEFORE the `(by ..)` alternatives: a `by` inside a term logs "unsolved goals"
+        # instead of throwing, so `first` cannot fall back past such an alternative.
+        alternatives.append(f"(intros; apply {general} <;> first | {_SIDE_GOAL_CLOSERS})")
     # `norm_num` only parses where Mathlib is imported; a parse error would void every alternative.
     for tactic in (("norm_num", "decide") if mathlib else ("decide",)):
         for side in (1, 2):
             if side <= arity:
                 arguments = ["_"] * (arity - side) + [f"(by {tactic})"] * side
                 alternatives.append("exact " + " ".join([general] + arguments))
-    if mathlib:
-        # Hypotheses of the general theorem that the request itself does not state: `apply` leaves
-        # them as side goals, closed only by this fixed list.  The declared type is the request's
-        # proposition, so the closers can discharge premises but never change the statement.
-        alternatives.append(f"(intros; apply {general} <;> first | {_SIDE_GOAL_CLOSERS})")
     return alternatives
 
 

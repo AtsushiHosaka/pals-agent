@@ -92,3 +92,17 @@ def test_the_api_wrapper_proves_a_hypothesis_instance_the_lane_accepts(general):
         "ja", budget_s=60.0, bound=False,
     )
     assert plain.outcome == "answered", (plain.code, plain.tried)
+
+
+def test_a_by_alternative_cannot_hide_the_side_goal_closers(general):
+    """`exact G _ (by norm_num)` logs "unsolved goals" instead of throwing, so it must come after
+    the `apply` alternative: the API wrapper has to compile what the lane's plain stage accepts."""
+    from pals_agent.recipe_instantiation import elaborate
+
+    source = (
+        "import Mathlib\n\ntheorem sqrt_pos_of (x : ℝ) (hx : 0 < x) : 0 < Real.sqrt x :=\n"
+        "  Real.sqrt_pos.mpr hx\n"
+    )
+    proposition = "0 < Real.sqrt (Real.exp 1 + 1)"
+    code, output, _ = general.runner.run(elaborate(source, proposition).source)
+    assert code == 0 and ": error" not in output, output[-500:]

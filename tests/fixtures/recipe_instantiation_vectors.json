@@ -38,5 +38,5 @@
     "proposition": "∀ (m : Nat), 5 ≤ 5 + m",
     "tail": "\n\ntheorem pals_recipe_instance : ∀ (m : Nat), 5 ≤ 5 + m := two_le_pow_add 5\n"
   },
-  "module_sha256": "a0dbd38a19e7fbdcce6f6df0207aec357034ed7ee6a9d511f761756227ae62fd"
+  "module_sha256": "7a62079eb9588004420e74cf475917522093309ef956b7ae2608a5ab8f0c5001"
 }

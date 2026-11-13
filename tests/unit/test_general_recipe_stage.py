@@ -30,10 +30,10 @@ class Scripted:
         return self.result
 
 
-def runtime(general_lane, instantiation=True):
+def runtime(general_lane, instantiation=True, grammar=False):
     return ProofReuseRuntime(
         client=None, catalog=None, general_lane=general_lane,  # type: ignore[arg-type]
-        instantiation_enabled=instantiation,
+        instantiation_enabled=instantiation, grammar_instantiation=grammar,
     )
 
 
@@ -62,10 +62,11 @@ def handoff(monkeypatch):
     return seen
 
 
-def call(general_lane, request=REQUEST, recipes=(POWER,), instantiation=True, seconds=120):
+def call(general_lane, request=REQUEST, recipes=(POWER,), instantiation=True, seconds=120,
+         grammar=False):
     search, calls = lookup(list(recipes))
     now = time.monotonic()
-    result = runtime(general_lane, instantiation).general_recipe_input(
+    result = runtime(general_lane, instantiation, grammar).general_recipe_input(
         request, recipe_search=search, claim_id=CLAIM_ID, deadline=now + seconds, started=now,
     )
     return result, calls
@@ -102,6 +103,13 @@ def test_a_lean_accepted_instance_is_proposed_to_the_unchanged_instantiation_rou
     assert scripted.calls[0][0] == "Continuous (fun x : ℝ => x ^ 3)"
     assert scripted.calls[0][4] is False  # plain stage only: what the API re-derives
     assert kwargs["claim_id"] == CLAIM_ID
+
+
+def test_a_request_the_grammar_stage_already_reviewed_is_not_reviewed_again(on, handoff):
+    """The grammar stage proposes first; its rejection is final (no second independent review)."""
+    scripted = Scripted(answered())
+    result, _ = call(scripted, grammar=True)
+    assert result is None and scripted.calls == [] and handoff == []
 
 
 def test_a_miss_returns_none_so_the_request_continues(on, handoff):
