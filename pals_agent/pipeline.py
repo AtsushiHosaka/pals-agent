@@ -2084,11 +2084,11 @@ def validate_generated_lean(
         )
         if formal_diagnostics:
             return formal_diagnostics
-    if formal_statement is None:
+    if not formal_statement:
         # With a pinned formal statement the harness check above already fixed the claim.
-        declaration_count, headers = target_headers(lean_code)
+        declaration_count, headers, preamble = target_headers(lean_code)
         scheme_diagnostics = scheme_statement_diagnostics(
-            request.prompt, declaration_count, headers
+            request.prompt, declaration_count, headers, preamble
         )
         if scheme_diagnostics:
             return scheme_diagnostics

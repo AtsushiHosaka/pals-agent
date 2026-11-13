@@ -26,22 +26,25 @@ SCHEME_STATEMENT_CODE: Final = "pals.scheme_statement_weakened"
 # Request cues. Strong cues drive the check; weak cues only add guidance.
 _STRONG_CUE: Final = re.compile(
     r"\b(?:(?:affine|projective|noetherian|integral|reduced|separated|quasi-?compact)\s+"
-    r"schemes?|morphisms?\s+(?:of|between)\s+schemes|(?:sheaf|sheaves|cohomology)\s+on\s+"
-    r"(?:a\s+|an\s+)?schemes?|structure\s+sheaf|quasi-?coherent|affine\s+morphism|"
-    r"closed\s+immersion|open\s+immersion|scheme\s+morphism)\b"
+    r"schemes?|morphisms?\s+(?:\w+\s+){0,3}?(?:of|between)\s+schemes|(?:sheaf|sheaves|"
+    r"cohomology)\s+on\s+(?:a\s+|an\s+)?schemes?|structure\s+sheaf|quasi-?coherent|"
+    r"affine\s+morphisms?|closed\s+immersions?|open\s+immersions?|scheme\s+morphisms?)\b"
     r"|構造層|準連接|アフィン射|閉埋め込み|開埋め込み|固有射",
     re.IGNORECASE,
 )
 # "Spec" with a capital S only: the spectrum functor, not "specific" or "spec".
-_SPEC_CUE: Final = re.compile(r"\bSpec(?:\s+|\s*\()[A-Za-z]")
+_SPEC_CUE: Final = re.compile(r"\bSpec(?:\s+|\s*\()[^\W\d_]|\bSpec(?:\s+|\s*\()[ℤℚℝℂ𝔸𝔽]")
 # Japanese "スキーム" also means a numerical or cryptographic scheme: it counts only beside a
 # word from algebraic geometry or commutative algebra.
 _JA_SCHEME: Final = re.compile(r"スキーム")
-_JA_GEOMETRY: Final = re.compile(r"環|Spec|アフィン|射|層|代数幾何|準コンパクト|可換")
+_JA_GEOMETRY: Final = re.compile(
+    r"(?<![循])環(?!境)|Spec|アフィン|射|(?<![階])層|代数幾何|準コンパクト|可換(?!図式)"
+)
 # Requests about numerical analysis or cryptography are never scheme-theory requests.
 _NOT_SCHEME_THEORY: Final = re.compile(
-    r"\b(?:numerical|finite[- ]difference|difference\s+scheme|euler|runge|heat\s+equation|"
-    r"hash|signature\s+scheme|encryption)\b|数値|差分|ハッシュ|認証|暗号|離散化",
+    r"\b(?:numerical|finite[- ]difference|difference\s+scheme|euler\s+(?:method|scheme|step)|"
+    r"runge|heat\s+equation|hash|signature\s+scheme|encryption)\b"
+    r"|数値(?:解|計算|積分|スキーム)|差分|ハッシュ|認証|暗号|離散化",
     re.IGNORECASE,
 )
 _WEAK_CUE: Final = re.compile(
@@ -54,7 +57,7 @@ _WEAK_CUE: Final = re.compile(
 _STATEMENT_VOCABULARY: Final = re.compile(
     r"\b(?:Scheme|Spec|Proj|AlgebraicGeometry|IsAffine|IsAffineHom|IsAffineOpen|QuasiCompact|"
     r"QuasiSeparated|IsSeparated|IsProper|UniversallyClosed|IsClosedImmersion|IsOpenImmersion|"
-    r"IsImmersion|LocallyOfFiniteType|LocallyOfFinitePresentation|StructureSheaf|Sheaf|"
+    r"IsImmersion|LocallyOfFiniteType|LocallyOfFinitePresentation|StructureSheaf|"
     r"SheafOfModules|LocallyRingedSpace)\b|Γ\(|Spec\.",
 )
 # A request that itself speaks of the topological space may be answered about ``PrimeSpectrum``.
@@ -114,12 +117,13 @@ def scheme_guidance(*parts: str | None) -> str:
 
 
 def scheme_statement_diagnostics(
-    request_text: str, declaration_count: int, headers: list[str]
+    request_text: str, declaration_count: int, headers: list[str], preamble: str = ""
 ) -> list[Diagnostic]:
     """Error diagnostics when a scheme request got a candidate with no scheme vocabulary.
 
     ``headers`` are the full headers (binders, hypotheses and proposition) of the candidate's
-    top-level theorem declarations, ``declaration_count`` how many there are. A candidate with
+    top-level theorem declarations, ``declaration_count`` how many there are and ``preamble`` the
+    text before the first one (``variable``, ``def`` lines). A candidate with
     no theorem at all (only comments or definitions) is rejected, since such a file compiles and
     would otherwise count as verified. A declaration whose header cannot be delimited is not
     judged: the check holds back rather than guess.
@@ -130,7 +134,9 @@ def scheme_statement_diagnostics(
         return []
     if declaration_count > len(headers):
         return []
-    if any(_STATEMENT_VOCABULARY.search(header) for header in headers):
+    if _STATEMENT_VOCABULARY.search(preamble) or any(
+        _STATEMENT_VOCABULARY.search(header) for header in headers
+    ):
         return []
     if _TOPOLOGICAL_REQUEST.search(request_text) and any(
         _TOPOLOGICAL_VOCABULARY.search(header) for header in headers

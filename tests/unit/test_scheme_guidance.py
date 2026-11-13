@@ -20,8 +20,10 @@ FAITHFUL = (
 
 
 def _diagnose(request_text: str, source: str) -> list[str]:
-    count, headers = target_headers(source)
-    return [d.code for d in scheme_statement_diagnostics(request_text, count, headers)]
+    count, headers, preamble = target_headers(source)
+    return [
+        d.code for d in scheme_statement_diagnostics(request_text, count, headers, preamble)
+    ]
 
 
 def test_cues_fire_on_scheme_requests_only() -> None:
@@ -86,8 +88,32 @@ def test_scheme_request_without_any_theorem_is_rejected() -> None:
     assert _diagnose("Show 1+1=2.", "import Mathlib\n") == []
 
 
+def test_scheme_bound_by_variable_or_def_or_let_is_accepted() -> None:
+    request = "Show that an affine scheme is quasi-compact."
+    for source in (
+        "variable (X : Scheme) [IsAffine X]\ntheorem t : CompactSpace X := inferInstance",
+        "def Y : Scheme := Spec (CommRingCat.of ℤ)\ntheorem t : CompactSpace Y := sorry",
+        "theorem t : let X := Spec (CommRingCat.of ℤ); QuasiCompact (𝟙 X) := by sorry",
+    ):
+        assert _diagnose(request, source) == [], source
+
+
+def test_more_cue_forms() -> None:
+    for text in (
+        "Show closed immersions are separated.",
+        "Show that a morphism of finite type between schemes is quasi-compact.",
+        "Show that Spec ℤ is connected.",
+        "Euler sequence on projective schemes",
+        "the Euler characteristic of an affine scheme is 1",
+        "可換環 R のスキーム Spec R は連結か",
+    ):
+        assert is_scheme_request(text), text
+    for text in ("環境スキームの循環を示せ", "階層スキームの設計", "可換図式のスキーム"):
+        assert not is_scheme_request(text), text
+
+
 def test_unparseable_header_is_held_back_not_rejected() -> None:
-    assert [d.code for d in scheme_statement_diagnostics(SPEC_QC, 1, [])] == []
+    assert [d.code for d in scheme_statement_diagnostics(SPEC_QC, 1, [], "")] == []
 
 
 def test_pipeline_validation_reports_the_code() -> None:
