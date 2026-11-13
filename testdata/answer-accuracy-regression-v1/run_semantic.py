@@ -31,6 +31,8 @@ def cases():
         dict(case="epsn_explicitN_request/tendsto", expected="approve?", statement=EPSN_STATEMENT, lean=(HERE / "epsn_tendsto.lean").read_text()),
         dict(case="epsn_explicitN_request/epsilonN", expected="approve", statement=EPSN_STATEMENT, lean=(HERE / "epsn_explicit.lean").read_text()),
         dict(case="epsn_explicitN_request/explicit_witness_in_statement", expected="approve", statement=EPSN_STATEMENT, lean=(HERE / "epsn_explicit_witness.lean").read_text()),
+        dict(case="defn_request/continuous_pow", expected="approve?", statement="関数 $x^2$ が実数全体で連続であることを、連続の ε-δ 定義を使って示せ。", lean="import Mathlib\n\ntheorem sq_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  fun_prop\n"),
+        dict(case="defn_request/epsilon_delta", expected="approve", statement="関数 $x^2$ が実数全体で連続であることを、連続の ε-δ 定義を使って示せ。", lean=probs["x2_continuity"]["lean"]),
         dict(case="epsn_plain/epsilonN", expected="approve", statement=EPSN_PLAIN, lean=(HERE / "epsn_explicit.lean").read_text()),
         dict(case="even_sum/mismatch_prime", expected="reject", statement=probs["even_sum"]["statement"], lean=probs["prime_dvd"]["lean"]),
         dict(case="ratio_two/mismatch_weaker", expected="reject", statement=probs["ratio_two"]["statement"],
