@@ -155,3 +155,69 @@ def test_library_trust_is_reported_for_verified_results() -> None:
     assert got is not None
     assert got["trust_level"] == "frontier_statement" and got["human_unreviewed"] is True
     assert got["frontier_modules"] == ["A.B"]
+
+
+def test_self_declared_incomplete_candidates_are_rejected() -> None:
+    from pals_agent.scheme_guidance import SCHEME_INCOMPLETE_CODE, scheme_incomplete_diagnostics
+
+    partial = (
+        "import Mathlib\nopen AlgebraicGeometry\n"
+        "-- Partial work; the localization is not established here.\n"
+        "theorem t (R : CommRingCat) : CompactSpace (Spec R) := inferInstance\n"
+    )
+    codes = [d.code for d in scheme_incomplete_diagnostics(SPEC_QC, partial)]
+    assert codes == [SCHEME_INCOMPLETE_CODE]
+    named = "theorem foo_partial (R : CommRingCat) : CompactSpace (Spec R) := inferInstance"
+    assert scheme_incomplete_diagnostics(SPEC_QC, named)
+    assert scheme_incomplete_diagnostics(SPEC_QC, FAITHFUL) == []
+    assert scheme_incomplete_diagnostics("Show 1+1=2.", partial) == []
+
+
+def test_stacks_tags_resolve_to_mathlib_declarations() -> None:
+    from pals_agent.stacks_tags import named_tags, stacks_tag_guidance
+
+    assert named_tags("Stacks Project Tag 02LS: show") == ["02LS"]
+    block = stacks_tag_guidance("Stacks Project Tag 02LS: a morphism is finite iff proper and lqf")
+    assert "IsFinite.iff_isProper_and_locallyQuasiFinite" in block
+    assert named_tags("tags 01K9 and 01KJ") == ["01K9", "01KJ"]
+    assert named_tags("see https://stacks.math.columbia.edu/tag/02LS") == ["02LS"]
+    assert stacks_tag_guidance("Show the derivative of x^3 is 3x^2.") == ""
+    assert stacks_tag_guidance("Tag 0ZZZ unknown") == ""
+
+
+def test_ordinary_partial_and_not_proved_wording_is_not_flagged() -> None:
+    from pals_agent.scheme_guidance import scheme_incomplete_diagnostics
+
+    for comment in (
+        "-- partial sums of the telescoping Finset.sum",
+        "/- the partial derivative of the sheaf -/",
+        "-- not proved by this lemma but by Mathlib",
+    ):
+        source = comment + "\n" + FAITHFUL
+        assert scheme_incomplete_diagnostics(SPEC_QC, source) == [], comment
+    for name in ("foo_partialOrder", "isOpen_partial_map"):
+        assert scheme_incomplete_diagnostics(SPEC_QC, f"theorem {name} : True := trivial") == []
+
+
+def test_incomplete_check_runs_only_without_a_pinned_formal_statement() -> None:
+    from pals_agent.scheme_guidance import SCHEME_INCOMPLETE_CODE
+
+    partial = "-- Partial work only.\n" + FAITHFUL
+    free = ProofRequest(id="p", prompt=SPEC_QC)
+    pinned = ProofRequest(id="p", prompt=SPEC_QC, formal_statement="theorem t : True")
+    assert SCHEME_INCOMPLETE_CODE in [d.code for d in validate_generated_lean(free, partial)]
+    assert SCHEME_INCOMPLETE_CODE not in [d.code for d in validate_generated_lean(pinned, partial)]
+
+
+def test_equivalence_requests_get_the_two_directions_guidance() -> None:
+    iff = "Show that Spec R is connected if and only if the only idempotents of R are 0 and 1."
+    assert "BOTH directions" in scheme_guidance(iff)
+    assert "BOTH directions" in scheme_guidance("スキーム Spec R が連結であることと同値な環の条件")
+    assert "BOTH directions" not in scheme_guidance(SPEC_QC)
+
+
+def test_equivalence_rule_ignores_category_equivalences_and_pinned_statements() -> None:
+    category = "Show the category of quasi-coherent sheaves on Spec R is equivalent to R-modules."
+    assert "BOTH directions" not in scheme_guidance(category)
+    pinned = scheme_guidance(SPEC_QC, "theorem t : A ↔ B")
+    assert "BOTH directions" not in pinned

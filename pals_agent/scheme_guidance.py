@@ -22,6 +22,7 @@ from typing import Final
 from pals_agent.models import Diagnostic
 
 SCHEME_STATEMENT_CODE: Final = "pals.scheme_statement_weakened"
+SCHEME_INCOMPLETE_CODE: Final = "pals.scheme_candidate_incomplete"
 
 # Request cues. Strong cues drive the check; weak cues only add guidance.
 _STRONG_CUE: Final = re.compile(
@@ -87,6 +88,26 @@ Cohomology of sheaves on schemes (derived pushforward, higher direct images) is 
 library: if the request needs it, say so in the Draft rather than formalizing a weaker claim.
 """
 
+_EQUIVALENCE_CUE: Final = re.compile(
+    r"\b(?:if\s+and\s+only\s+if|iff|equivalent|equivalence)\b|同値|必要十分|⇔|↔", re.IGNORECASE
+)
+_CATEGORY_EQUIVALENCE: Final = re.compile(r"\bcateg(?:ory|ories)\b|圏", re.IGNORECASE)
+_EQUIVALENCE_GUIDANCE: Final = """\
+The request is an equivalence between a property of a scheme (or of `Spec R`, or of its
+topological space) and a property of a ring. State ONE theorem `A ↔ B` whose two sides are
+exactly the two properties named in the request, and prove BOTH directions. Do not state a
+conjunction of separate facts, one direction only, or a lemma about only the ring or only the
+space. To pass between the scheme and the ring, state the bridge explicitly as a `have`:
+- Topology of the spectrum: `PrimeSpectrum R` is the topological space of `Spec R`; clopen subsets
+  correspond to idempotents: `PrimeSpectrum.isIdempotentElemEquivClopens`.
+- Connectedness: `connectedSpace_iff_clopen`, `isClopen_iff` (clopen sets of a preconnected
+  space are `∅` or `univ`), `isPreconnected_iff_subset_of_disjoint`.
+- Irreducible vs the nilradical: `PrimeSpectrum.irreducibleSpace_iff_isPrime_nilradical`.
+- Integral / reduced: `affine_isIntegral_iff`, `affine_isReduced_iff`.
+- A nontriviality hypothesis (`[Nontrivial R]`) belongs in the statement exactly when the request
+  has it (the empty space is not connected).
+"""
+
 
 def _cue_text(*parts: str | None) -> str:
     return "\n".join(part for part in parts if part)
@@ -112,6 +133,16 @@ def scheme_guidance(*parts: str | None) -> str:
         and "AlgebraicGeometry" in text
         and not _NOT_SCHEME_THEORY.search(text)
     ):
+        # Only the question itself decides (a pinned statement's own `↔` does not), and an
+        # equivalence of categories is not an equivalence of properties.
+        question = parts[0] or ""
+        pinned = len(parts) > 1 and bool(parts[1])
+        if (
+            not pinned
+            and _EQUIVALENCE_CUE.search(question)
+            and not _CATEGORY_EQUIVALENCE.search(question)
+        ):
+            return _GUIDANCE + _EQUIVALENCE_GUIDANCE
         return _GUIDANCE
     return ""
 
@@ -157,6 +188,47 @@ def scheme_statement_diagnostics(
                 f"{message} State and prove the requested claim itself about "
                 "`AlgebraicGeometry.Scheme` (for a ring `R` use `Spec (CommRingCat.of R)`). "
                 "Do not replace it by a lemma about rings, `PrimeSpectrum` or topological spaces."
+            ),
+        )
+    ]
+
+
+_COMMENT: Final = re.compile(r"--[^\n]*|/-.*?-/", re.DOTALL)
+# What a model writes when it proves only a part and says so. Measured: every weakened scheme
+# candidate that was not rejected by the vocabulary check carried such a comment.
+_SELF_DECLARED_INCOMPLETE: Final = re.compile(
+    r"\bpartial\s+(?:work|result|results|statement|proof|claim|version|formali[sz]ation|progress)\b|"
+    r"\bremains?\s+(?:open|unproved|unproven|to\s+be\s+proved)\b|"
+    r"\bnot\s+(?:yet\s+)?(?:proved|proven|established|formali[sz]ed)\s+(?:here|in\s+this)\b|"
+    r"\bunproved\b|\bunproven\b|\bno\s+lean\s+theorem\s+is\s+claimed\b|"
+    r"\bleft\s+(?:open|unproved)\b|\bcannot\s+verify\b",
+    re.IGNORECASE,
+)
+# A theorem named like a partial result (``foo_partial``); ``partialOrder`` or ``partial_map`` are
+# ordinary mathematical names and do not count.
+_PARTIAL_NAME: Final = re.compile(r"\b(?:theorem|lemma)\s+[\w.]*_partial\b")
+
+
+def scheme_incomplete_diagnostics(request_text: str, lean_code: str) -> list[Diagnostic]:
+    """Error diagnostics when a scheme request got a candidate that says it is incomplete.
+
+    A candidate whose own comments (or theorem name) declare that the requested claim is only
+    partly proved compiles and would otherwise count as verified. The check reads comments only,
+    so a proof is never judged by its tactics.
+    """
+    if not is_scheme_request(request_text):
+        return []
+    comments = " ".join(match.group(0) for match in _COMMENT.finditer(lean_code))
+    if not _SELF_DECLARED_INCOMPLETE.search(comments) and not _PARTIAL_NAME.search(lean_code):
+        return []
+    return [
+        Diagnostic(
+            severity="error",
+            code=SCHEME_INCOMPLETE_CODE,
+            message=(
+                "The candidate says in a comment or a name that it proves only part of the "
+                "request. Prove the complete requested claim in one theorem, with no `sorry`. If "
+                "a needed lemma is missing from Mathlib, prove it inside the theorem with `have`."
             ),
         )
     ]
