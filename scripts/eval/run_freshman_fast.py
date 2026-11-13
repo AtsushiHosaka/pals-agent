@@ -8,7 +8,7 @@ would double the cost; the replay keeps the claim/cancel/deadline logic real and
 time and cost measured.  Reported per item: fast outcome and reason, seconds to verified and to
 shown, the winner and the total, and the usd of both paths.
 
-Safety: the input must be a manifest that contains ONLY dev_unseen items (the file built from
+Safety: the input must be a manifest that contains ONLY dev_unseen or tuning items (never held_out) (the file built from
 docs/generation-eval-freshman-v1/manifest.json); any other split aborts before any call.
 
     python scripts/eval/run_freshman_fast.py --manifest DEV.json --out DIR --normal-log LOG ...
@@ -112,7 +112,7 @@ def main() -> None:
     args.out.mkdir(parents=True, exist_ok=True)
     problems = json.loads(args.manifest.read_text())["problems"]
     if not problems or any(p.get("split") not in {"dev_unseen", "tuning"} for p in problems):
-        raise SystemExit("refusing: the manifest must hold dev_unseen items only")
+        raise SystemExit("refusing: the manifest must hold dev_unseen or tuning items only")
     if any(not p["id"].startswith("fy1-") for p in problems) or len(problems) > 20:
         raise SystemExit("refusing: not the dev_unseen set")
     normal = normal_replay(args.normal_log, None)
@@ -184,7 +184,9 @@ def main() -> None:
             if spent[0] >= args.max_usd:
                 print("budget reached", round(spent[0], 4), flush=True)
                 break
-            n = normal.get(p["id"], {"answer_s": 600.0, "usd": 0.0, "ok": False})
+            if p["id"] not in normal:
+                raise SystemExit(f"no normal-path record for {p['id']}: refusing to guess")
+            n = normal[p["id"]]
             recorder.reset()
 
             replay = make_replay(n, forward_usage)
