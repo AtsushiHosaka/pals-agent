@@ -8,6 +8,7 @@ import threading
 import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import nullcontext
 from contextvars import copy_context
 from dataclasses import asdict, dataclass, replace
 from typing import Any, Final, Literal, Protocol, cast
@@ -20,6 +21,7 @@ from pals_agent.artifacts import (
 )
 from pals_agent.draft_catalog import DraftCatalog, DraftSearchResult
 from pals_agent.explanations import target_matches_statement
+from pals_agent.lean_hygiene import normalise_source_header
 from pals_agent.lean_layout import normalise_signature_layout
 from pals_agent.lean_profiles import LibraryProfileNotEnabled, ProfileRoutedVerifier
 from pals_agent.lean_source_policy import (
@@ -977,11 +979,19 @@ class ProofPipeline:
             attempt += 1
             repairs_used += 1
 
-    def _layout(self, generated: GeneratedProof) -> GeneratedProof:
+    def _layout(self, generated: GeneratedProof, request: ProofRequest) -> GeneratedProof:
         """The one place a produced source takes its normalised layout (idempotent)."""
-        if not self.signature_layout_normalisation or not generated.lean_code:
+        if not generated.lean_code:
             return generated
-        code = normalise_signature_layout(generated.lean_code)
+        code = generated.lean_code
+        # Two independent fixes: the whitespace-only signature layout (its own setting) and the
+        # source hygiene (its own flag).
+        if self.signature_layout_normalisation:
+            code = normalise_signature_layout(code)
+        # A request with a formal statement carries its own header, which the output must contain
+        # verbatim (the harness check): its imports and opens are never rewritten.
+        if t2_lane.source_hygiene_enabled() and not request.formal_statement:
+            code = normalise_source_header(code)
         return generated if code == generated.lean_code else replace(generated, lean_code=code)
 
     def _generate_attempt(
@@ -996,17 +1006,25 @@ class ProofPipeline:
         on_status: StatusCallback | None,
     ) -> GeneratedProof:
         """Every first attempt and model repair, in the layout the deployed verifier can audit."""
-        return self._layout(
-            self._generate_attempt_spliced(
-                request=request,
-                problem_id=problem_id,
-                attempt=attempt,
-                repairs_used=repairs_used,
-                diagnostics=diagnostics,
-                feedback=feedback,
-                on_status=on_status,
-            )
+        # Cheap-first: only the first, un-raced attempt takes the fast effort; a repair never does.
+        cheap = (
+            t2_lane.cheap_first_enabled()
+            and feedback is None
+            and not t2_lane.parallel_candidates_enabled()
         )
+        with t2_lane.candidate_variant(0) if cheap else nullcontext():
+            return self._layout(
+                self._generate_attempt_spliced(
+                    request=request,
+                    problem_id=problem_id,
+                    attempt=attempt,
+                    repairs_used=repairs_used,
+                    diagnostics=diagnostics,
+                    feedback=feedback,
+                    on_status=on_status,
+                ),
+                request,
+            )
 
     def _generate_attempt_spliced(
         self,
@@ -1107,7 +1125,7 @@ class ProofPipeline:
                 race=(
                     (
                         lambda prove_once: self._race_first_attempt(
-                            request, lambda: self._layout(prove_once())
+                            request, lambda: self._layout(prove_once(), request)
                         )
                     )
                     if feedback is None
@@ -1522,7 +1540,7 @@ class ProofPipeline:
         patched = patcher(request, feedback)
         if patched is None or not patched.lean_code.strip():
             return None
-        patched = self._layout(patched)
+        patched = self._layout(patched, request)
         decision = RepairRouteDecision(
             route="prove",
             rationale="T2 patch repair from a sanitised failure summary.",
@@ -1767,7 +1785,7 @@ class ProofPipeline:
             sketch=seed.generated.sketch,
             provider="pals-deterministic",
         )
-        generated = self._layout(generated)
+        generated = self._layout(generated, request)
         route = RepairRouteDecision(
             route="prove",
             rationale="Deterministic substitution of a known wrong Mathlib lemma name.",
