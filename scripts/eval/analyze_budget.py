@@ -41,10 +41,13 @@ def main() -> None:
     picks = [
         ("Draft(初回)", lambda r: first(r, "draft")),
         ("Sketch(初回)", lambda r: first(r, "sketch")),
-        ("Prove(初回、並列候補は遅い方)", lambda r: first(r, "prove")),
+        ("Prove(初回、採用された候補の段数と推論に依らず wall−検証−Draft−Sketch)",
+         lambda r: r["wall_s"] - r["api_overhead_s"] - r["submits_detail"][0]["verify_s"]
+         - (first(r, "draft") or 0) - (first(r, "sketch") or 0)),
         ("検証(API 往復 1.1 固定 + 検証器)", lambda r: r["api_overhead_s"] + r["submits_detail"][0]["verify_s"]),
         ("意味審査(検証後の待ち)", lambda r: r["answer"].get("review_s")),
         ("解説(検証後の待ち)", lambda r: r["answer"].get("explain_wait_s")),
+        ("解説の出力レビュー(解説の後の2本目の呼び出し)", lambda r: r["answer"].get("output_review_s")),
         ("検証済みまで(wall)", lambda r: r["wall_s"]),
         ("表示まで(answer、解説・審査まで)", lambda r: r["answer_s"]),
         ("負荷平均(開始)", lambda r: r["load_start"]),
@@ -52,7 +55,7 @@ def main() -> None:
     for label, pick in picks:
         print(f"| {label} | " + " | ".join(stage(r, label, pick) for r in runs.values()) + " |")
     print("\n測っていない段: OpenMath 化、検索(Draft の検索)、worker・API のキュー待ちと poll、"
-          "解説の出力レビュー(解説の後の 2 本目の呼び出し)、トークン精算。")
+          "トークン精算。(解説の出力レビューは --output-review の実行だけ測っている)")
 
 
 if __name__ == "__main__":
