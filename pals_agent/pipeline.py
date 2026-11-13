@@ -70,7 +70,7 @@ from pals_agent.proof_fastpaths import (
 from pals_agent.proof_flow_evidence import DraftEvidence
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
 from pals_agent.runtime_latency import latency_stage
-from pals_agent.scheme_guidance import scheme_statement_diagnostics
+from pals_agent.scheme_guidance import scheme_incomplete_diagnostics, scheme_statement_diagnostics
 from pals_agent.sketch_repair import repair_sketch
 
 _THEOREM_DECLARATION_RE = re.compile(
@@ -2155,6 +2155,9 @@ def validate_generated_lean(
         )
         if scheme_diagnostics:
             return scheme_diagnostics
+    incomplete_diagnostics = scheme_incomplete_diagnostics(request.prompt, lean_code)
+    if incomplete_diagnostics:
+        return incomplete_diagnostics
     return _validate_requested_proof_method(request, lean_code)
 
 

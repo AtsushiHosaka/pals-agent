@@ -155,3 +155,29 @@ def test_library_trust_is_reported_for_verified_results() -> None:
     assert got is not None
     assert got["trust_level"] == "frontier_statement" and got["human_unreviewed"] is True
     assert got["frontier_modules"] == ["A.B"]
+
+
+def test_self_declared_incomplete_candidates_are_rejected() -> None:
+    from pals_agent.scheme_guidance import SCHEME_INCOMPLETE_CODE, scheme_incomplete_diagnostics
+
+    partial = (
+        "import Mathlib\nopen AlgebraicGeometry\n"
+        "-- Partial work; the localization is not established here.\n"
+        "theorem t (R : CommRingCat) : CompactSpace (Spec R) := inferInstance\n"
+    )
+    codes = [d.code for d in scheme_incomplete_diagnostics(SPEC_QC, partial)]
+    assert codes == [SCHEME_INCOMPLETE_CODE]
+    named = "theorem foo_partial (R : CommRingCat) : CompactSpace (Spec R) := inferInstance"
+    assert scheme_incomplete_diagnostics(SPEC_QC, named)
+    assert scheme_incomplete_diagnostics(SPEC_QC, FAITHFUL) == []
+    assert scheme_incomplete_diagnostics("Show 1+1=2.", partial) == []
+
+
+def test_stacks_tags_resolve_to_mathlib_declarations() -> None:
+    from pals_agent.stacks_tags import named_tags, stacks_tag_guidance
+
+    assert named_tags("Stacks Project Tag 02LS: show") == ["02LS"]
+    block = stacks_tag_guidance("Stacks Project Tag 02LS: a morphism is finite iff proper and lqf")
+    assert "IsFinite.iff_isProper_and_locallyQuasiFinite" in block
+    assert stacks_tag_guidance("Show the derivative of x^3 is 3x^2.") == ""
+    assert stacks_tag_guidance("Tag 0ZZZ unknown") == ""

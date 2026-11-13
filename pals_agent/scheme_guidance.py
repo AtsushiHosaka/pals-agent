@@ -22,6 +22,7 @@ from typing import Final
 from pals_agent.models import Diagnostic
 
 SCHEME_STATEMENT_CODE: Final = "pals.scheme_statement_weakened"
+SCHEME_INCOMPLETE_CODE: Final = "pals.scheme_candidate_incomplete"
 
 # Request cues. Strong cues drive the check; weak cues only add guidance.
 _STRONG_CUE: Final = re.compile(
@@ -157,6 +158,44 @@ def scheme_statement_diagnostics(
                 f"{message} State and prove the requested claim itself about "
                 "`AlgebraicGeometry.Scheme` (for a ring `R` use `Spec (CommRingCat.of R)`). "
                 "Do not replace it by a lemma about rings, `PrimeSpectrum` or topological spaces."
+            ),
+        )
+    ]
+
+
+_COMMENT: Final = re.compile(r"--[^\n]*|/-.*?-/", re.DOTALL)
+# What a model writes when it proves only a part and says so. Measured: every weakened scheme
+# candidate that was not rejected by the vocabulary check carried such a comment.
+_SELF_DECLARED_INCOMPLETE: Final = re.compile(
+    r"\bpartial\b|\bremains?\s+(?:open|unproved|unproven|to\s+be\s+proved)\b|"
+    r"\bnot\s+(?:yet\s+)?(?:proved|proven|established|formali[sz]ed)\b|\bunproved\b|"
+    r"\bunproven\b|\bno\s+lean\s+theorem\s+is\s+claimed\b|\bleft\s+(?:open|unproved)\b|"
+    r"\bcannot\s+verify\b",
+    re.IGNORECASE,
+)
+_PARTIAL_NAME: Final = re.compile(r"\b(?:theorem|lemma)\s+\w*_?partial\w*", re.IGNORECASE)
+
+
+def scheme_incomplete_diagnostics(request_text: str, lean_code: str) -> list[Diagnostic]:
+    """Error diagnostics when a scheme request got a candidate that says it is incomplete.
+
+    A candidate whose own comments (or theorem name) declare that the requested claim is only
+    partly proved compiles and would otherwise count as verified. The check reads comments only,
+    so a proof is never judged by its tactics.
+    """
+    if not is_scheme_request(request_text):
+        return []
+    comments = " ".join(match.group(0) for match in _COMMENT.finditer(lean_code))
+    if not _SELF_DECLARED_INCOMPLETE.search(comments) and not _PARTIAL_NAME.search(lean_code):
+        return []
+    return [
+        Diagnostic(
+            severity="error",
+            code=SCHEME_INCOMPLETE_CODE,
+            message=(
+                "The candidate says in a comment or a name that it proves only part of the "
+                "request. Prove the complete requested claim in one theorem, with no `sorry`. If "
+                "a needed lemma is missing from Mathlib, prove it inside the theorem with `have`."
             ),
         )
     ]

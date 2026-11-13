@@ -101,7 +101,7 @@ LEAN_CODES = frozenset({
     "pals.repair_stopped_repeated_statement_mismatch", "pals.repair_generator_unavailable",
     "pals.repair_route_selection_failed", "pals.repair_stagnation", "pals.sketch_contract_mismatch",
     "pals.target_declaration_invalid", "pals.artifact_checkpoint_failed",
-    "pals.scheme_statement_weakened",
+    "pals.scheme_statement_weakened", "pals.scheme_candidate_incomplete",
     "llm.empty", "llm.generation_failed", "openai.error", "ollama.error",
 })
 _TIMEOUT_CODES = frozenset({

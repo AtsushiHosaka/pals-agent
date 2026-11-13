@@ -1,0 +1,222 @@
+{
+ "problems": [
+  {
+   "expected_answer": null,
+   "field": "structure-sheaf",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag2_basic_open_sections",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v2",
+   "split": "tuning",
+   "statement": "Show that for a commutative ring R and an element f of R, the ring of sections of the structure sheaf of Spec R over the basic open set D(f) is isomorphic to the localization of R at f.",
+   "statement_sha256": "f4188d7732f45a08575cb39b36e95d524453325fe7ec8da10f9c9d18eded1621",
+   "tags": [
+    "structure-sheaf",
+    "basic-open"
+   ],
+   "tier": "hard",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "structure-sheaf",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag2_stalk_local_ring",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v2",
+   "split": "tuning",
+   "statement": "Show that for every scheme X and every point x of X, the stalk of the structure sheaf of X at x is a local ring.",
+   "statement_sha256": "14d67f49136ee96978451e8776d596561f96619913e7f319a43fde28ebbe7f07",
+   "tags": [
+    "structure-sheaf",
+    "stalk"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "morphism-properties",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag2_closed_immersion_lft",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v2",
+   "split": "tuning",
+   "statement": "Show that every closed immersion of schemes is locally of finite type.",
+   "statement_sha256": "526e2a41dd0f774b0d898c0f73f1ec08a8a4943e4b7a61a5ff45be1ab91540fd",
+   "tags": [
+    "finite-type"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "morphism-properties",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag2_lft_composition",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v2",
+   "split": "tuning",
+   "statement": "Show that the composition of two morphisms of schemes that are locally of finite type is locally of finite type.",
+   "statement_sha256": "832d2a0a2e9c6169e70b0db08830d71f88b1a757469ded19536317cd0b3c7235",
+   "tags": [
+    "finite-type"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "morphism-properties",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag2_spec_map_separated",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v2",
+   "split": "tuning",
+   "statement": "Show that for every ring homomorphism R -> S of commutative rings, the induced morphism of schemes Spec S -> Spec R is separated.",
+   "statement_sha256": "c5f9fe258c9365940d3af2454256f96320a9b7d2964534417e7ff9246a2d8274",
+   "tags": [
+    "separated"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "morphism-properties",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag2_finite_is_proper",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v2",
+   "split": "tuning",
+   "statement": "Show that every finite morphism of schemes is proper.",
+   "statement_sha256": "7df342294927bb474c7b9b90754943ce5b6989de52bc25129357274f70bd035e",
+   "tags": [
+    "proper"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "fiber-products",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag2_fiber_product_affine",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v2",
+   "split": "tuning",
+   "statement": "Show that for ring homomorphisms R -> A and R -> B of commutative rings, the fiber product of Spec A and Spec B over Spec R is an affine scheme.",
+   "statement_sha256": "5bbdb45389434a2ce123e444e70e6ae3745ca5009dd2ff96e5f5d3ff7983cbd1",
+   "tags": [
+    "fiber-product",
+    "affine-scheme"
+   ],
+   "tier": "hard",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "fiber-products",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag2_affine_base_change",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v2",
+   "split": "tuning",
+   "statement": "Show that the base change of an affine morphism of schemes along any morphism of schemes is affine.",
+   "statement_sha256": "257817eaa3b76398138fbdf61269b37c65eba4ec5ff061088289bc5c7f27ed33",
+   "tags": [
+    "fiber-product",
+    "base-change"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "stacks-tag",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag2_stacks_02LS_finite_iff_proper_qf",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v2",
+   "split": "tuning",
+   "statement": "Stacks Project Tag 02LS: show that a morphism of schemes is finite if and only if it is proper and locally quasi-finite.",
+   "statement_sha256": "d8bbf16ec622606f8711132ccf98e0b03600c5fdbc9eed28e9622e21ed57113e",
+   "tags": [
+    "stacks-tag",
+    "02LS"
+   ],
+   "tier": "hard",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "stacks-tag",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag2_stacks_01KJ_diagonal_immersion",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v2",
+   "split": "tuning",
+   "statement": "Stacks Project Tag 01KJ: show that the diagonal morphism of any morphism of schemes is an immersion.",
+   "statement_sha256": "9f4b0cec5ae38effdbbc0fe5b5e1c915916361a6651a817e4173c2b9cf6036c9",
+   "tags": [
+    "stacks-tag",
+    "01KJ"
+   ],
+   "tier": "hard",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "stacks-tag",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag2_stacks_01K9_closed_iff_specializing",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v2",
+   "split": "tuning",
+   "statement": "Stacks Project Tag 01K9: show that a quasi-compact morphism of schemes is a closed map if and only if it is specializing.",
+   "statement_sha256": "4e0bcb935c486435870af5f2d48670c52a26523b11a55ae324cae477f3e53393",
+   "tags": [
+    "stacks-tag",
+    "01K9"
+   ],
+   "tier": "hard",
+   "tier_basis": "declared"
+  }
+ ],
+ "schema_version": "pals.generation-eval-manifest.v1",
+ "version": "algebraic-geometry-v2"
+}
