@@ -220,3 +220,39 @@ def test_runtime_returns_before_searching_when_the_budget_is_small(on):
         REQUEST, recipe_search=search, deadline=time.monotonic() + 35
     )
     assert result is None and calls == [] and scripted.calls == []
+
+
+@pytest.mark.parametrize(
+    ("statement", "head"),
+    [
+        ("∃ x : ℝ, 0 < x ∧ x < 1", "∃"),
+        ("∃ x : ℕ, x > 0 → x ≥ 1", "∃"),
+        ("∀ a : ℝ, 0 < a → ∃ n : ℕ, a < n", "∃"),
+        ("∀ a : ℝ, 0 < a → ∀ n ≥ 1, 0 < a ^ n", "<"),
+    ],
+)
+def test_conclusion_head_existence_and_nested_binders(statement, head):
+    assert lane.conclusion_head(statement) == head
+
+
+def test_lane_budget_is_computed_after_the_search_and_keeps_thirty_seconds(on):
+    scripted = Scripted(answered())
+    import pals_agent.proof_reuse as reuse
+
+    now = [1000.0]
+    search_calls = []
+
+    def search(query, language):
+        now[0] += 4.0  # the search itself takes 4 s
+        search_calls.append(query)
+        return [RECIPE]
+
+    original = reuse.time.monotonic
+    reuse.time.monotonic = lambda: now[0]
+    try:
+        runtime(scripted).general_recipe_input(
+            REQUEST, recipe_search=search, deadline=1060.0
+        )
+    finally:
+        reuse.time.monotonic = original
+    assert search_calls and scripted.calls[0][3] == pytest.approx(60.0 - 4.0 - 30.0)

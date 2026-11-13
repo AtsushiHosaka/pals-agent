@@ -544,19 +544,23 @@ def conclusion_head(statement: str) -> str:
                 return index
         return None
 
-    while text.startswith("∀"):  # drop the binders: up to the first top-level comma
-        comma = top_level(",", text)
-        if comma is None:
+    while True:
+        while text.startswith("∀"):  # drop the binders: up to the first top-level comma
+            comma = top_level(",", text)
+            if comma is None:
+                break
+            text = text[comma + 1 :].strip()
+        if text.startswith("∃"):  # an existence claim, whatever its body says
+            return "∃"
+        arrow = top_level("→", text)  # the conclusion of a chain of hypotheses
+        if arrow is None:
             break
-        text = text[comma + 1 :].strip()
-    # the conclusion of a chain of hypotheses: after the LAST top-level arrow
-    while (arrow := top_level("→", text)) is not None:
         text = text[arrow + 1 :].strip()
     for connective in "↔∨∧":
         if top_level(connective, text) is not None:
             return connective
-    if text.startswith(("¬", "∃")):
-        return text[0]
+    if text.startswith("¬"):
+        return "¬"
     relation = top_level("≠≤≥⊆∣∈∉≡<>=", text)
     if relation is not None:
         return text[relation]

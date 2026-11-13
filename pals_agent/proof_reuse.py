@@ -1042,6 +1042,7 @@ class ProofReuseRuntime:
             )
         except ValueError:
             return None
+        budget = min(30.0, deadline - time.monotonic() - 30.0)  # after the search: keep the 30 s
         result = self.general_lane.run(parsed.proposition, recipes, language, budget_s=budget)
         if result.outcome != "answered" or not result.answer_text:
             return None

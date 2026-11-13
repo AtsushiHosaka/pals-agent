@@ -29,7 +29,7 @@ from typing import Any, Final
 
 from pals_agent import general_recipe_lane as lane
 
-SCHEMA_VERSION: Final = "pals.general-recipe-stage.v1"
+SCHEMA_VERSION: Final = "pals.general-recipe-stage.v2"
 EVIDENCE_KIND: Final = "lean_general_recipe"
 WORKSPACE_ENV: Final = "PALS_GENERAL_RECIPE_LANE_WORKSPACE"
 MAX_LEAN_SECONDS: Final = 60.0
