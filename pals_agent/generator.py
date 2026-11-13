@@ -46,6 +46,7 @@ from pals_agent.prompt_safety import (
 from pals_agent.proof_reuse_usage import model_role
 from pals_agent.scheme_guidance import scheme_guidance
 from pals_agent.sketch_repair import normalize_header
+from pals_agent.stacks_tags import stacks_tag_guidance
 from pals_agent.statement_template import TEMPLATE_INSTRUCTION, assemble
 from pals_agent.t2_lane import (
     HETERO_EFFORTS,
@@ -1220,7 +1221,9 @@ Repair invalid steps locally while retaining valid intermediate reasoning.
 
 def _scheme_block(request: ProofRequest) -> str:
     """Scheme-theory API guidance (``scheme_guidance``), empty and byte-neutral otherwise."""
-    guidance = scheme_guidance(request.prompt, request.formal_statement)
+    guidance = scheme_guidance(request.prompt, request.formal_statement) + stacks_tag_guidance(
+        request.prompt, request.formal_statement
+    )
     return f"\n{guidance}" if guidance else ""
 
 

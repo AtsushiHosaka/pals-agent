@@ -1,0 +1,4695 @@
+{
+ "schema": "pals.mathlib-stacks-tags.v1",
+ "mathlib_commit": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+ "claims": "declarations whose attribute names the tag in the source text; names are implied by namespaces, not elaborated. Not every tag in Mathlib is covered (attributes on `attribute [...]` lines and on `proof_wanted` are skipped, private names are dropped)",
+ "tags": {
+  "0014": [
+   {
+    "name": "CategoryTheory.Category",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Category.Basic",
+    "line": 234,
+    "statement": "class Category (obj : Type u) : Type max u (v + 1) extends CategoryStruct.{v} obj where id_comp : ∀ {X Y : obj} (f : X ⟶ Y), 𝟙 X ≫ f = f"
+   }
+  ],
+  "0017": [
+   {
+    "name": "CategoryTheory.Iso",
+    "kind": "structure",
+    "module": "Mathlib.CategoryTheory.Iso",
+    "line": 53,
+    "statement": "structure Iso {C : Type u} [Category.{v} C] (X Y : C) where hom : X ⟶ Y inv : Y ⟶ X hom_inv_id : hom ≫ inv = 𝟙 X"
+   }
+  ],
+  "0019": [
+   {
+    "name": "CategoryTheory.SingleObj.groupoid",
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.SingleObj",
+    "line": 84,
+    "statement": "instance groupoid : Groupoid (SingleObj G) where inv x"
+   }
+  ],
+  "001A": [
+   {
+    "name": "CategoryTheory.discreteCategory",
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Discrete.Basic",
+    "line": 74,
+    "statement": "instance discreteCategory (α : Type u₁) : SmallCategory (Discrete α) where Hom X Y"
+   }
+  ],
+  "001B": [
+   {
+    "name": "CategoryTheory.Functor",
+    "kind": "structure",
+    "module": "Mathlib.CategoryTheory.Functor.Basic",
+    "line": 40,
+    "statement": "structure Functor (C : Type u₁) [Category.{v₁} C] (D : Type u₂) [Category.{v₂} D] : Type max v₁ v₂ u₁ u₂ where obj : C → D map : ∀ {X Y : C}, (X ⟶ Y) → ((obj X) ⟶ (obj Y)) map_id : ∀ X : C, map (𝟙 X) = 𝟙 (obj X)"
+   }
+  ],
+  "001C": [
+   {
+    "name": "CategoryTheory.Functor.EssSurj",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.EssentialImage",
+    "line": 106,
+    "statement": "class EssSurj (F : C ⥤ D) : Prop where mem_essImage (F) (Y : D) : F.essImage Y instance EssSurj.toEssImage : EssSurj F.toEssImage where mem_essImage"
+   },
+   {
+    "name": "CategoryTheory.Functor.Full",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Functor.FullyFaithful",
+    "line": 45,
+    "statement": "class Full (F : C ⥤ D) : Prop where map_surjective {X Y : C} : Function.Surjective (F.map (X"
+   },
+   {
+    "name": "CategoryTheory.Functor.Faithful",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Functor.FullyFaithful",
+    "line": 52,
+    "statement": "class Faithful (F : C ⥤ D) : Prop where map_injective : ∀ {X Y : C}, Function.Injective (F.map : (X ⟶ Y) → (F.obj X ⟶ F.obj Y))"
+   }
+  ],
+  "001D": [
+   {
+    "name": "CategoryTheory.ObjectProperty.FullSubcategory",
+    "kind": "structure",
+    "module": "Mathlib.CategoryTheory.ObjectProperty.FullSubcategory",
+    "line": 39,
+    "statement": "structure FullSubcategory where obj : C property : P obj instance FullSubcategory.category : Category.{v} P.FullSubcategory"
+   }
+  ],
+  "001F": [
+   {
+    "name": "CategoryTheory.SingleObj.mapHom",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.SingleObj",
+    "line": 112,
+    "statement": "def mapHom : (M →* N) ≃ SingleObj M ⥤ SingleObj N where toFun f"
+   }
+  ],
+  "001G": [
+   {
+    "name": "CategoryTheory.Over",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Comma.Over.Basic",
+    "line": 39,
+    "statement": "def Over (X : T)"
+   },
+   {
+    "name": "CategoryTheory.Over.forget",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Comma.Over.Basic",
+    "line": 177,
+    "statement": "def forget : Over X ⥤ T"
+   },
+   {
+    "name": "CategoryTheory.Over.map",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Comma.Over.Basic",
+    "line": 199,
+    "statement": "def map {Y : T} (f : X ⟶ Y) : Over X ⥤ Over Y"
+   }
+  ],
+  "001J": [
+   {
+    "name": "CategoryTheory.Equivalence",
+    "kind": "structure",
+    "module": "Mathlib.CategoryTheory.Equivalence",
+    "line": 87,
+    "statement": "structure Equivalence (C : Type u₁) (D : Type u₂) [Category.{v₁} C] [Category.{v₂} D] where mk' :: functor : C ⥤ D inverse : D ⥤ C unitIso : 𝟭 C ≅ functor ⋙ inverse counitIso : inverse ⋙ functor ≅ 𝟭 D"
+   }
+  ],
+  "001K": [
+   {
+    "name": "CategoryTheory.prod'",
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Products.Basic",
+    "line": 110,
+    "statement": "instance prod' : Category.{max v₁ v₂} (C × D) where theorem isIso_prod_iff {P Q : C} {S T : D} {f : (P, S) ⟶ (Q, T)} : IsIso f ↔ IsIso f.1 ∧ IsIso f.2"
+   }
+  ],
+  "001M": [
+   {
+    "name": "CategoryTheory.Category.opposite",
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Opposites",
+    "line": 115,
+    "statement": "instance Category.opposite : Category.{v₁} Cᵒᵖ where __"
+   }
+  ],
+  "001O": [
+   {
+    "name": "CategoryTheory.yoneda",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Yoneda",
+    "line": 43,
+    "statement": "def yoneda : C ⥤ Cᵒᵖ ⥤ Type v₁ where obj X"
+   }
+  ],
+  "001P": [
+   {
+    "name": "CategoryTheory.Yoneda.yoneda_full",
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Yoneda",
+    "line": 147,
+    "statement": "instance yoneda_full : (yoneda : C ⥤ Cᵒᵖ ⥤ Type v₁).Full"
+   },
+   {
+    "name": "CategoryTheory.Yoneda.yoneda_faithful",
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Yoneda",
+    "line": 152,
+    "statement": "instance yoneda_faithful : (yoneda : C ⥤ Cᵒᵖ ⥤ Type v₁).Faithful"
+   },
+   {
+    "name": "CategoryTheory.yonedaLemma",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Yoneda",
+    "line": 837,
+    "statement": "def yonedaLemma : yonedaPairing C ≅ yonedaEvaluation C"
+   },
+   {
+    "name": "CategoryTheory.coyonedaLemma",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Yoneda",
+    "line": 1076,
+    "statement": "def coyonedaLemma : coyonedaPairing C ≅ coyonedaEvaluation C"
+   }
+  ],
+  "001Q": [
+   {
+    "name": "CategoryTheory.Functor.IsRepresentable",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Yoneda",
+    "line": 520,
+    "statement": "class IsRepresentable (F : Cᵒᵖ ⥤ Type v) : Prop where has_representation : ∃ (Y : C), Nonempty (F.RepresentableBy Y) lemma RepresentableBy.isRepresentable {F : Cᵒᵖ ⥤ Type v} {Y : C} (e : F.RepresentableBy Y) : F.IsRepresentable where has_representation"
+   },
+   {
+    "name": "CategoryTheory.Functor.IsCorepresentable",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Yoneda",
+    "line": 543,
+    "statement": "class IsCorepresentable (F : C ⥤ Type v) : Prop where has_corepresentation : ∃ (X : C), Nonempty (F.CorepresentableBy X) lemma CorepresentableBy.isCorepresentable {F : C ⥤ Type v} {X : C} (e : F.CorepresentableBy X) : F.IsCorepresentable where has_corepresentation"
+   }
+  ],
+  "001T": [
+   {
+    "name": "CategoryTheory.Limits.HasBinaryProducts",
+    "kind": "abbrev",
+    "module": "Mathlib.CategoryTheory.Limits.Shapes.BinaryProducts",
+    "line": 887,
+    "statement": "abbrev HasBinaryProducts"
+   }
+  ],
+  "001W": [
+   {
+    "name": "CategoryTheory.Limits.HasPullbacks",
+    "kind": "abbrev",
+    "module": "Mathlib.CategoryTheory.Limits.Shapes.Pullback.HasPullback",
+    "line": 571,
+    "statement": "abbrev HasPullbacks"
+   }
+  ],
+  "002E": [
+   {
+    "name": "CategoryTheory.Limits.IsLimit",
+    "kind": "structure",
+    "module": "Mathlib.CategoryTheory.Limits.IsLimit",
+    "line": 55,
+    "statement": "structure IsLimit (t : Cone F) where lift : ∀ s : Cone F, s.pt ⟶ t.pt fac : ∀ (s : Cone F) (j : J), lift s ≫ t.π.app j = s.π.app j"
+   }
+  ],
+  "002F": [
+   {
+    "name": "CategoryTheory.Limits.IsColimit",
+    "kind": "structure",
+    "module": "Mathlib.CategoryTheory.Limits.IsLimit",
+    "line": 68,
+    "statement": "structure IsColimit (t : Cocone F) where desc : ∀ s : Cocone F, t.pt ⟶ s.pt fac : ∀ (s : Cocone F) (j : J), dsimp% t.ι.app j ≫ desc s = s.ι.app j"
+   }
+  ],
+  "002N": [
+   {
+    "name": "CategoryTheory.Limits.has_limits_of_hasEqualizers_and_products",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Limits.Constructions.LimitsOfProductsAndEqualizers",
+    "line": 134,
+    "statement": "theorem has_limits_of_hasEqualizers_and_products [HasProducts.{w} C] [HasEqualizers C] : HasLimitsOfSize.{w, w} C"
+   }
+  ],
+  "002O": [
+   {
+    "name": "CategoryTheory.Limits.hasFiniteLimits_of_hasEqualizers_and_finite_products",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Limits.Constructions.LimitsOfProductsAndEqualizers",
+    "line": 141,
+    "statement": "theorem hasFiniteLimits_of_hasEqualizers_and_finite_products [HasFiniteProducts C] [HasEqualizers C] : HasFiniteLimits C where out _"
+   }
+  ],
+  "002P": [
+   {
+    "name": "CategoryTheory.Limits.has_colimits_of_hasCoequalizers_and_coproducts",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Limits.Constructions.LimitsOfProductsAndEqualizers",
+    "line": 410,
+    "statement": "theorem has_colimits_of_hasCoequalizers_and_coproducts [HasCoproducts.{w} C] [HasCoequalizers C] : HasColimitsOfSize.{w, w} C where has_colimits_of_shape"
+   }
+  ],
+  "002Q": [
+   {
+    "name": "CategoryTheory.Limits.hasFiniteColimits_of_hasCoequalizers_and_finite_coproducts",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Limits.Constructions.LimitsOfProductsAndEqualizers",
+    "line": 417,
+    "statement": "theorem hasFiniteColimits_of_hasCoequalizers_and_finite_coproducts [HasFiniteCoproducts C] [HasCoequalizers C] : HasFiniteColimits C where out _"
+   }
+  ],
+  "002S": [
+   {
+    "name": "CategoryTheory.IsConnected",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.IsConnected",
+    "line": 75,
+    "statement": "class IsConnected (J : Type u₁) [Category.{v₁} J] : Prop extends IsPreconnected J where [is_nonempty : Nonempty J] attribute [instance 100] IsConnected.is_nonempty variable {J : Type u₁} [Category.{v₁} J] variable {K : Type u₂} [Category.{v₂} K] namespace IsPreconnected.IsoConstantAux set_option backward.privateInPublic true in private def liftToDiscrete {α : Type u₂} (F : J ⥤ Discrete α) : J ⥤ Discrete J where obj j"
+   }
+  ],
+  "002U": [
+   {
+    "name": "CategoryTheory.Limits.Types.hasColimitsOfSize",
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Limits.Types.Colimits",
+    "line": 124,
+    "statement": "instance (priority"
+   },
+   {
+    "name": "CategoryTheory.Limits.Types.hasLimitsOfSize",
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Limits.Types.Limits",
+    "line": 186,
+    "statement": "instance (priority"
+   }
+  ],
+  "002V": [
+   {
+    "name": "CategoryTheory.IsFiltered",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Filtered.Basic",
+    "line": 95,
+    "statement": "class IsFiltered : Prop extends IsFilteredOrEmpty C where [nonempty : Nonempty C] instance (priority"
+   }
+  ],
+  "0032": [
+   {
+    "name": "CategoryTheory.IsCardinalFiltered.exists_cardinal_directed",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.Presentable.Directed",
+    "line": 528,
+    "statement": "lemma exists_cardinal_directed (J : Type w) [SmallCategory J] (κ : Cardinal.{w}) [Fact κ.IsRegular] [IsCardinalFiltered J κ] : ∃ (α : Type w) (_ : PartialOrder α) (_ : IsCardinalFiltered α κ) (F : α ⥤ J), F.Final"
+   },
+   {
+    "name": "CategoryTheory.IsFiltered.exists_directed",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.Presentable.Directed",
+    "line": 545,
+    "statement": "lemma IsFiltered.exists_directed (J : Type w) [SmallCategory J] [IsFiltered J] : ∃ (α : Type w) (_ : PartialOrder α) (_ : IsDirected α (· ≤ ·)) (_ : Nonempty α) (F : α ⥤ J), F.Final"
+   }
+  ],
+  "0037": [
+   {
+    "name": "CategoryTheory.Adjunction",
+    "kind": "structure",
+    "module": "Mathlib.CategoryTheory.Adjunction.Basic",
+    "line": 109,
+    "statement": "structure Adjunction (F : C ⥤ D) (G : D ⥤ C) where unit : 𝟭 C ⟶ F.comp G counit : G.comp F ⟶ 𝟭 D left_triangle_components (X : C) : dsimp% F.map (unit.app X) ≫ counit.app (F.obj X) = 𝟙 (F.obj X)"
+   }
+  ],
+  "0038": [
+   {
+    "name": "CategoryTheory.Adjunction.leftAdjoint_preservesColimits",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.Adjunction.Limits",
+    "line": 90,
+    "statement": "lemma leftAdjoint_preservesColimits : PreservesColimitsOfSize.{v, u} F where preservesColimitsOfShape"
+   },
+   {
+    "name": "CategoryTheory.Adjunction.rightAdjoint_preservesLimits",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.Adjunction.Limits",
+    "line": 203,
+    "statement": "lemma rightAdjoint_preservesLimits : PreservesLimitsOfSize.{v, u} G where preservesLimitsOfShape"
+   }
+  ],
+  "003B": [
+   {
+    "name": "CategoryTheory.Mono",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Category.Basic",
+    "line": 328,
+    "statement": "class Mono (f : X ⟶ Y) : Prop where right_cancellation : ∀ {Z : C} (g h : Z ⟶ X), g ≫ f = h ≫ f → g = h @[to_dual] instance (X : C) : Epi (𝟙 X)"
+   }
+  ],
+  "003C": [
+   {
+    "name": "CategoryTheory.ofHom_mono_iff_injective",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Types.Basic",
+    "line": 352,
+    "statement": "theorem ofHom_mono_iff_injective {X Y : Type u} (f : X → Y) : Mono (ofHom f) ↔ Function.Injective f"
+   },
+   {
+    "name": "CategoryTheory.mono_iff_injective",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Types.Basic",
+    "line": 365,
+    "statement": "theorem mono_iff_injective {X Y : Type u} (f : X ⟶ Y) : Mono f ↔ Function.Injective f"
+   },
+   {
+    "name": "CategoryTheory.ofHom_epi_iff_surjective",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Types.Basic",
+    "line": 373,
+    "statement": "theorem ofHom_epi_iff_surjective {X Y : Type u} (f : X → Y) : Epi (ofHom f) ↔ Function.Surjective f"
+   },
+   {
+    "name": "CategoryTheory.epi_iff_surjective",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Types.Basic",
+    "line": 391,
+    "statement": "theorem epi_iff_surjective {X Y : Type u} (f : X ⟶ Y) : Epi f ↔ Function.Surjective f"
+   }
+  ],
+  "004V": [
+   {
+    "name": "IsIrreducible",
+    "kind": "def",
+    "module": "Mathlib.Topology.Irreducible",
+    "line": 52,
+    "statement": "def IsIrreducible (s : Set X) : Prop"
+   },
+   {
+    "name": "irreducibleComponents",
+    "kind": "def",
+    "module": "Mathlib.Topology.Irreducible",
+    "line": 107,
+    "statement": "def irreducibleComponents (X : Type*) [TopologicalSpace X] : Set (Set X)"
+   },
+   {
+    "name": "IrreducibleSpace",
+    "kind": "class",
+    "module": "Mathlib.Topology.Irreducible",
+    "line": 172,
+    "statement": "class IrreducibleSpace (X : Type*) [TopologicalSpace X] : Prop extends PreirreducibleSpace X where toNonempty : Nonempty X attribute [instance 50] IrreducibleSpace.toNonempty theorem IrreducibleSpace.isIrreducible_univ (X : Type*) [TopologicalSpace X] [IrreducibleSpace X] : IsIrreducible (univ : Set X)"
+   }
+  ],
+  "004W": [
+   {
+    "name": "isIrreducible_iff_closure",
+    "kind": "theorem",
+    "module": "Mathlib.Topology.Irreducible",
+    "line": 79,
+    "statement": "theorem isIrreducible_iff_closure : IsIrreducible (closure s) ↔ IsIrreducible s"
+   },
+   {
+    "name": "isClosed_of_mem_irreducibleComponents",
+    "kind": "theorem",
+    "module": "Mathlib.Topology.Irreducible",
+    "line": 111,
+    "statement": "theorem isClosed_of_mem_irreducibleComponents (s) (H : s ∈ irreducibleComponents X) : IsClosed s"
+   },
+   {
+    "name": "exists_mem_irreducibleComponents_subset_of_isIrreducible",
+    "kind": "lemma",
+    "module": "Mathlib.Topology.Irreducible",
+    "line": 128,
+    "statement": "lemma exists_mem_irreducibleComponents_subset_of_isIrreducible (s : Set X) (hs : IsIrreducible s) : ∃ u ∈ irreducibleComponents X, s ⊆ u"
+   },
+   {
+    "name": "irreducibleComponent",
+    "kind": "def",
+    "module": "Mathlib.Topology.Irreducible",
+    "line": 136,
+    "statement": "def irreducibleComponent (x : X) : Set X"
+   },
+   {
+    "name": "mem_irreducibleComponent",
+    "kind": "theorem",
+    "module": "Mathlib.Topology.Irreducible",
+    "line": 146,
+    "statement": "theorem mem_irreducibleComponent {x : X} : x ∈ irreducibleComponent x"
+   }
+  ],
+  "004X": [
+   {
+    "name": "T0Space",
+    "kind": "class",
+    "module": "Mathlib.Topology.Separation.Basic",
+    "line": 77,
+    "statement": "class T0Space (X : Type u) [TopologicalSpace X] : Prop where t0 : ∀ ⦃x y : X⦄, Inseparable x y → x = y theorem t0Space_iff_inseparable (X : Type u) [TopologicalSpace X] : T0Space X ↔ ∀ x y : X, Inseparable x y → x = y"
+   },
+   {
+    "name": "IsGenericPoint",
+    "kind": "def",
+    "module": "Mathlib.Topology.Sober",
+    "line": 39,
+    "statement": "def IsGenericPoint (x : α) (S : Set α) : Prop"
+   },
+   {
+    "name": "QuasiSober",
+    "kind": "class",
+    "module": "Mathlib.Topology.Sober",
+    "line": 109,
+    "statement": "class QuasiSober (α : Type*) [TopologicalSpace α] : Prop where sober : ∀ {S : Set α}, IsIrreducible S → IsClosed S → ∃ x, IsGenericPoint x S noncomputable def IsIrreducible.genericPoint [QuasiSober α] {S : Set α} (hS : IsIrreducible S) : α"
+   }
+  ],
+  "004Z": [
+   {
+    "name": "IsPreirreducible.preimage_of_dense_isPreirreducible_fiber",
+    "kind": "lemma",
+    "module": "Mathlib.Topology.Irreducible",
+    "line": 413,
+    "statement": "lemma IsPreirreducible.preimage_of_dense_isPreirreducible_fiber {V : Set Y} (hV : IsPreirreducible V) (f : X → Y) (hf' : IsOpenMap f) (hf'' : V ⊆ closure (V ∩ { x | IsPreirreducible (f ⁻¹' {x}) })) : IsPreirreducible (f ⁻¹' V)"
+   }
+  ],
+  "0052": [
+   {
+    "name": "TopologicalSpace.NoetherianSpace.set",
+    "kind": "instance",
+    "module": "Mathlib.Topology.NoetherianSpace",
+    "line": 76,
+    "statement": "instance NoetherianSpace.set [NoetherianSpace α] (s : Set α) : NoetherianSpace s"
+   },
+   {
+    "name": "TopologicalSpace.NoetherianSpace.finite_irreducibleComponents",
+    "kind": "theorem",
+    "module": "Mathlib.Topology.NoetherianSpace",
+    "line": 193,
+    "statement": "theorem NoetherianSpace.finite_irreducibleComponents [NoetherianSpace α] : (irreducibleComponents α).Finite"
+   },
+   {
+    "name": "TopologicalSpace.NoetherianSpace.exists_isOpen_nonempty_subset_irreducibleComponent",
+    "kind": "theorem",
+    "module": "Mathlib.Topology.NoetherianSpace",
+    "line": 203,
+    "statement": "theorem NoetherianSpace.exists_isOpen_nonempty_subset_irreducibleComponent [NoetherianSpace α] (Z : Set α) (H : Z ∈ irreducibleComponents α) : ∃ o : Set α, IsOpen o ∧ o.Nonempty ∧ o ⊆ Z"
+   }
+  ],
+  "005A": [
+   {
+    "name": "IsRetrocompact",
+    "kind": "def",
+    "module": "Mathlib.Topology.Constructible",
+    "line": 52,
+    "statement": "def IsRetrocompact (s : Set X) : Prop"
+   },
+   {
+    "name": "IsSpectralMap",
+    "kind": "structure",
+    "module": "Mathlib.Topology.Spectral.Hom",
+    "line": 43,
+    "statement": "structure IsSpectralMap (f : α → β) : Prop extends Continuous f where isCompact_preimage_of_isOpen ⦃s : Set β⦄ : IsOpen s → IsCompact s → IsCompact (f ⁻¹' s) theorem IsCompact.preimage_of_isOpen (hf : IsSpectralMap f) (h₀ : IsCompact s) (h₁ : IsOpen s) : IsCompact (f ⁻¹' s)"
+   }
+  ],
+  "005B": [
+   {
+    "name": "IsRetrocompact.image_of_isEmbedding",
+    "kind": "lemma",
+    "module": "Mathlib.Topology.Constructible",
+    "line": 143,
+    "statement": "lemma IsRetrocompact.image_of_isEmbedding (hs : IsRetrocompact s) (hfemb : IsEmbedding f) (hfcomp : IsRetrocompact (range f)) : IsRetrocompact (f '' s)"
+   },
+   {
+    "name": "IsSpectralMap.comp",
+    "kind": "theorem",
+    "module": "Mathlib.Topology.Spectral.Hom",
+    "line": 59,
+    "statement": "theorem IsSpectralMap.comp {f : β → γ} {g : α → β} (hf : IsSpectralMap f) (hg : IsSpectralMap g) : IsSpectralMap (f ∘ g)"
+   }
+  ],
+  "005G": [
+   {
+    "name": "Topology.IsLocallyConstructible",
+    "kind": "def",
+    "module": "Mathlib.Topology.Constructible",
+    "line": 378,
+    "statement": "def IsLocallyConstructible (s : Set X) : Prop"
+   }
+  ],
+  "005I": [
+   {
+    "name": "Topology.IsConstructible.preimage",
+    "kind": "lemma",
+    "module": "Mathlib.Topology.Constructible",
+    "line": 244,
+    "statement": "lemma IsConstructible.preimage {s : Set Y} (hfcont : Continuous f) (hf : ∀ s, IsOpen s → IsRetrocompact s → IsRetrocompact (f ⁻¹' s)) (hs : IsConstructible s) : IsConstructible (f ⁻¹' s)"
+   }
+  ],
+  "005J": [
+   {
+    "name": "IsRetrocompact.preimage_of_isOpenEmbedding",
+    "kind": "lemma",
+    "module": "Mathlib.Topology.Constructible",
+    "line": 152,
+    "statement": "lemma IsRetrocompact.preimage_of_isOpenEmbedding {s : Set Y} (hf : IsOpenEmbedding f) (hs : IsRetrocompact s) : IsRetrocompact (f ⁻¹' s)"
+   },
+   {
+    "name": "Topology.IsConstructible.preimage_of_isOpenEmbedding",
+    "kind": "lemma",
+    "module": "Mathlib.Topology.Constructible",
+    "line": 254,
+    "statement": "lemma IsConstructible.preimage_of_isOpenEmbedding {s : Set Y} (hf : IsOpenEmbedding f) (hs : IsConstructible s) : IsConstructible (f ⁻¹' s)"
+   }
+  ],
+  "005U": [
+   {
+    "name": "JacobsonSpace",
+    "kind": "class",
+    "module": "Mathlib.Topology.JacobsonSpace",
+    "line": 72,
+    "statement": "class JacobsonSpace : Prop where closure_inter_closedPoints : ∀ {Z}, IsClosed Z → closure (Z ∩ closedPoints X) = Z export JacobsonSpace (closure_inter_closedPoints) variable {X} lemma closure_closedPoints [JacobsonSpace X] : closure (closedPoints X) = Set.univ"
+   }
+  ],
+  "0069": [
+   {
+    "name": "QuasiSeparatedSpace.isRetrocompact_iff_isCompact",
+    "kind": "lemma",
+    "module": "Mathlib.Topology.Constructible",
+    "line": 336,
+    "statement": "lemma _root_.QuasiSeparatedSpace.isRetrocompact_iff_isCompact (hU : IsOpen U) : IsRetrocompact U ↔ IsCompact U"
+   }
+  ],
+  "0073": [
+   {
+    "name": "TopCat.Presheaf.isSheaf_iff_isSheaf_comp'",
+    "kind": "theorem",
+    "module": "Mathlib.Topology.Sheaves.Forget",
+    "line": 50,
+    "statement": "theorem isSheaf_iff_isSheaf_comp' {C : Type u₁} [Category.{v₁} C] {D : Type u₂} [Category.{v₂} D] (G : C ⥤ D) [G.ReflectsIsomorphisms] [HasLimitsOfSize.{v, v} C] [PreservesLimitsOfSize.{v, v} G] {X : TopCat.{v}} (F : Presheaf C X) : Presheaf.IsSheaf F ↔ Presheaf.IsSheaf (F ⋙ G)"
+   }
+  ],
+  "00D3": [
+   {
+    "name": "Preorder.smallCategory",
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Category.Preorder",
+    "line": 47,
+    "statement": "instance (priority"
+   }
+  ],
+  "00DS": [
+   {
+    "name": "Ideal.subset_union_prime",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Ideal.Operations",
+    "line": 1158,
+    "statement": "theorem subset_union_prime {R : Type u} [CommRing R] {s : Finset ι} {f : ι → Ideal R} (a b : ι) (hp : ∀ i ∈ s, i ≠ a → i ≠ b → IsPrime (f i)) {I : Ideal R} : ((I : Set R) ⊆ ⋃ i ∈ (↑s : Set ι), f i) ↔ ∃ i ∈ s, I ≤ f i"
+   }
+  ],
+  "00DV": [
+   {
+    "name": "Submodule.exists_sub_one_mem_and_smul_eq_zero_of_fg_of_le_smul",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Finiteness.Nakayama",
+    "line": 28,
+    "statement": "theorem exists_sub_one_mem_and_smul_eq_zero_of_fg_of_le_smul {R : Type*} [CommRing R] {M : Type*} [AddCommGroup M] [Module R M] (I : Ideal R) (N : Submodule R M) (hn : N.FG) (hin : N ≤ I • N) : ∃ r : R, r - 1 ∈ I ∧ ∀ n ∈ N, r • n = (0 : M)"
+   },
+   {
+    "name": "Submodule.eq_smul_of_le_smul_of_le_jacobson",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Nakayama",
+    "line": 61,
+    "statement": "theorem eq_smul_of_le_smul_of_le_jacobson {I J : Ideal R} {N : Submodule R M} (hN : N.FG) (hIN : N ≤ I • N) (hIjac : I ≤ jacobson J) : N = J • N"
+   },
+   {
+    "name": "Submodule.eq_bot_of_le_smul_of_le_jacobson_bot",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Nakayama",
+    "line": 118,
+    "statement": "theorem eq_bot_of_le_smul_of_le_jacobson_bot (I : Ideal R) (N : Submodule R M) (hN : N.FG) (hIN : N ≤ I • N) (hIjac : I ≤ jacobson ⊥) : N = ⊥"
+   },
+   {
+    "name": "Submodule.sup_smul_eq_sup_smul_of_le_smul_of_le_jacobson",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Nakayama",
+    "line": 141,
+    "statement": "theorem sup_smul_eq_sup_smul_of_le_smul_of_le_jacobson {I J : Ideal R} {N N' : Submodule R M} (hN' : N'.FG) (hIJ : I ≤ jacobson J) (hNN : N' ≤ N ⊔ I • N') : N ⊔ I • N' = N ⊔ J • N'"
+   },
+   {
+    "name": "Submodule.smul_le_of_le_smul_of_le_jacobson_bot",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Nakayama",
+    "line": 156,
+    "statement": "theorem smul_le_of_le_smul_of_le_jacobson_bot {I : Ideal R} {N N' : Submodule R M} (hN' : N'.FG) (hIJ : I ≤ jacobson ⊥) (hNN : N' ≤ N ⊔ I • N') : I • N' ≤ N"
+   },
+   {
+    "name": "Submodule.exists_sub_one_mem_and_smul_le_of_fg_of_le_sup",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Nakayama",
+    "line": 162,
+    "statement": "lemma exists_sub_one_mem_and_smul_le_of_fg_of_le_sup {I : Ideal R} {N N' P : Submodule R M} (hN' : N'.FG) (hN'le : N' ≤ P) (hNN' : P ≤ N ⊔ I • N') : ∃ r : R, r - 1 ∈ I ∧ r • P ≤ N"
+   },
+   {
+    "name": "Submodule.exists_injOn_mkQ_image_span_eq_of_span_eq_map_mkQ_of_le_jacobson_bot",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Nakayama",
+    "line": 220,
+    "statement": "theorem exists_injOn_mkQ_image_span_eq_of_span_eq_map_mkQ_of_le_jacobson_bot {I : Ideal R} {N : Submodule R M} (s : Set (M ⧸ (I • N))) (hN : N.FG) (hIjac : I ≤ jacobson ⊥) (hsspan : span R s = map (I • N).mkQ N) : ∃ (t : Set M), t.InjOn (I • N).mkQ ∧ (I • N).mkQ '' t = s ∧ span R t = N"
+   }
+  ],
+  "00EC": [
+   {
+    "name": "PrimeSpectrum.basicOpen_eq_zeroLocus_of_isIdempotentElem",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.Topology",
+    "line": 1385,
+    "statement": "lemma basicOpen_eq_zeroLocus_of_isIdempotentElem (e : R) (he : IsIdempotentElem e) : basicOpen e = zeroLocus {1 - e}"
+   },
+   {
+    "name": "PrimeSpectrum.zeroLocus_eq_basicOpen_of_isIdempotentElem",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.Topology",
+    "line": 1391,
+    "statement": "lemma zeroLocus_eq_basicOpen_of_isIdempotentElem (e : R) (he : IsIdempotentElem e) : zeroLocus {e} = basicOpen (1 - e)"
+   }
+  ],
+  "00EE": [
+   {
+    "name": "PrimeSpectrum.existsUnique_idempotent_basicOpen_eq_of_isClopen",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.Topology",
+    "line": 1091,
+    "statement": "lemma existsUnique_idempotent_basicOpen_eq_of_isClopen {s : Set (PrimeSpectrum R)} (hs : IsClopen s) : ∃! e : R, IsIdempotentElem e ∧ s = basicOpen e"
+   },
+   {
+    "name": "PrimeSpectrum.isIdempotentElemEquivClopens",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.Topology",
+    "line": 1415,
+    "statement": "def isIdempotentElemEquivClopens : {e : R // IsIdempotentElem e} ≃o Clopens (PrimeSpectrum R)"
+   }
+  ],
+  "00ES": [
+   {
+    "name": "Ideal.minimalPrimes.equivIrreducibleComponents",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.Topology",
+    "line": 1247,
+    "statement": "protected def _root_.Ideal.minimalPrimes.equivIrreducibleComponents (I : Ideal R) : I.minimalPrimes ≃o (irreducibleComponents <| (zeroLocus (I : Set R)))ᵒᵈ"
+   },
+   {
+    "name": "minimalPrimes.equivIrreducibleComponents",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.Topology",
+    "line": 1261,
+    "statement": "protected def _root_.minimalPrimes.equivIrreducibleComponents : minimalPrimes R ≃o (irreducibleComponents <| PrimeSpectrum R)ᵒᵈ"
+   }
+  ],
+  "00F8": [
+   {
+    "name": "PrimeSpectrum.exists_range_eq_of_isConstructible",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.ConstructibleSet",
+    "line": 142,
+    "statement": "lemma exists_range_eq_of_isConstructible {R : Type u} [CommRing R] {s : Set (PrimeSpectrum R)} (hs : IsConstructible s) : ∃ (S : Type u) (_ : CommRing S) (f : R →+* S), Set.range (comap f) = s"
+   }
+  ],
+  "00FB": [
+   {
+    "name": "AlgebraicGeometry.Polynomial.isOpenMap_comap_C",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.IsOpenComapC",
+    "line": 68,
+    "statement": "theorem isOpenMap_comap_C : IsOpenMap (PrimeSpectrum.comap (C : R →+* R[X]))"
+   }
+  ],
+  "00FK": [
+   {
+    "name": "Ideal.exists_comap_eq_of_mem_minimalPrimes_of_injective",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Ideal.MinimalPrime.Localization",
+    "line": 110,
+    "statement": "@[stacks 00FK] theorem Ideal.exists_comap_eq_of_mem_minimalPrimes_of_injective {f : R →+* S} (hf : Function.Injective f) (p) (H : p ∈ minimalPrimes R) : ∃ p' : Ideal S, p'.IsPrime ∧ p'.comap f = p"
+   }
+  ],
+  "00FL": [
+   {
+    "name": "PrimeSpectrum.denseRange_comap_iff_minimalPrimes",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.Topology",
+    "line": 955,
+    "statement": "lemma denseRange_comap_iff_minimalPrimes : DenseRange (comap f) ↔ ∀ I (h : I ∈ minimalPrimes R), ⟨I, h.1.1⟩ ∈ Set.range (comap f)"
+   }
+  ],
+  "00GI": [
+   {
+    "name": "RingHom.IsIntegral",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.IntegralClosure.IsIntegral.Defs",
+    "line": 45,
+    "statement": "def RingHom.IsIntegral (f : R →+* A)"
+   }
+  ],
+  "00GK": [
+   {
+    "name": "RingHom.Finite.to_isIntegral",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.IntegralClosure.Algebra.Basic",
+    "line": 127,
+    "statement": "theorem RingHom.Finite.to_isIntegral (h : f.Finite) : f.IsIntegral"
+   }
+  ],
+  "00GW": [
+   {
+    "name": "IsAlmostIntegral",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.IntegralClosure.IsIntegral.AlmostIntegral",
+    "line": 26,
+    "statement": "def IsAlmostIntegral (s : S) : Prop"
+   }
+  ],
+  "00GX": [
+   {
+    "name": "completeIntegralClosure",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.IntegralClosure.IsIntegral.AlmostIntegral",
+    "line": 31,
+    "statement": "def completeIntegralClosure : Subalgebra R S where carrier"
+   },
+   {
+    "name": "IsIntegral.isAlmostIntegral",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.IntegralClosure.IsIntegral.AlmostIntegral",
+    "line": 78,
+    "statement": "lemma IsIntegral.isAlmostIntegral [IsFractionRing R S] {s : S} (H : IsIntegral R s) : IsAlmostIntegral R s"
+   },
+   {
+    "name": "IsAlmostIntegral.isIntegral",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.IntegralClosure.IsIntegral.AlmostIntegral",
+    "line": 115,
+    "statement": "lemma IsAlmostIntegral.isIntegral [IsNoetherianRing R] [IsDomain S] [FaithfulSMul R S] {s : S} (H : IsAlmostIntegral R s) : IsIntegral R s"
+   }
+  ],
+  "00H0": [
+   {
+    "name": "IsAlmostIntegral.coeff",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Polynomial.IsIntegral",
+    "line": 85,
+    "statement": "lemma IsAlmostIntegral.coeff [IsDomain R] [FaithfulSMul R S] {p : S[X]} (hp : IsAlmostIntegral R[X] p) (i : ℕ) : IsAlmostIntegral R (p.coeff i)"
+   },
+   {
+    "name": "IsIntegral.coeff",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Polynomial.IsIntegral",
+    "line": 121,
+    "statement": "protected lemma IsIntegral.coeff {p : S[X]} (hp : IsIntegral R[X] p) (i : ℕ) : IsIntegral R (p.coeff i)"
+   }
+  ],
+  "00H5": [
+   {
+    "name": "Polynomial.exists_monic_aeval_eq_zero_forall_mem_of_mem_map",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.IntegralClosure.Algebra.Ideal",
+    "line": 93,
+    "statement": "lemma exists_monic_aeval_eq_zero_forall_mem_of_mem_map [Algebra.IsIntegral R S] {I : Ideal R} {x : S} (hx : x ∈ I.map (algebraMap R S)) : ∃ p : R[X], p.Monic ∧ aeval x p = 0 ∧ ∀ i ≠ p.natDegree, p.coeff i ∈ I"
+   }
+  ],
+  "00H6": [
+   {
+    "name": "Polynomial.isIntegral_coeff_of_dvd",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Polynomial.IsIntegral",
+    "line": 62,
+    "statement": "lemma isIntegral_coeff_of_dvd (p : R[X]) (q : S[X]) (hp : p.Monic) (hq : q.Monic) (H : q ∣ p.map (algebraMap R S)) (i : ℕ) : IsIntegral R (q.coeff i)"
+   }
+  ],
+  "00H8": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.IntegralClosure.GoingDown",
+    "line": 48,
+    "statement": "instance [IsDomain S] [FaithfulSMul R S] [Algebra.IsIntegral R S] [IsIntegrallyClosed R] : Algebra.HasGoingDown R S"
+   }
+  ],
+  "00HB": [
+   {
+    "name": "RingHom.FaithfullyFlat",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.RingHom.FaithfullyFlat",
+    "line": 25,
+    "statement": "def FaithfullyFlat {R S : Type*} [CommRing R] [CommRing S] (f : R →+* S) : Prop"
+   }
+  ],
+  "00HK": [
+   {
+    "name": "Module.Flat.tfae_equational_criterion",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Flat.EquationalCriterion",
+    "line": 117,
+    "statement": "theorem tfae_equational_criterion : List.TFAE [ Flat R M, ∀ I : Ideal R, Function.Injective (rTensor M I.subtype), ∀ {l : ℕ} {f : Fin l → R} {x : Fin l → M}, ∑ i, f i ⊗ₜ x i = (0 : R ⊗[R] M) → VanishesTrivially R f x, ∀ {l : ℕ} {f : Fin l → R} {x : Fin l → M}, ∑ i, f i • x i = 0 → IsTrivialRelation f x, ∀ {l : ℕ} {f : Fin l →₀ R} {x : (Fin l →₀ R) →ₗ[R] M}, x f = 0 → ∃ (k : ℕ) (a : (Fin l →₀ R) →ₗ[R] (Fin k →₀ R)) (y : (Fin k →₀ R) →ₗ[R] M), x = y ∘ₗ a ∧ a f = 0]"
+   },
+   {
+    "name": "Module.Flat.iff_forall_isTrivialRelation",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Flat.EquationalCriterion",
+    "line": 170,
+    "statement": "theorem iff_forall_isTrivialRelation : Flat R M ↔ ∀ {l : ℕ} {f : Fin l → R} {x : Fin l → M}, ∑ i, f i • x i = 0 → IsTrivialRelation f x"
+   },
+   {
+    "name": "Module.Flat.isTrivialRelation_of_sum_smul_eq_zero",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Flat.EquationalCriterion",
+    "line": 178,
+    "statement": "theorem isTrivialRelation_of_sum_smul_eq_zero [Flat R M] {ι : Type*} [Fintype ι] {f : ι → R} {x : ι → M} (h : ∑ i, f i • x i = 0) : IsTrivialRelation f x"
+   },
+   {
+    "name": "Module.Flat.of_forall_isTrivialRelation",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Flat.EquationalCriterion",
+    "line": 187,
+    "statement": "theorem of_forall_isTrivialRelation (hfx : ∀ {l : ℕ} {f : Fin l → R} {x : Fin l → M}, ∑ i, f i • x i = 0 → IsTrivialRelation f x) : Flat R M"
+   }
+  ],
+  "00HS": [
+   {
+    "name": "Algebra.HasGoingDown.of_flat",
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.Ideal.GoingDown",
+    "line": 154,
+    "statement": "instance of_flat [Module.Flat R S] : Algebra.HasGoingDown R S"
+   }
+  ],
+  "00HV": [
+   {
+    "name": "Algebra.HasGoingDown",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.Ideal.GoingDown",
+    "line": 44,
+    "statement": "class Algebra.HasGoingDown (R S : Type*) [CommRing R] [CommRing S] [Algebra R S] : Prop where exists_ideal_le_liesOver_of_lt {p : Ideal R} [p.IsPrime] (Q : Ideal S) [Q.IsPrime] : p < Q.under R → ∃ P ≤ Q, P.IsPrime ∧ P.LiesOver p variable {R S : Type*} [CommRing R] [CommRing S] [Algebra R S] lemma Ideal.exists_ideal_le_liesOver_of_le [Algebra.HasGoingDown R S] {p q : Ideal R} [p.IsPrime] [q.IsPrime] (Q : Ideal S) [Q.IsPrime] [Q.LiesOver q] (hle : p ≤ q) : ∃ P ≤ Q, P.IsPrime ∧ P.LiesOver p"
+   }
+  ],
+  "00HW": [
+   {
+    "name": "Algebra.HasGoingDown.iff_generalizingMap_primeSpectrumComap",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Ideal.GoingDown",
+    "line": 106,
+    "statement": "lemma iff_generalizingMap_primeSpectrumComap : Algebra.HasGoingDown R S ↔ GeneralizingMap (PrimeSpectrum.comap (algebraMap R S))"
+   }
+  ],
+  "00HX": [
+   {
+    "name": "Algebra.HasGoingDown.trans",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Ideal.GoingDown",
+    "line": 125,
+    "statement": "lemma trans (T : Type*) [CommRing T] [Algebra R T] [Algebra S T] [IsScalarTower R S T] [Algebra.HasGoingDown R S] [Algebra.HasGoingDown S T] : Algebra.HasGoingDown R T"
+   }
+  ],
+  "00HY": [
+   {
+    "name": "PrimeSpectrum.isClosed_range_of_stableUnderSpecialization",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.Topology",
+    "line": 884,
+    "statement": "lemma isClosed_range_of_stableUnderSpecialization (hf : StableUnderSpecialization (Set.range (comap f))) : IsClosed (Set.range (comap f))"
+   },
+   {
+    "name": "PrimeSpectrum.stableUnderSpecialization_range_iff",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.Topology",
+    "line": 892,
+    "statement": "lemma stableUnderSpecialization_range_iff : StableUnderSpecialization (Set.range (comap f)) ↔ IsClosed (Set.range (comap f))"
+   }
+  ],
+  "00I0": [
+   {
+    "name": "PrimeSpectrum.isClosed_of_stableUnderSpecialization_of_isConstructible",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.ConstructibleSet",
+    "line": 161,
+    "statement": "lemma isClosed_of_stableUnderSpecialization_of_isConstructible {R : Type*} [CommRing R] {s : Set (PrimeSpectrum R)} (hs : StableUnderSpecialization s) (hs' : IsConstructible s) : IsClosed s"
+   },
+   {
+    "name": "PrimeSpectrum.isOpen_of_stableUnderGeneralization_of_isConstructible",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.ConstructibleSet",
+    "line": 168,
+    "statement": "lemma isOpen_of_stableUnderGeneralization_of_isConstructible {R : Type*} [CommRing R] {s : Set (PrimeSpectrum R)} (hs : StableUnderGeneralization s) (hs' : IsConstructible s) : IsOpen s"
+   }
+  ],
+  "00I1": [
+   {
+    "name": "PrimeSpectrum.isOpenMap_comap_of_hasGoingDown_of_finitePresentation",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.Chevalley",
+    "line": 59,
+    "statement": "lemma isOpenMap_comap_of_hasGoingDown_of_finitePresentation [Algebra R S] [Algebra.HasGoingDown R S] [Algebra.FinitePresentation R S] : IsOpenMap (comap (algebraMap R S))"
+   }
+  ],
+  "00I9": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.LocalRing.LocalSubring",
+    "line": 69,
+    "statement": "instance : PartialOrder (LocalSubring R) where le A B"
+   }
+  ],
+  "00IA": [
+   {
+    "name": "LocalSubring.exists_le_valuationSubring",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Valuation.LocalSubring",
+    "line": 118,
+    "statement": "lemma LocalSubring.exists_le_valuationSubring (A : LocalSubring K) : ∃ B : ValuationSubring K, A ≤ B.toLocalSubring"
+   }
+  ],
+  "00IB": [
+   {
+    "name": "LocalSubring.exists_valuationRing_of_isMax",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Valuation.LocalSubring",
+    "line": 95,
+    "statement": "lemma LocalSubring.exists_valuationRing_of_isMax {R : LocalSubring K} (hR : IsMax R) : ∃ R' : ValuationSubring K, R'.toLocalSubring = R"
+   }
+  ],
+  "00IC": [
+   {
+    "name": "LocalSubring.mem_of_isMax_of_isIntegral",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Valuation.LocalSubring",
+    "line": 66,
+    "statement": "lemma LocalSubring.mem_of_isMax_of_isIntegral {R : LocalSubring K} (hR : IsMax R) {x : K} (hx : IsIntegral R.toSubring x) : x ∈ R.toSubring"
+   }
+  ],
+  "00IS": [
+   {
+    "name": "fg_of_fg_of_fg",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Adjoin.Tower",
+    "line": 145,
+    "statement": "theorem fg_of_fg_of_fg [IsNoetherianRing A] (hAC : (⊤ : Subalgebra A C).FG) (hBC : (⊤ : Submodule B C).FG) (hBCi : Function.Injective (algebraMap B C)) : (⊤ : Subalgebra A B).FG"
+   }
+  ],
+  "00J5": [
+   {
+    "name": "IsArtinianRing",
+    "kind": "abbrev",
+    "module": "Mathlib.RingTheory.Artinian.Defs",
+    "line": 66,
+    "statement": "abbrev IsArtinianRing (R) [Semiring R]"
+   }
+  ],
+  "00J7": [
+   {
+    "name": "IsArtinianRing.setOf_isMaximal_finite",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Artinian.Module",
+    "line": 517,
+    "statement": "lemma setOf_isMaximal_finite : {I : Ideal R | I.IsMaximal}.Finite"
+   }
+  ],
+  "00J8": [
+   {
+    "name": "IsArtinianRing.isNilpotent_jacobson_bot",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Artinian.Ring",
+    "line": 54,
+    "statement": "theorem isNilpotent_jacobson_bot {R} [Ring R] [IsArtinianRing R] : IsNilpotent (Ideal.jacobson (⊥ : Ideal R))"
+   }
+  ],
+  "00J9": [
+   {
+    "name": "existsUnique_isIdempotentElem_eq_of_ker_isNilpotent",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Idempotents",
+    "line": 373,
+    "statement": "theorem existsUnique_isIdempotentElem_eq_of_ker_isNilpotent (h : ∀ x ∈ RingHom.ker f, IsNilpotent x) (e : S) (he : e ∈ f.range) (he' : IsIdempotentElem e) : ∃! e' : R, IsIdempotentElem e' ∧ f e' = e"
+   }
+  ],
+  "00JA": [
+   {
+    "name": "MaximalSpectrum.toPiLocalizationEquiv",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.Topology",
+    "line": 779,
+    "statement": "def _root_.MaximalSpectrum.toPiLocalizationEquiv : R ≃ₐ[R] MaximalSpectrum.PiLocalization R"
+   }
+  ],
+  "00JB": [
+   {
+    "name": "isArtinianRing_iff_isFiniteLength",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.HopkinsLevitzki",
+    "line": 135,
+    "statement": "theorem isArtinianRing_iff_isFiniteLength : IsArtinianRing R ↔ IsFiniteLength R R"
+   },
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.HopkinsLevitzki",
+    "line": 141,
+    "statement": "instance [IsArtinianRing R] : IsNoetherianRing R"
+   }
+  ],
+  "00KH": [
+   {
+    "name": "isArtinianRing_iff_isNoetherianRing_krullDimLE_zero",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.HopkinsLevitzki",
+    "line": 176,
+    "statement": "@[stacks 00KH] theorem isArtinianRing_iff_isNoetherianRing_krullDimLE_zero {R} [CommRing R] : IsArtinianRing R ↔ IsNoetherianRing R ∧ Ring.KrullDimLE 0 R"
+   }
+  ],
+  "00KU": [
+   {
+    "name": "IsRegularLocalRing",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.RegularLocalRing.Defs",
+    "line": 51,
+    "statement": "class IsRegularLocalRing (R : Type*) [CommRing R] : Prop extends IsLocalRing R, IsNoetherianRing R where spanFinrank_maximalIdeal : (maximalIdeal R).spanFinrank = ringKrullDim R variable (R : Type*) [CommRing R] lemma isRegularLocalRing_iff [IsLocalRing R] [IsNoetherianRing R] : IsRegularLocalRing R ↔ (maximalIdeal R).spanFinrank = ringKrullDim R"
+   }
+  ],
+  "00KW": [
+   {
+    "name": "ringKrullDim_quotient_span_singleton_succ_eq_ringKrullDim_of_mem_nonZeroDivisors",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.KrullDimension.Regular",
+    "line": 187,
+    "statement": "lemma _root_.ringKrullDim_quotient_span_singleton_succ_eq_ringKrullDim_of_mem_nonZeroDivisors {x : R} (reg : x ∈ R⁰) (hx : x ∈ maximalIdeal R) : ringKrullDim (R ⧸ span {x}) + 1 = ringKrullDim R"
+   }
+  ],
+  "00L0": [
+   {
+    "name": "IsNoetherianRing.exists_relSeries_isQuotientEquivQuotientPrime",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Ideal.AssociatedPrime.Finiteness",
+    "line": 92,
+    "statement": "theorem IsNoetherianRing.exists_relSeries_isQuotientEquivQuotientPrime : ∃ s : RelSeries {(N₁, N₂) | Submodule.IsQuotientEquivQuotientPrime (A"
+   }
+  ],
+  "00L1": [
+   {
+    "name": "Module.support",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Support",
+    "line": 49,
+    "statement": "def Module.support : Set (PrimeSpectrum R)"
+   }
+  ],
+  "00L2": [
+   {
+    "name": "Module.support_eq_zeroLocus",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Support",
+    "line": 216,
+    "statement": "lemma Module.support_eq_zeroLocus : Module.support R M = zeroLocus (Module.annihilator R M)"
+   }
+  ],
+  "00L3": [
+   {
+    "name": "Module.support_subset_of_injective",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Support",
+    "line": 156,
+    "statement": "lemma Module.support_subset_of_injective (hf : Function.Injective f) : Module.support R M ⊆ Module.support R N"
+   },
+   {
+    "name": "Module.support_subset_of_surjective",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Support",
+    "line": 163,
+    "statement": "lemma Module.support_subset_of_surjective (hf : Function.Surjective f) : Module.support R N ⊆ Module.support R M"
+   },
+   {
+    "name": "Module.support_of_exact",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Support",
+    "line": 173,
+    "statement": "lemma Module.support_of_exact (h : Function.Exact f g) (hf : Function.Injective f) (hg : Function.Surjective g) : Module.support R N = Module.support R M ∪ Module.support R P"
+   },
+   {
+    "name": "Module.support_quotient",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Support",
+    "line": 243,
+    "statement": "theorem Module.support_quotient (I : Ideal R) : support R (M ⧸ (I • ⊤ : Submodule R M)) = support R M ∩ zeroLocus I"
+   }
+  ],
+  "00LC": [
+   {
+    "name": "associatedPrimes.finite",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Ideal.AssociatedPrime.Finiteness",
+    "line": 158,
+    "statement": "theorem associatedPrimes.finite : (associatedPrimes A M).Finite"
+   }
+  ],
+  "00NX": [
+   {
+    "name": "Module.Flat.projective_of_finitePresentation",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Flat.EquationalCriterion",
+    "line": 288,
+    "statement": "theorem projective_of_finitePresentation [Flat R M] [FinitePresentation R M] : Projective R M"
+   }
+  ],
+  "00NZ": [
+   {
+    "name": "Module.free_of_flat_of_isLocalRing",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.LocalRing.Module",
+    "line": 302,
+    "statement": "theorem free_of_flat_of_isLocalRing [Module.Finite R P] [Flat R P] : Free R P"
+   }
+  ],
+  "00OM": [
+   {
+    "name": "Ideal.height_le_height_add_of_liesOver",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Ideal.KrullsHeightTheorem",
+    "line": 424,
+    "statement": "lemma Ideal.height_le_height_add_of_liesOver [IsNoetherianRing S] (p : Ideal R) [p.IsPrime] (P : Ideal S) [P.IsPrime] [P.LiesOver p] : P.height ≤ p.height + (P.map (Ideal.Quotient.mk <| p.map (algebraMap R S))).height"
+   }
+  ],
+  "00ON": [
+   {
+    "name": "Ideal.height_eq_height_add_of_liesOver_of_hasGoingDown",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Ideal.KrullsHeightTheorem",
+    "line": 461,
+    "statement": "lemma Ideal.height_eq_height_add_of_liesOver_of_hasGoingDown [IsNoetherianRing S] [Algebra.HasGoingDown R S] (p : Ideal R) [p.IsPrime] (P : Ideal S) [P.IsPrime] [P.LiesOver p] : P.height = p.height + (P.map (Ideal.Quotient.mk <| p.map (algebraMap R S))).height"
+   }
+  ],
+  "00OW": [
+   {
+    "name": "exists_integral_inj_algHom_of_fg",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.NoetherNormalization",
+    "line": 275,
+    "statement": "theorem exists_integral_inj_algHom_of_fg : ∃ s, ∃ g : (MvPolynomial (Fin s) k) →ₐ[k] R, Function.Injective g ∧ g.IsIntegral"
+   }
+  ],
+  "00PL": [
+   {
+    "name": "Algebra.QuasiFinite",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.QuasiFinite.Basic",
+    "line": 67,
+    "statement": "class QuasiFinite : Prop where finite_fiber (P : Ideal R) [P.IsPrime] : Module.Finite P.ResidueField (P.Fiber S)"
+   }
+  ],
+  "00PO": [
+   {
+    "name": "Algebra.QuasiFinite.trans",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.QuasiFinite.Basic",
+    "line": 168,
+    "statement": "lemma trans [QuasiFinite R S] [QuasiFinite S T] : QuasiFinite R T"
+   }
+  ],
+  "00PP": [
+   {
+    "name": "Algebra.QuasiFinite.baseChange",
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.QuasiFinite.Basic",
+    "line": 110,
+    "statement": "instance baseChange [QuasiFinite R S] {A : Type*} [CommRing A] [Algebra R A] : QuasiFinite A (A ⊗[R] S)"
+   }
+  ],
+  "00PT": [
+   {
+    "name": "exists_isIntegral_sub_of_isIntegralElem_of_mul_mem_range",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.ZariskisMainTheorem",
+    "line": 178,
+    "statement": "lemma exists_isIntegral_sub_of_isIntegralElem_of_mul_mem_range (ht : φ.IsIntegralElem t) (hpm : p.Monic) (hp : φ p * t ∈ φ.range) : ∃ q, IsIntegral R (t - φ q)"
+   }
+  ],
+  "00PV": [
+   {
+    "name": "exists_isIntegral_leadingCoeff_pow_smul_sub_of_isIntegralElem_of_mul_mem_range",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.ZariskisMainTheorem",
+    "line": 191,
+    "statement": "lemma exists_isIntegral_leadingCoeff_pow_smul_sub_of_isIntegralElem_of_mul_mem_range (ht : φ.IsIntegralElem t) (hp : φ p * t ∈ φ.range) : ∃ q n, IsIntegral R (p.leadingCoeff ^ n • t - φ q)"
+   }
+  ],
+  "00PX": [
+   {
+    "name": "exists_leadingCoeff_pow_smul_mem_conductor",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.ZariskisMainTheorem",
+    "line": 232,
+    "statement": "lemma exists_leadingCoeff_pow_smul_mem_conductor (hRS : integralClosure R S = ⊥) (hφ : φ.toRingHom.Finite) (hp : φ p * t ∈ conductor R (φ X)) : ∃ n, p.leadingCoeff ^ n • t ∈ conductor R (φ X)"
+   }
+  ],
+  "00PY": [
+   {
+    "name": "exists_leadingCoeff_pow_smul_mem_radical_conductor",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.ZariskisMainTheorem",
+    "line": 260,
+    "statement": "lemma exists_leadingCoeff_pow_smul_mem_radical_conductor (hRS : integralClosure R S = ⊥) (hφ : φ.toRingHom.Finite) (hp : φ p * t ∈ (conductor R (φ X)).radical) (i : ℕ) : p.coeff i • t ∈ (conductor R (φ X)).radical"
+   },
+   {
+    "name": "isStronglyTranscendental_mk_radical_conductor",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.ZariskisMainTheorem",
+    "line": 294,
+    "statement": "lemma isStronglyTranscendental_mk_radical_conductor (hRS : integralClosure R S = ⊥) (x : S) (hx : (aeval (R"
+   }
+  ],
+  "00PZ": [
+   {
+    "name": "IsStronglyTranscendental",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Algebraic.StronglyTranscendental",
+    "line": 37,
+    "statement": "def IsStronglyTranscendental (x : S) : Prop"
+   }
+  ],
+  "00Q0": [
+   {
+    "name": "isStronglyTranscendental_mk_of_mem_minimalPrimes",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Algebraic.StronglyTranscendental",
+    "line": 123,
+    "statement": "lemma isStronglyTranscendental_mk_of_mem_minimalPrimes [IsReduced S] {x : S} (hx : IsStronglyTranscendental R x) (q : Ideal S) (hq : q ∈ minimalPrimes S) : IsStronglyTranscendental R (Ideal.Quotient.mk q x)"
+   }
+  ],
+  "00Q2": [
+   {
+    "name": "Algebra.not_isStronglyTranscendental_of_quasiFiniteAt",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.ZariskisMainTheorem",
+    "line": 448,
+    "statement": "nonrec lemma not_isStronglyTranscendental_of_quasiFiniteAt [IsReduced S] {x : S} (hx' : (aeval (R"
+   }
+  ],
+  "00Q9": [
+   {
+    "name": "Algebra.ZariskisMainProperty.of_finiteType_of_weaklyQuasiFiniteAt",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.ZariskisMainTheorem",
+    "line": 636,
+    "statement": "lemma ZariskisMainProperty.of_finiteType_of_weaklyQuasiFiniteAt.{u, v} {R : Type u} {S : Type v} [CommRing R] [CommRing S] [Algebra R S] [Algebra.FiniteType R S] (p : Ideal S) [p.IsPrime] [Algebra.WeaklyQuasiFiniteAt R p] : ZariskisMainProperty R p"
+   },
+   {
+    "name": "Algebra.ZariskisMainProperty.of_finiteType",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.ZariskisMainTheorem",
+    "line": 659,
+    "statement": "lemma ZariskisMainProperty.of_finiteType.{u, v} {R : Type u} {S : Type v} [CommRing R] [CommRing S] [Algebra R S] [Algebra.FiniteType R S] (p : Ideal S) [p.IsPrime] [Algebra.QuasiFiniteAt R p] : ZariskisMainProperty R p"
+   }
+  ],
+  "00S2": [
+   {
+    "name": "Algebra.H1Cotangent.exact_map_δ",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Kaehler.JacobiZariski",
+    "line": 542,
+    "statement": "lemma H1Cotangent.exact_map_δ : Function.Exact (map R S T T) (δ R S T)"
+   },
+   {
+    "name": "Algebra.H1Cotangent.exact_δ_mapBaseChange",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Kaehler.JacobiZariski",
+    "line": 550,
+    "statement": "lemma H1Cotangent.exact_δ_mapBaseChange : Function.Exact (δ R S T) (mapBaseChange R S T)"
+   },
+   {
+    "name": "Algebra.H1Cotangent.exact_liftBaseChange_map_of_flat",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Kaehler.JacobiZariski",
+    "line": 557,
+    "statement": "lemma H1Cotangent.exact_liftBaseChange_map_of_flat [Module.Flat S T] : Function.Exact ((map R R S T).liftBaseChange T) (map R S T T)"
+   }
+  ],
+  "00T2": [
+   {
+    "name": "Algebra.Smooth",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.Smooth.Basic",
+    "line": 541,
+    "statement": "class Smooth [CommRing R] (A : Type u) [CommRing A] [Algebra R A] : Prop where formallySmooth : FormallySmooth R A"
+   }
+  ],
+  "00T7": [
+   {
+    "name": "Algebra.SubmersivePresentation.basisCotangent",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Smooth.StandardSmoothCotangent",
+    "line": 144,
+    "statement": "noncomputable def basisCotangent : Basis σ S P.toExtension.Cotangent"
+   },
+   {
+    "name": "Algebra.SubmersivePresentation.free_cotangent",
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.Smooth.StandardSmoothCotangent",
+    "line": 156,
+    "statement": "instance free_cotangent : Module.Free S P.toExtension.Cotangent"
+   },
+   {
+    "name": "Algebra.SubmersivePresentation.basisKaehler",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Smooth.StandardSmoothCotangent",
+    "line": 225,
+    "statement": "noncomputable def basisKaehler : Basis ((Set.range P.map)ᶜ : Set _) S Ω[S⁄R]"
+   },
+   {
+    "name": "Algebra.SubmersivePresentation.free_kaehlerDifferential",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Smooth.StandardSmoothCotangent",
+    "line": 238,
+    "statement": "theorem free_kaehlerDifferential (P : SubmersivePresentation R S ι σ) : Module.Free S Ω[S⁄R]"
+   }
+  ],
+  "00TB": [
+   {
+    "name": "Algebra.IsSmoothAt",
+    "kind": "abbrev",
+    "module": "Mathlib.RingTheory.Smooth.Locus",
+    "line": 46,
+    "statement": "abbrev IsSmoothAt (p : Ideal A) [p.IsPrime] : Prop"
+   }
+  ],
+  "00TF": [
+   {
+    "name": "Algebra.IsSmoothAt.of_formallySmooth_fiber",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Smooth.Fiber",
+    "line": 195,
+    "statement": "lemma IsSmoothAt.of_formallySmooth_fiber [Algebra.FinitePresentation R S] (p : Ideal R) (q : Ideal S) [p.IsPrime] [q.IsPrime] [q.LiesOver p] [FormallySmooth p.ResidueField (p.Fiber S)] : Algebra.IsSmoothAt R q"
+   }
+  ],
+  "00TI": [
+   {
+    "name": "Algebra.FormallySmooth",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.Smooth.Basic",
+    "line": 70,
+    "statement": "class FormallySmooth : Prop where projective_kaehlerDifferential : Module.Projective A Ω[A⁄R] subsingleton_h1Cotangent : Subsingleton (H1Cotangent R A) attribute [instance] FormallySmooth.projective_kaehlerDifferential FormallySmooth.subsingleton_h1Cotangent @[deprecated (since"
+   }
+  ],
+  "00TP": [
+   {
+    "name": "Algebra.Smooth.exists_finiteType",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Smooth.NoetherianDescent",
+    "line": 254,
+    "statement": "public theorem exists_finiteType [Smooth A B] : ∃ (A₀ : Type u) (B₀ : Type u) (_ : CommRing A₀) (_ : CommRing B₀) (_ : Algebra R A₀) (_ : Algebra A₀ A) (_ : Algebra A₀ B₀), Function.Injective (algebraMap A₀ A) ∧ FiniteType R A₀ ∧ Smooth A₀ B₀ ∧ Nonempty (B ≃ₐ[A] A ⊗[A₀] B₀)"
+   }
+  ],
+  "00U1": [
+   {
+    "name": "Algebra.Etale",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.Etale.Basic",
+    "line": 213,
+    "statement": "class Etale : Prop where formallyEtale : FormallyEtale R A"
+   }
+  ],
+  "00U2": [
+   {
+    "name": "Algebra.Etale.exists_subalgebra_fg",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Smooth.NoetherianDescent",
+    "line": 280,
+    "statement": "public theorem _root_.Algebra.Etale.exists_subalgebra_fg [Etale A B] : ∃ (A₀ : Subalgebra R A) (B₀ : Type u) (_ : CommRing B₀) (_ : Algebra A₀ B₀), A₀.FG ∧ Etale A₀ B₀ ∧ Nonempty (B ≃ₐ[A] A ⊗[A₀] B₀)"
+   }
+  ],
+  "00UE": [
+   {
+    "name": "IsEtaleAt.exists_isStandardEtale",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Unramified.LocalStructure",
+    "line": 374,
+    "statement": "lemma IsEtaleAt.exists_isStandardEtale (Q : Ideal S) [Q.IsPrime] [FinitePresentation R S] [IsEtaleAt R Q] : ∃ f, f ∉ Q ∧ IsStandardEtale R (Localization.Away f)"
+   }
+  ],
+  "00UH": [
+   {
+    "name": "Algebra.exists_etale_bijective_residueFieldMap_and_map_eq_mul_and_isCoprime",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Polynomial.UniversalFactorizationRing",
+    "line": 688,
+    "statement": "lemma _root_.Algebra.exists_etale_bijective_residueFieldMap_and_map_eq_mul_and_isCoprime.{u} {R : Type u} [CommRing R] (P : Ideal R) [P.IsPrime] (p : R[X]) (f g : P.ResidueField[X]) (hp : p.Monic) (hf : f.Monic) (hg : g.Monic) (H : p.map (algebraMap R _) = f * g) (Hpq : IsCoprime f g) : ∃ (R' : Type u) (_ : CommRing R') (_ : Algebra R R') (_ : Algebra.Etale R R') (Q : Ideal R') (_ : Q.IsPrime) (_ : Q.LiesOver P) (f' g' : R'[X]), Function.Bijective (Ideal.ResidueField.mapₐ P Q (Algebra.ofId _ _) (Ideal.over_def Q P)) ∧ f'.Monic ∧ g'.Monic ∧ p.map (algebraMap R R') = f' * g' ∧ IsCoprime f' g' ∧ "
+   }
+  ],
+  "00UI": [
+   {
+    "name": "Localization.exists_finite_awayMapₐ_of_surjective_awayMapₐ",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Etale.QuasiFinite",
+    "line": 91,
+    "statement": "lemma Localization.exists_finite_awayMapₐ_of_surjective_awayMapₐ [Algebra.FiniteType R T] [Algebra.IsIntegral R S] (f : S →ₐ[R] T) (g : S) (hg : Function.Surjective (Localization.awayMapₐ f g)) (p : Ideal R) [p.IsPrime] (hgp : IsUnit (M"
+   }
+  ],
+  "00UJ": [
+   {
+    "name": "Algebra.exists_etale_isIdempotentElem_forall_liesOver_eq",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Etale.QuasiFinite",
+    "line": 378,
+    "statement": "lemma Algebra.exists_etale_isIdempotentElem_forall_liesOver_eq {R : Type u} {S : Type v} [CommRing R] [CommRing S] [Algebra R S] [Algebra.FiniteType R S] (p : Ideal R) [p.IsPrime] (q : Ideal S) [q.IsPrime] [q.LiesOver p] [Algebra.QuasiFiniteAt R q] : ∃ (R' : Type u) (_ : CommRing R') (_ : Algebra R R') (_ : Algebra.Etale R R') (P : Ideal R') (_ : P.IsPrime) (_ : P.LiesOver p) (e : R' ⊗[R] S) (_ : IsIdempotentElem e) (P' : Ideal (R' ⊗[R] S)) (_ : P'.IsPrime) (_ : P'.LiesOver P), P'.comap Algebra.TensorProduct.includeRight.toRingHom = q ∧ e ∉ P' ∧ Function.Bijective (Ideal.ResidueField.mapₐ p P "
+   }
+  ],
+  "00UM": [
+   {
+    "name": "Algebra.FormallyUnramified",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.Unramified.Basic",
+    "line": 58,
+    "statement": "class FormallyUnramified : Prop where subsingleton_kaehlerDifferential : Subsingleton Ω[A⁄R] attribute [instance] FormallyUnramified.subsingleton_kaehlerDifferential end namespace FormallyUnramified section variable {R : Type v} [CommRing R] variable {A : Type u} [CommRing A] [Algebra R A] variable {B : Type w} [CommRing B] [Algebra R B] (I : Ideal B)"
+   }
+  ],
+  "00UQ": [
+   {
+    "name": "Algebra.FormallyEtale",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.Etale.Basic",
+    "line": 47,
+    "statement": "class FormallyEtale : Prop where subsingleton_kaehlerDifferential : Subsingleton Ω[A⁄R] subsingleton_h1Cotangent : Subsingleton (H1Cotangent R A) attribute [instance] FormallyEtale.subsingleton_kaehlerDifferential FormallyEtale.subsingleton_h1Cotangent end namespace FormallyEtale section instance (priority"
+   }
+  ],
+  "00UT": [
+   {
+    "name": "Algebra.Unramified",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.Unramified.Basic",
+    "line": 359,
+    "statement": "class Unramified : Prop where formallyUnramified : FormallyUnramified R A"
+   }
+  ],
+  "00UW": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.Unramified.LocalRing",
+    "line": 56,
+    "statement": "instance [FormallyUnramified R S] : Module.Finite (ResidueField R) (ResidueField S)"
+   },
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.Unramified.LocalRing",
+    "line": 63,
+    "statement": "instance [FormallyUnramified R S] : Algebra.IsSeparable (ResidueField R) (ResidueField S)"
+   },
+   {
+    "name": "Algebra.FormallyUnramified.map_maximalIdeal",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Unramified.LocalRing",
+    "line": 88,
+    "statement": "lemma FormallyUnramified.map_maximalIdeal [FormallyUnramified R S] : (maximalIdeal R).map (algebraMap R S) = maximalIdeal S"
+   }
+  ],
+  "00VH": [
+   {
+    "name": "CategoryTheory.Pretopology",
+    "kind": "structure",
+    "module": "Mathlib.CategoryTheory.Sites.Pretopology",
+    "line": 64,
+    "statement": "structure Pretopology extends Precoverage C where has_isos : ∀ ⦃X Y⦄ (f : Y ⟶ X) [IsIso f], Presieve.singleton f ∈ coverings X pullbacks : ∀ ⦃X Y⦄ (f : Y ⟶ X) (S), S ∈ coverings X → pullbackArrows f S ∈ coverings Y transitive : ∀ ⦃X : C⦄ (S : Presieve X) (Ti : ∀ ⦃Y⦄ (f : Y ⟶ X), S f → Presieve Y), S ∈ coverings X → (∀ ⦃Y⦄ (f) (H : S f), Ti f H ∈ coverings Y) → S.bind Ti ∈ coverings X namespace Pretopology instance : CoeFun (Pretopology C) fun _ => ∀ X : C, Set (Presieve X)"
+   }
+  ],
+  "00VM": [
+   {
+    "name": "CategoryTheory.Equalizer.FirstObj",
+    "kind": "abbrev",
+    "module": "Mathlib.CategoryTheory.Sites.EqualizerSheafCondition",
+    "line": 56,
+    "statement": "abbrev FirstObj : Type (max v u)"
+   },
+   {
+    "name": "CategoryTheory.Equalizer.forkMap",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.EqualizerSheafCondition",
+    "line": 89,
+    "statement": "def forkMap : P.obj (op X) ⟶ FirstObj P R"
+   },
+   {
+    "name": "CategoryTheory.Equalizer.Presieve.SecondObj",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.EqualizerSheafCondition",
+    "line": 189,
+    "statement": "def SecondObj : Type (max v u)"
+   },
+   {
+    "name": "CategoryTheory.Equalizer.Presieve.firstMap",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.EqualizerSheafCondition",
+    "line": 196,
+    "statement": "def firstMap : FirstObj P R ⟶ SecondObj P R"
+   },
+   {
+    "name": "CategoryTheory.Equalizer.Presieve.secondMap",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.EqualizerSheafCondition",
+    "line": 206,
+    "statement": "def secondMap : FirstObj P R ⟶ SecondObj P R"
+   },
+   {
+    "name": "CategoryTheory.Equalizer.Presieve.sheaf_condition",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Sites.EqualizerSheafCondition",
+    "line": 240,
+    "statement": "theorem sheaf_condition : R.IsSheafFor P ↔ Nonempty (IsLimit (Fork.ofι _ (w P R)))"
+   },
+   {
+    "name": "CategoryTheory.Equalizer.Presieve.Arrows.FirstObj",
+    "kind": "abbrev",
+    "module": "Mathlib.CategoryTheory.Sites.EqualizerSheafCondition",
+    "line": 274,
+    "statement": "abbrev FirstObj : Type w"
+   },
+   {
+    "name": "CategoryTheory.Equalizer.Presieve.Arrows.SecondObj",
+    "kind": "abbrev",
+    "module": "Mathlib.CategoryTheory.Sites.EqualizerSheafCondition",
+    "line": 289,
+    "statement": "abbrev SecondObj : Type w"
+   },
+   {
+    "name": "CategoryTheory.Equalizer.Presieve.Arrows.sheaf_condition",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Sites.EqualizerSheafCondition",
+    "line": 357,
+    "statement": "theorem sheaf_condition : (Presieve.ofArrows X π).IsSheafFor P ↔ Nonempty (IsLimit (Fork.ofι (forkMap P X π) (w P X π)))"
+   },
+   {
+    "name": "CategoryTheory.Presieve.FamilyOfElements",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.IsSheafFor",
+    "line": 95,
+    "statement": "def FamilyOfElements (P : Cᵒᵖ ⥤ Type w) (R : Presieve X)"
+   },
+   {
+    "name": "CategoryTheory.Presheaf.firstObj",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.Sheaf",
+    "line": 599,
+    "statement": "def firstObj : A"
+   },
+   {
+    "name": "CategoryTheory.Presheaf.forkMap",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.Sheaf",
+    "line": 605,
+    "statement": "def forkMap : P.obj (op U) ⟶ firstObj R P"
+   },
+   {
+    "name": "CategoryTheory.Presheaf.secondObj",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.Sheaf",
+    "line": 614,
+    "statement": "def secondObj : A"
+   },
+   {
+    "name": "CategoryTheory.Presheaf.firstMap",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.Sheaf",
+    "line": 620,
+    "statement": "def firstMap : firstObj R P ⟶ secondObj R P"
+   },
+   {
+    "name": "CategoryTheory.Presheaf.secondMap",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.Sheaf",
+    "line": 625,
+    "statement": "def secondMap : firstObj R P ⟶ secondObj R P"
+   }
+  ],
+  "00VR": [
+   {
+    "name": "CategoryTheory.Presheaf.IsSheaf",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.Sheaf",
+    "line": 78,
+    "statement": "def IsSheaf (P : Cᵒᵖ ⥤ A) : Prop"
+   }
+  ],
+  "00WW": [
+   {
+    "name": "CategoryTheory.Functor.isContinuous_of_coverPreserving",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.Sites.CoverPreserving",
+    "line": 160,
+    "statement": "lemma Functor.isContinuous_of_coverPreserving (hF₁ : CompatiblePreserving.{max u₁ v₁ u₂ v₂} K F) (hF₂ : CoverPreserving J K F) : Functor.IsContinuous F J K where op_comp_isSheaf_of_types G X S hS x hx"
+   }
+  ],
+  "00XK": [
+   {
+    "name": "CategoryTheory.ran_isSheaf_of_isCocontinuous",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Sites.CoverLifting",
+    "line": 280,
+    "statement": "theorem ran_isSheaf_of_isCocontinuous (ℱ : Sheaf J A) : Presheaf.IsSheaf K (G.op.ran.obj ℱ.obj)"
+   }
+  ],
+  "00YK": [
+   {
+    "name": "CategoryTheory.ObjectProperty.IsConservativeFamilyOfPoints",
+    "kind": "structure",
+    "module": "Mathlib.CategoryTheory.Sites.Point.Conservative",
+    "line": 51,
+    "statement": "structure IsConservativeFamilyOfPoints : Prop where jointlyReflectIsomorphisms_type : JointlyReflectIsomorphisms (fun (Φ : P.FullSubcategory) ↦ Φ.obj.sheafFiber (A"
+   },
+   {
+    "name": "CategoryTheory.ObjectProperty.IsConservativeFamilyOfPoints.jointlyReflectIsomorphisms",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.Sites.Point.Conservative",
+    "line": 74,
+    "statement": "lemma jointlyReflectIsomorphisms : JointlyReflectIsomorphisms (fun (Φ : P.FullSubcategory) ↦ Φ.obj.sheafFiber (A"
+   }
+  ],
+  "00YL": [
+   {
+    "name": "CategoryTheory.ObjectProperty.IsConservativeFamilyOfPoints.jointlyReflectMonomorphisms",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.Sites.Point.Conservative",
+    "line": 87,
+    "statement": "lemma jointlyReflectMonomorphisms [AB5OfSize.{w, w} A] [HasFiniteLimits A] : JointlyReflectMonomorphisms (fun (Φ : P.FullSubcategory) ↦ Φ.obj.sheafFiber (A"
+   },
+   {
+    "name": "CategoryTheory.ObjectProperty.IsConservativeFamilyOfPoints.jointlyReflectEpimorphisms",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.Sites.Point.Conservative",
+    "line": 94,
+    "statement": "lemma jointlyReflectEpimorphisms [HasWeakSheafify J A] [HasProducts.{w} A] : JointlyReflectEpimorphisms (fun (Φ : P.FullSubcategory) ↦ Φ.obj.sheafFiber (A"
+   },
+   {
+    "name": "CategoryTheory.ObjectProperty.IsConservativeFamilyOfPoints.jointlyFaithful",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.Sites.Point.Conservative",
+    "line": 102,
+    "statement": "lemma jointlyFaithful [AB5OfSize.{w, w} A] [HasFiniteLimits A] : JointlyFaithful (fun (Φ : P.FullSubcategory) ↦ Φ.obj.sheafFiber (A"
+   }
+  ],
+  "00Z4": [
+   {
+    "name": "CategoryTheory.GrothendieckTopology",
+    "kind": "structure",
+    "module": "Mathlib.CategoryTheory.Sites.Grothendieck",
+    "line": 76,
+    "statement": "structure GrothendieckTopology where sieves : ∀ X : C, Set (Sieve X) top_mem' : ∀ X, ⊤ ∈ sieves X pullback_stable' : ∀ ⦃X Y : C⦄ ⦃S : Sieve X⦄ (f : Y ⟶ X), S ∈ sieves X → S.pullback f ∈ sieves Y transitive' : ∀ ⦃X⦄ ⦃S : Sieve X⦄ (_ : S ∈ sieves X) (R : Sieve X), (∀ ⦃Y⦄ ⦃f : Y ⟶ X⦄, S f → R.pullback f ∈ sieves Y) → R ∈ sieves X"
+   }
+  ],
+  "00Z5": [
+   {
+    "name": "CategoryTheory.GrothendieckTopology.superset_covering",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Sites.Grothendieck",
+    "line": 164,
+    "statement": "theorem superset_covering (Hss : S ≤ R) (sjx : S ∈ J X) : R ∈ J X"
+   },
+   {
+    "name": "CategoryTheory.GrothendieckTopology.intersection_covering",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Sites.Grothendieck",
+    "line": 175,
+    "statement": "theorem intersection_covering (rj : R ∈ J X) (sj : S ∈ J X) : R ⊓ S ∈ J X"
+   }
+  ],
+  "00Z6": [
+   {
+    "name": "CategoryTheory.GrothendieckTopology.instLEGrothendieckTopology",
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Sites.Grothendieck",
+    "line": 266,
+    "statement": "instance instLEGrothendieckTopology : LE (GrothendieckTopology C) where le J₁ J₂"
+   },
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Sites.Grothendieck",
+    "line": 273,
+    "statement": "instance : PartialOrder (GrothendieckTopology C)"
+   }
+  ],
+  "00Z7": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Sites.Grothendieck",
+    "line": 280,
+    "statement": "instance : InfSet (GrothendieckTopology C) where sInf T"
+   },
+   {
+    "name": "CategoryTheory.GrothendieckTopology.isGLB_sInf",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Sites.Grothendieck",
+    "line": 300,
+    "statement": "theorem isGLB_sInf (s : Set (GrothendieckTopology C)) : IsGLB s (sInf s)"
+   }
+  ],
+  "00Z8": [
+   {
+    "name": "CategoryTheory.Presieve.YonedaSheafCondition",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.IsSheafFor",
+    "line": 472,
+    "statement": "def YonedaSheafCondition (P : Cᵒᵖ ⥤ Type v₁) (S : Sieve X) : Prop"
+   }
+  ],
+  "00Z9": [
+   {
+    "name": "CategoryTheory.Sheaf.finestTopologySingle",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.Canonical",
+    "line": 59,
+    "statement": "def finestTopologySingle (P : Cᵒᵖ ⥤ Type w) : GrothendieckTopology C where sieves X"
+   },
+   {
+    "name": "CategoryTheory.Sheaf.finestTopology",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.Canonical",
+    "line": 82,
+    "statement": "def finestTopology (Ps : Set (Cᵒᵖ ⥤ Type w)) : GrothendieckTopology C"
+   }
+  ],
+  "00ZA": [
+   {
+    "name": "CategoryTheory.Sheaf.canonicalTopology",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.Canonical",
+    "line": 108,
+    "statement": "def canonicalTopology (C : Type u) [Category.{v} C] : GrothendieckTopology C"
+   }
+  ],
+  "00ZC": [
+   {
+    "name": "CategoryTheory.Pretopology.toGrothendieck",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.Pretopology",
+    "line": 112,
+    "statement": "def toGrothendieck (K : Pretopology C) : GrothendieckTopology C where sieves X"
+   }
+  ],
+  "00ZY": [
+   {
+    "name": "CategoryTheory.Functor.Additive",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Preadditive.AdditiveFunctor",
+    "line": 42,
+    "statement": "class Functor.Additive {C D : Type*} [Category* C] [Category* D] [Preadditive C] [Preadditive D] (F : C ⥤ D) : Prop where map_add : ∀ {X Y : C} {f g : X ⟶ Y}, F.map (f + g) = F.map f + F.map g"
+   },
+   {
+    "name": "CategoryTheory.Preadditive",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Preadditive.Basic",
+    "line": 63,
+    "statement": "class Preadditive where homGroup : ∀ P Q : C, AddCommGroup (P ⟶ Q)"
+   }
+  ],
+  "0107": [
+   {
+    "name": "CategoryTheory.Abelian.coimageImageComparison",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Abelian.Images",
+    "line": 102,
+    "statement": "def coimageImageComparison : Abelian.coimage f ⟶ Abelian.image f"
+   }
+  ],
+  "0109": [
+   {
+    "name": "CategoryTheory.Abelian.ofCoimageImageComparisonIsIso",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Abelian.Basic",
+    "line": 260,
+    "statement": "def ofCoimageImageComparisonIsIso : Abelian C where end CategoryTheory.Abelian namespace CategoryTheory.Abelian variable {C : Type u} [Category.{v} C] [Abelian C]"
+   }
+  ],
+  "0144": [
+   {
+    "name": "CategoryTheory.Pretriangulated.Triangle",
+    "kind": "structure",
+    "module": "Mathlib.CategoryTheory.Triangulated.Basic",
+    "line": 44,
+    "statement": "structure Triangle where mk' :: obj₁ : C obj₂ : C obj₃ : C mor₁ : obj₁ ⟶ obj₂ mor₂ : obj₂ ⟶ obj₃ mor₃ : obj₃ ⟶ obj₁⟦(1 : ℤ)⟧"
+   },
+   {
+    "name": "CategoryTheory.Pretriangulated.TriangleMorphism",
+    "kind": "structure",
+    "module": "Mathlib.CategoryTheory.Triangulated.Basic",
+    "line": 104,
+    "statement": "structure TriangleMorphism (T₁ : Triangle C) (T₂ : Triangle C) where hom₁ : T₁.obj₁ ⟶ T₂.obj₁ hom₂ : T₁.obj₂ ⟶ T₂.obj₂ hom₃ : T₁.obj₃ ⟶ T₂.obj₃ comm₁ : T₁.mor₁ ≫ hom₂ = hom₁ ≫ T₂.mor₁"
+   }
+  ],
+  "0145": [
+   {
+    "name": "CategoryTheory.Pretriangulated",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Triangulated.Pretriangulated",
+    "line": 65,
+    "statement": "class Pretriangulated [∀ n : ℤ, Functor.Additive (shiftFunctor C n)] where distinguishedTriangles : Set (Triangle C) isomorphic_distinguished : ∀ T₁ ∈ distinguishedTriangles, ∀ (T₂) (_ : T₂ ≅ T₁), T₂ ∈ distinguishedTriangles contractible_distinguished : ∀ X : C, contractibleTriangle X ∈ distinguishedTriangles distinguished_cocone_triangle : ∀ {X Y : C} (f : X ⟶ Y), ∃ (Z : C) (g : Y ⟶ Z) (h : Z ⟶ X⟦(1 : ℤ)⟧), Triangle.mk f g h ∈ distinguishedTriangles rotate_distinguished_triangle :"
+   }
+  ],
+  "0146": [
+   {
+    "name": "CategoryTheory.Pretriangulated.comp_distTriang_mor_zero₁₂",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Triangulated.Pretriangulated",
+    "line": 122,
+    "statement": "theorem comp_distTriang_mor_zero₁₂ (T) (H : T ∈ distTriang C) : T.mor₁ ≫ T.mor₂ = 0"
+   },
+   {
+    "name": "CategoryTheory.Pretriangulated.comp_distTriang_mor_zero₂₃",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Triangulated.Pretriangulated",
+    "line": 135,
+    "statement": "theorem comp_distTriang_mor_zero₂₃ (T : Triangle C) (H : T ∈ distTriang C) : T.mor₂ ≫ T.mor₃ = 0"
+   },
+   {
+    "name": "CategoryTheory.Pretriangulated.comp_distTriang_mor_zero₃₁",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Triangulated.Pretriangulated",
+    "line": 147,
+    "statement": "theorem comp_distTriang_mor_zero₃₁ (T : Triangle C) (H : T ∈ distTriang C) : T.mor₃ ≫ T.mor₁⟦1⟧' = 0"
+   }
+  ],
+  "0149": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Triangulated.Yoneda",
+    "line": 43,
+    "statement": "instance (A : Cᵒᵖ) : (preadditiveCoyoneda.obj A).IsHomological where exact T hT"
+   },
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Triangulated.Yoneda",
+    "line": 51,
+    "statement": "instance (B : C) : (preadditiveYoneda.obj B).IsHomological where exact T hT"
+   }
+  ],
+  "014A": [
+   {
+    "name": "CategoryTheory.Pretriangulated.isIso₂_of_isIso₁₃",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.Triangulated.Pretriangulated",
+    "line": 476,
+    "statement": "lemma isIso₂_of_isIso₁₃ {T T' : Triangle C} (φ : T ⟶ T') (hT : T ∈ distTriang C) (hT' : T' ∈ distTriang C) (h₁ : IsIso φ.hom₁) (h₃ : IsIso φ.hom₃) : IsIso φ.hom₂"
+   },
+   {
+    "name": "CategoryTheory.Pretriangulated.isIso₃_of_isIso₁₂",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.Triangulated.Pretriangulated",
+    "line": 513,
+    "statement": "lemma isIso₃_of_isIso₁₂ {T T' : Triangle C} (φ : T ⟶ T') (hT : T ∈ distTriang C) (hT' : T' ∈ distTriang C) (h₁ : IsIso φ.hom₁) (h₂ : IsIso φ.hom₂) : IsIso φ.hom₃"
+   },
+   {
+    "name": "CategoryTheory.Pretriangulated.isIso₁_of_isIso₂₃",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.Triangulated.Pretriangulated",
+    "line": 523,
+    "statement": "lemma isIso₁_of_isIso₂₃ {T T' : Triangle C} (φ : T ⟶ T') (hT : T ∈ distTriang C) (hT' : T' ∈ distTriang C) (h₂ : IsIso φ.hom₂) (h₃ : IsIso φ.hom₃) : IsIso φ.hom₁"
+   }
+  ],
+  "01C6": [
+   {
+    "name": "SheafOfModules.IsLocallyFree",
+    "kind": "class",
+    "module": "Mathlib.Algebra.Category.ModuleCat.Sheaf.LocallyFree",
+    "line": 62,
+    "statement": "class IsLocallyFree (M : SheafOfModules.{u} R) : Prop where exists_isLocallyFreeData : ∃ q : LocalGeneratorsData.{u₁} M, q.IsLocallyFreeData theorem LocalGeneratorsData.isLocallyFree {M : SheafOfModules.{u} R} (q : M.LocalGeneratorsData) [q.IsLocallyFreeData] : M.IsLocallyFree"
+   }
+  ],
+  "01J7": [
+   {
+    "name": "AlgebraicGeometry.Scheme.range_fromSpecStalk",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Stalk",
+    "line": 152,
+    "statement": "lemma range_fromSpecStalk {x : X} : Set.range (X.fromSpecStalk x) = { y | y ⤳ x }"
+   }
+  ],
+  "01JJ": [
+   {
+    "name": "AlgebraicGeometry.Scheme.LocalRepresentability.isRepresentable",
+    "kind": "theorem",
+    "module": "Mathlib.AlgebraicGeometry.Sites.Representability",
+    "line": 207,
+    "statement": "theorem isRepresentable : F.1.IsRepresentable"
+   }
+  ],
+  "01K9": [
+   {
+    "name": "AlgebraicGeometry.isClosedMap_iff_specializingMap",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.QuasiCompact",
+    "line": 210,
+    "statement": "nonrec lemma isClosedMap_iff_specializingMap (f : X ⟶ Y) [QuasiCompact f] : IsClosedMap f ↔ SpecializingMap f"
+   }
+  ],
+  "01KE": [
+   {
+    "name": "AlgebraicGeometry.ValuativeCriterion.Existence.specializingMap",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.ValuativeCriterion",
+    "line": 114,
+    "statement": "lemma specializingMap (H : ValuativeCriterion.Existence f) : SpecializingMap f"
+   },
+   {
+    "name": "AlgebraicGeometry.ValuativeCriterion.Existence.eq",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.ValuativeCriterion",
+    "line": 216,
+    "statement": "protected lemma eq : ValuativeCriterion.Existence = (topologically @SpecializingMap).universally"
+   }
+  ],
+  "01KF": [
+   {
+    "name": "AlgebraicGeometry.UniversallyClosed.eq_valuativeCriterion",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.ValuativeCriterion",
+    "line": 230,
+    "statement": "lemma UniversallyClosed.eq_valuativeCriterion : @UniversallyClosed = ValuativeCriterion.Existence ⊓ @QuasiCompact"
+   },
+   {
+    "name": "AlgebraicGeometry.UniversallyClosed.of_valuativeCriterion",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.ValuativeCriterion",
+    "line": 236,
+    "statement": "lemma UniversallyClosed.of_valuativeCriterion [QuasiCompact f] (hf : ValuativeCriterion.Existence f) : UniversallyClosed f"
+   }
+  ],
+  "01KJ": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.Immersion",
+    "line": 193,
+    "statement": "instance : IsImmersion (pullback.diagonal f)"
+   }
+  ],
+  "01KM": [
+   {
+    "name": "AlgebraicGeometry.isClosedImmersion_equalizer_ι_left",
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.Separated",
+    "line": 273,
+    "statement": "instance isClosedImmersion_equalizer_ι_left {S : Scheme} {X Y : Over S} [IsSeparated Y.hom] (f g : X ⟶ Y) : IsClosedImmersion (equalizer.ι f g).left"
+   }
+  ],
+  "01KZ": [
+   {
+    "name": "AlgebraicGeometry.IsSeparated.valuativeCriterion",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.ValuativeCriterion",
+    "line": 273,
+    "statement": "lemma IsSeparated.valuativeCriterion [IsSeparated f] : ValuativeCriterion.Uniqueness f"
+   }
+  ],
+  "01L0": [
+   {
+    "name": "AlgebraicGeometry.IsSeparated.of_valuativeCriterion",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.ValuativeCriterion",
+    "line": 245,
+    "statement": "lemma IsSeparated.of_valuativeCriterion [QuasiSeparated f] (hf : ValuativeCriterion.Uniqueness f) : IsSeparated f where isClosedImmersion_diagonal"
+   }
+  ],
+  "01LH": [
+   {
+    "name": "AlgebraicGeometry.Scheme.Cover.RelativeGluingData",
+    "kind": "structure",
+    "module": "Mathlib.AlgebraicGeometry.RelativeGluing",
+    "line": 75,
+    "statement": "structure RelativeGluingData where functor : 𝒰.I₀ ⥤ Scheme.{u} natTrans : functor ⟶ 𝒰.functorOfLocallyDirected equifibered : natTrans.Equifibered variable {𝒰} (d : RelativeGluingData 𝒰) namespace RelativeGluingData instance {i j : 𝒰.I₀} (hij : i ⟶ j) : IsOpenImmersion (d.functor.map hij)"
+   },
+   {
+    "name": "AlgebraicGeometry.Scheme.Cover.RelativeGluingData.glued",
+    "kind": "abbrev",
+    "module": "Mathlib.AlgebraicGeometry.RelativeGluing",
+    "line": 103,
+    "statement": "noncomputable abbrev glued : Scheme.{u}"
+   }
+  ],
+  "01MC": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.ProjectiveSpectrum.Proper",
+    "line": 129,
+    "statement": "instance : Scheme.IsSeparated (Proj 𝒜)"
+   }
+  ],
+  "01MF": [
+   {
+    "name": "AlgebraicGeometry.Proj.valuativeCriterion_existence_aux",
+    "kind": "theorem",
+    "module": "Mathlib.AlgebraicGeometry.ProjectiveSpectrum.Proper",
+    "line": 197,
+    "statement": "theorem valuativeCriterion_existence_aux {O : Type*} [CommRing O] [IsDomain O] [ValuationRing O] {K : Type*} [Field K] [Algebra O K] [IsFractionRing O K] (φ₀ : (𝒜 0) →+* O) (ι : Type*) [Finite ι] (x : ι → A) (h2 : Algebra.adjoin (𝒜 0) (Set.range x) = ⊤) (j : ι) (φ : Away 𝒜 (x j) →+* K) (hcomm : (algebraMap O K).comp φ₀ = φ.comp (fromZeroRingHom 𝒜 _)) (d : ι → ℕ) (hdi : ∀ i, 0 < d i) (hxdi : ∀ i, x i ∈ 𝒜 (d i)) : ∃ (j₀ : ι) (φ' : Away 𝒜 (x j * x j₀) →+* K), φ'.comp (awayMap 𝒜 (hxdi j₀) rfl) = φ ∧ (φ'.comp (awayMap 𝒜 (hxdi j) (mul_comm (x j) (x j₀)))).range ≤ (algebraMap O K).range"
+   },
+   {
+    "name": "AlgebraicGeometry.Proj.valuativeCriterion_existence",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.ProjectiveSpectrum.Proper",
+    "line": 313,
+    "statement": "lemma valuativeCriterion_existence [Algebra.FiniteType (𝒜 0) A] : ValuativeCriterion.Existence (Proj.toSpecZero 𝒜)"
+   }
+  ],
+  "01OX": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Noetherian",
+    "line": 205,
+    "statement": "instance (priority"
+   }
+  ],
+  "01OY": [
+   {
+    "name": "AlgebraicGeometry.IsLocallyNoetherian.quasiSeparatedSpace",
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Noetherian",
+    "line": 219,
+    "statement": "instance (priority"
+   }
+  ],
+  "01OZ": [
+   {
+    "name": "AlgebraicGeometry.IsNoetherian.noetherianSpace",
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Noetherian",
+    "line": 317,
+    "statement": "instance (priority"
+   }
+  ],
+  "01P0": [
+   {
+    "name": "AlgebraicGeometry.quasiCompact_of_noetherianSpace_source",
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Noetherian",
+    "line": 334,
+    "statement": "instance (priority"
+   }
+  ],
+  "01P6": [
+   {
+    "name": "AlgebraicGeometry.Scheme.IsQuasiAffine",
+    "kind": "class",
+    "module": "Mathlib.AlgebraicGeometry.QuasiAffine",
+    "line": 34,
+    "statement": "class IsQuasiAffine (X : Scheme.{u}) : Prop extends CompactSpace X, IsImmersion X.toSpecΓ variable {X Y : Scheme.{u}} (f : X ⟶ Y) instance (priority"
+   }
+  ],
+  "01QF": [
+   {
+    "name": "AlgebraicGeometry.isAffine_of_isAffineOpen_basicOpen",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.Affine",
+    "line": 108,
+    "statement": "lemma isAffine_of_isAffineOpen_basicOpen (s : Set Γ(X, ⊤)) (hs : Ideal.span s = ⊤) (hs₂ : ∀ i ∈ s, IsAffineOpen (X.basicOpen i)) : IsAffine X"
+   }
+  ],
+  "01S4": [
+   {
+    "name": "AlgebraicGeometry.tfae_universallyInjective",
+    "kind": "theorem",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.UniversallyInjective",
+    "line": 102,
+    "statement": "theorem tfae_universallyInjective : List.TFAE [ UniversallyInjective f, ∀ (K : Type u) [Field K], Function.Injective (fun g : Spec (.of K) ⟶ X ↦ g ≫ f), Function.Injective f ∧ ∀ x, (f.residueFieldMap x).hom.IsPurelyInseparable, Surjective (pullback.diagonal f) ]"
+   }
+  ],
+  "01TB": [
+   {
+    "name": "AlgebraicGeometry.Scheme.Hom.closePoints_subset_preimage_closedPoints",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.Finite",
+    "line": 196,
+    "statement": "lemma Scheme.Hom.closePoints_subset_preimage_closedPoints {X Y : Scheme.{u}} (f : X ⟶ Y) [JacobsonSpace Y] [LocallyOfFiniteType f] : closedPoints X ⊆ f ⁻¹' closedPoints Y"
+   },
+   {
+    "name": "AlgebraicGeometry.isClosed_singleton_iff_locallyOfFiniteType",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.Finite",
+    "line": 207,
+    "statement": "lemma isClosed_singleton_iff_locallyOfFiniteType {X : Scheme.{u}} [JacobsonSpace X] {x : X} : IsClosed {x} ↔ LocallyOfFiniteType (X.fromSpecResidueField x)"
+   }
+  ],
+  "01U1": [
+   {
+    "name": "AlgebraicGeometry.isOpenMap_of_generalizingMap",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.UniversallyOpen",
+    "line": 108,
+    "statement": "lemma isOpenMap_of_generalizingMap [LocallyOfFinitePresentation f] (hf : GeneralizingMap f) : IsOpenMap f"
+   }
+  ],
+  "01UA": [
+   {
+    "name": "AlgebraicGeometry.UniversallyOpen.of_flat",
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.UniversallyOpen",
+    "line": 145,
+    "statement": "instance (priority"
+   }
+  ],
+  "01W6": [
+   {
+    "name": "AlgebraicGeometry.UniversallyClosed.of_comp_of_isSeparated",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.Proper",
+    "line": 105,
+    "statement": "lemma UniversallyClosed.of_comp_of_isSeparated [UniversallyClosed (f ≫ g)] [IsSeparated g] : UniversallyClosed f"
+   },
+   {
+    "name": "AlgebraicGeometry.IsProper.of_comp",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.Proper",
+    "line": 118,
+    "statement": "lemma IsProper.of_comp [IsProper (f ≫ g)] [IsSeparated g] : IsProper f"
+   }
+  ],
+  "01Z2": [
+   {
+    "name": "AlgebraicGeometry.Scheme.nonempty_of_isLimit",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.AffineTransitionLimit",
+    "line": 47,
+    "statement": "lemma Scheme.nonempty_of_isLimit [IsCofilteredOrEmpty I] [∀ {i j} (f : i ⟶ j), IsAffineHom (D.map f)] [∀ i, Nonempty (D.obj i)] [∀ i, CompactSpace (D.obj i)] : Nonempty c.pt"
+   }
+  ],
+  "01Z3": [
+   {
+    "name": "AlgebraicGeometry.exists_mem_of_isClosed_of_nonempty'",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.AffineTransitionLimit",
+    "line": 158,
+    "statement": "lemma exists_mem_of_isClosed_of_nonempty' [IsCofilteredOrEmpty I] [∀ {i j} (f : i ⟶ j), IsAffineHom (D.map f)] {j : I} (Z : ∀ (i : I), (i ⟶ j) → Set (D.obj i)) (hZc : ∀ i hij, IsClosed (Z i hij)) (hZne : ∀ i hij, (Z i hij).Nonempty) (hZcpt : ∀ i hij, IsCompact (Z i hij)) (hstab : ∀ (i i' : I) (hi'i : i' ⟶ i) (hij : i ⟶ j), Set.MapsTo (D.map hi'i) (Z i' (hi'i ≫ hij)) (Z i hij)) : ∃ (s : c.pt), ∀ i hij, c.π.app i s ∈ Z i hij"
+   }
+  ],
+  "01Z4": [
+   {
+    "name": "AlgebraicGeometry.exists_map_preimage_eq_map_preimage",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.AffineTransitionLimit",
+    "line": 292,
+    "statement": "lemma exists_map_preimage_eq_map_preimage [IsCofiltered I] [∀ {i j} (f : i ⟶ j), IsAffineHom (D.map f)] {i : I} {U V : (D.obj i).Opens} (hU : IsCompact (U : Set (D.obj i))) (hV : IsCompact (V : Set (D.obj i))) (H : c.π.app i ⁻¹ᵁ U = c.π.app i ⁻¹ᵁ V) : ∃ (j : I) (fji : j ⟶ i), D.map fji ⁻¹ᵁ U = D.map fji ⁻¹ᵁ V"
+   },
+   {
+    "name": "AlgebraicGeometry.exists_preimage_eq",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.AffineTransitionLimit",
+    "line": 339,
+    "statement": "lemma exists_preimage_eq [IsCofiltered I] [∀ {i j} (f : i ⟶ j), IsAffineHom (D.map f)] (U : c.pt.Opens) (hU : IsCompact (U : Set c.pt)) : ∃ (i : I) (V : (D.obj i).Opens), IsCompact (V : Set (D.obj i)) ∧ c.π.app i ⁻¹ᵁ V = U"
+   },
+   {
+    "name": "AlgebraicGeometry.exists_isAffineOpen_preimage_eq",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.AffineTransitionLimit",
+    "line": 1059,
+    "statement": "lemma exists_isAffineOpen_preimage_eq [IsCofiltered I] [∀ {i j} (f : i ⟶ j), IsAffineHom (D.map f)] [∀ i, QuasiSeparatedSpace (D.obj i)] (U : c.pt.Opens) (hU : IsAffineOpen U) : ∃ (i : I) (V : (D.obj i).Opens), IsAffineOpen V ∧ c.π.app i ⁻¹ᵁ V = U"
+   }
+  ],
+  "01Z5": [
+   {
+    "name": "AlgebraicGeometry.Scheme.exists_isQuasiAffine_of_isLimit",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.AffineTransitionLimit",
+    "line": 983,
+    "statement": "lemma Scheme.exists_isQuasiAffine_of_isLimit [IsCofiltered I] [∀ {i j} (f : i ⟶ j), IsAffineHom (D.map f)] [∀ (i : I), CompactSpace (D.obj i)] [∀ (i : I), QuasiSeparatedSpace (D.obj i)] [IsQuasiAffine c.pt] : ∃ i, IsQuasiAffine (D.obj i)"
+   }
+  ],
+  "01Z6": [
+   {
+    "name": "AlgebraicGeometry.Scheme.exists_isAffine_of_isLimit",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.AffineTransitionLimit",
+    "line": 1037,
+    "statement": "lemma Scheme.exists_isAffine_of_isLimit [IsCofiltered I] [∀ {i j} (f : i ⟶ j), IsAffineHom (D.map f)] [∀ (i : I), CompactSpace (D.obj i)] [∀ (i : I), QuasiSeparatedSpace (D.obj i)] [IsAffine c.pt] : ∃ i, IsAffine (D.obj i)"
+   }
+  ],
+  "01ZC": [
+   {
+    "name": "AlgebraicGeometry.Scheme.exists_hom_hom_comp_eq_comp_of_locallyOfFiniteType",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.AffineTransitionLimit",
+    "line": 687,
+    "statement": "lemma Scheme.exists_hom_hom_comp_eq_comp_of_locallyOfFiniteType {i : I} (a : D.obj i ⟶ X) (ha : t.app i = a ≫ f) {j : I} (b : D.obj j ⟶ X) (hb : t.app j = b ≫ f) (hab : c.π.app i ≫ a = c.π.app j ≫ b) : ∃ (k : I) (hik : k ⟶ i) (hjk : k ⟶ j), D.map hik ≫ a = D.map hjk ≫ b"
+   }
+  ],
+  "022B": [
+   {
+    "name": "AlgebraicGeometry.QuasiCompactCover",
+    "kind": "class",
+    "module": "Mathlib.AlgebraicGeometry.Cover.QuasiCompact",
+    "line": 38,
+    "statement": "class QuasiCompactCover (𝒰 : PreZeroHypercover.{v} S) : Prop where isCompactOpenCovered_of_isAffineOpen {U : S.Opens} (hU : IsAffineOpen U) : IsCompactOpenCovered (𝒰.f ·) (U : Set S) variable (𝒰 : PreZeroHypercover.{v} S) lemma IsAffineOpen.isCompactOpenCovered [QuasiCompactCover 𝒰] {U : S.Opens} (hU : IsAffineOpen U) : IsCompactOpenCovered (𝒰.f ·) (U : Set S)"
+   }
+  ],
+  "022C": [
+   {
+    "name": "AlgebraicGeometry.QuasiCompactCover.of_isOpenMap",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Cover.QuasiCompact",
+    "line": 73,
+    "statement": "lemma of_isOpenMap {𝒰 : S.Cover K} [Scheme.JointlySurjective K] (h : ∀ i, IsOpenMap (𝒰.f i)) : QuasiCompactCover 𝒰.toPreZeroHypercover where isCompactOpenCovered_of_isAffineOpen {U} hU"
+   }
+  ],
+  "022D": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Cover.QuasiCompact",
+    "line": 95,
+    "statement": "instance [QuasiCompactCover 𝒰] {T : Scheme.{u}} (f : T ⟶ S) : QuasiCompactCover (𝒰.pullback₁ f)"
+   },
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Cover.QuasiCompact",
+    "line": 126,
+    "statement": "instance {X : Scheme.{u}} (𝒰 : PreZeroHypercover.{w} X) [QuasiCompactCover 𝒰] (f : ∀ (x : 𝒰.I₀), PreZeroHypercover.{w} (𝒰.X x)) [∀ x, QuasiCompactCover (f x)] : QuasiCompactCover (𝒰.bind f) where isCompactOpenCovered_of_isAffineOpen {U} hU"
+   },
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Cover.QuasiCompact",
+    "line": 170,
+    "statement": "instance {P : MorphismProperty Scheme.{u}} [P.ContainsIdentities] [P.RespectsIso] {X Y : Scheme.{u}} {f : X ⟶ Y} [IsIso f] : QuasiCompactCover (Scheme.coverOfIsIso (P"
+   }
+  ],
+  "022H": [
+   {
+    "name": "AlgebraicGeometry.isSheaf_type_propQCTopology_iff",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Sites.SheafQuasiCompact",
+    "line": 36,
+    "statement": "nonrec lemma isSheaf_type_propQCTopology_iff [P.IsMultiplicative] (F : Scheme.{u}ᵒᵖ ⥤ Type*) [IsZariskiLocalAtSource P] : Presieve.IsSheaf (propQCTopology P) F ↔ Presieve.IsSheaf Scheme.zariskiTopology F ∧ ∀ {R S : CommRingCat.{u}} (f : R ⟶ S), P (Spec.map f) → Surjective (Spec.map f) → Presieve.IsSheafFor F (.singleton (Spec.map f))"
+   },
+   {
+    "name": "AlgebraicGeometry.isSheaf_propQCTopology_iff",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Sites.SheafQuasiCompact",
+    "line": 100,
+    "statement": "nonrec lemma isSheaf_propQCTopology_iff [P.IsMultiplicative] (F : Scheme.{u}ᵒᵖ ⥤ A) [IsZariskiLocalAtSource P] : Presheaf.IsSheaf (propQCTopology P) F ↔ Presheaf.IsSheaf Scheme.zariskiTopology F ∧ ∀ {R S : CommRingCat.{u}} (f : R ⟶ S), P (Spec.map f) → Surjective (Spec.map f) → ∀ (M : A), Presieve.IsSheafFor (F ⋙ coyoneda.obj (.op M)) (.singleton (Spec.map f))"
+   }
+  ],
+  "023Q": [
+   {
+    "name": "AlgebraicGeometry.isRegularEpi_of_flat_of_surjective_of_isAffine",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.EffectiveEpi",
+    "line": 120,
+    "statement": "lemma isRegularEpi_of_flat_of_surjective_of_isAffine {X Y : Scheme.{u}} [IsAffine X] [IsAffine Y] (π : X ⟶ Y) [Surjective π] [Flat π] : IsRegularEpi π"
+   }
+  ],
+  "026F": [
+   {
+    "name": "CategoryTheory.Pseudofunctor.IsPrestack",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Sites.Descent.IsPrestack",
+    "line": 165,
+    "statement": "class IsPrestack (J : GrothendieckTopology C) : Prop where isSheaf (J) {S : C} (M N : F.obj (.mk (op S))) : Presheaf.IsSheaf (J.over S) (F.presheafHom M N) @[simps] def sheafHom (J : GrothendieckTopology C) [F.IsPrestack J] {S : C} (M N : F.obj (.mk (op S))) : Sheaf (J.over S) (Type v') where obj"
+   },
+   {
+    "name": "CategoryTheory.Pseudofunctor.IsStack",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Sites.Descent.IsStack",
+    "line": 49,
+    "statement": "class IsStack (F : LocallyDiscrete Cᵒᵖ ⥤ᵖ Cat.{v', u'}) (J : GrothendieckTopology C) : Prop extends F.IsPrestack J where essSurj_of_sieve (F) {S : C} (R : Sieve S) (hR : R ∈ J S) : (F.toDescentData (fun (f : R.arrows.category) ↦ f.obj.hom)).EssSurj variable (F : LocallyDiscrete Cᵒᵖ ⥤ᵖ Cat.{v', u'}) {J : GrothendieckTopology C} lemma isStackFor' [F.IsStack J] {S : C} (R : Sieve S) (hR : R ∈ J S) : F.IsStackFor R.arrows"
+   }
+  ],
+  "02C3": [
+   {
+    "name": "CategoryTheory.Equivalence.essSurj_functor",
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Equivalence",
+    "line": 550,
+    "statement": "instance essSurj_functor (e : C ≌ E) : e.functor.EssSurj"
+   },
+   {
+    "name": "CategoryTheory.Equivalence.faithful_functor",
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Equivalence",
+    "line": 566,
+    "statement": "instance faithful_functor (e : C ≌ E) : e.functor.Faithful"
+   },
+   {
+    "name": "CategoryTheory.Equivalence.full_functor",
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Equivalence",
+    "line": 574,
+    "statement": "instance full_functor (e : C ≌ E) : e.functor.Full"
+   },
+   {
+    "name": "CategoryTheory.Functor.asEquivalence",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Equivalence",
+    "line": 648,
+    "statement": "noncomputable def asEquivalence (F : C ⥤ D) [F.IsEquivalence] : C ≌ D where functor"
+   }
+  ],
+  "02FM": [
+   {
+    "name": "Algebra.FormallyUnramified.of_map_maximalIdeal",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Unramified.LocalRing",
+    "line": 95,
+    "statement": "lemma FormallyUnramified.of_map_maximalIdeal [Algebra.IsSeparable (ResidueField R) (ResidueField S)] (H : (maximalIdeal R).map (algebraMap R S) = maximalIdeal S) : Algebra.FormallyUnramified R S"
+   }
+  ],
+  "02I4": [
+   {
+    "name": "AlgebraicGeometry.coheight_eq_of_isOpenImmersion",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Properties",
+    "line": 360,
+    "statement": "lemma coheight_eq_of_isOpenImmersion {U X : Scheme} {x : U} (f : U ⟶ X) [IsOpenImmersion f] : Order.coheight (f.base x) = Order.coheight x"
+   }
+  ],
+  "02IZ": [
+   {
+    "name": "AlgebraicGeometry.ringKrullDim_stalk_eq_coheight",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Properties",
+    "line": 372,
+    "statement": "lemma ringKrullDim_stalk_eq_coheight {X : Scheme} (x : X) : ringKrullDim (X.presheaf.stalk x) = coheight x"
+   }
+  ],
+  "02JJ": [
+   {
+    "name": "IsPurelyInseparable.trans",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.PurelyInseparable.Basic",
+    "line": 260,
+    "statement": "theorem IsPurelyInseparable.trans [Algebra E K] [IsScalarTower F E K] [h1 : IsPurelyInseparable F E] [h2 : IsPurelyInseparable E K] : IsPurelyInseparable F K"
+   }
+  ],
+  "02JY": [
+   {
+    "name": "AlgebraicGeometry.Flat.isQuotientMap_of_surjective",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.Flat",
+    "line": 119,
+    "statement": "lemma isQuotientMap_of_surjective {X Y : Scheme.{u}} (f : X ⟶ Y) [Flat f] [QuasiCompact f] [Surjective f] : Topology.IsQuotientMap f"
+   }
+  ],
+  "02KA": [
+   {
+    "name": "AlgebraicGeometry.Scheme.Hom.finrank",
+    "kind": "def",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.FlatRank",
+    "line": 89,
+    "statement": "def Scheme.Hom.finrank {X S : Scheme.{u}} (f : X ⟶ S) (s : S) : ℕ"
+   }
+  ],
+  "02KS": [
+   {
+    "name": "AlgebraicGeometry.descendsAlong_universallyClosed_surjective_inf_flat_inf_quasicompact",
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.FlatDescent",
+    "line": 46,
+    "statement": "instance descendsAlong_universallyClosed_surjective_inf_flat_inf_quasicompact : DescendsAlong @UniversallyClosed (@Surjective ⊓ @Flat ⊓ @QuasiCompact)"
+   }
+  ],
+  "02KT": [
+   {
+    "name": "AlgebraicGeometry.descendsAlong_universallyOpen_surjective_inf_flat_inf_quasicompact",
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.FlatDescent",
+    "line": 63,
+    "statement": "instance descendsAlong_universallyOpen_surjective_inf_flat_inf_quasicompact : DescendsAlong @UniversallyOpen (@Surjective ⊓ @Flat ⊓ @QuasiCompact)"
+   }
+  ],
+  "02KW": [
+   {
+    "name": "AlgebraicGeometry.descendsAlong_universallyInjective_surjective_inf_flat_inf_quasicompact",
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.FlatDescent",
+    "line": 81,
+    "statement": "instance descendsAlong_universallyInjective_surjective_inf_flat_inf_quasicompact : DescendsAlong @UniversallyInjective (@Surjective ⊓ @Flat ⊓ @QuasiCompact)"
+   }
+  ],
+  "02L3": [
+   {
+    "name": "AlgebraicGeometry.descendsAlong_isOpenImmersion_surjective_inf_flat_inf_quasicompact'",
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.FlatDescent",
+    "line": 127,
+    "statement": "instance descendsAlong_isOpenImmersion_surjective_inf_flat_inf_quasicompact' : IsOpenImmersion.DescendsAlong (@Surjective ⊓ @Flat ⊓ @QuasiCompact)"
+   }
+  ],
+  "02L4": [
+   {
+    "name": "AlgebraicGeometry.descendsAlong_isomorphisms_surjective_inf_flat_inf_quasicompact",
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.FlatDescent",
+    "line": 88,
+    "statement": "instance descendsAlong_isomorphisms_surjective_inf_flat_inf_quasicompact : (isomorphisms Scheme.{u}).DescendsAlong (@Surjective ⊓ @Flat ⊓ @QuasiCompact)"
+   }
+  ],
+  "02LS": [
+   {
+    "name": "AlgebraicGeometry.IsFinite.iff_isProper_and_locallyQuasiFinite",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.ZariskisMainTheorem",
+    "line": 380,
+    "statement": "lemma IsFinite.iff_isProper_and_locallyQuasiFinite : IsFinite f ↔ IsProper f ∧ LocallyQuasiFinite f"
+   }
+  ],
+  "02M3": [
+   {
+    "name": "associatedPrimes.subset_of_injective",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Ideal.AssociatedPrime.Basic",
+    "line": 165,
+    "statement": "theorem subset_of_injective (hf : Function.Injective f) : associatedPrimes R M ⊆ associatedPrimes R M'"
+   },
+   {
+    "name": "associatedPrimes.subset_union_of_exact",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Ideal.AssociatedPrime.Basic",
+    "line": 171,
+    "statement": "theorem subset_union_of_exact (hf : Function.Injective f) (hfg : Function.Exact f g) : associatedPrimes R M' ⊆ associatedPrimes R M ∪ associatedPrimes R M''"
+   },
+   {
+    "name": "associatedPrimes.prod",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Ideal.AssociatedPrime.Basic",
+    "line": 206,
+    "statement": "theorem prod : associatedPrimes R (M × M') = associatedPrimes R M ∪ associatedPrimes R M'"
+   }
+  ],
+  "02M9": [
+   {
+    "name": "Module.nonempty_basis_of_flat_of_finrank_eq",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.LocalRing.Module",
+    "line": 393,
+    "statement": "@[stacks 02M9] theorem nonempty_basis_of_flat_of_finrank_eq [Module.Finite R M] [Flat R M] (n : ℕ) (rk : ∀ P : MaximalSpectrum R, finrank (R ⧸ P.1) ((R ⧸ P.1) ⊗[R] M) = n) : Nonempty (Basis (Fin n) R M)"
+   },
+   {
+    "name": "Module.free_of_flat_of_finrank_eq",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.LocalRing.Module",
+    "line": 420,
+    "statement": "@[stacks 02M9] theorem free_of_flat_of_finrank_eq [Module.Finite R M] [Flat R M] (n : ℕ) (rk : ∀ P : MaximalSpectrum R, finrank (R ⧸ P.1) ((R ⧸ P.1) ⊗[R] M) = n) : Free R M"
+   }
+  ],
+  "02MD": [
+   {
+    "name": "Ring.ord",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.OrderOfVanishing.Basic",
+    "line": 36,
+    "statement": "def ord (x : R) : ℕ∞"
+   },
+   {
+    "name": "Ring.ordMonoidWithZeroHom",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.OrderOfVanishing.Basic",
+    "line": 238,
+    "statement": "def ordMonoidWithZeroHom [Nontrivial R] : R →*₀ ℤᵐ⁰ where toFun x"
+   },
+   {
+    "name": "Ring.ordFrac",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.OrderOfVanishing.Basic",
+    "line": 325,
+    "statement": "def ordFrac : K →*₀ ℤᵐ⁰"
+   }
+  ],
+  "02MS": [
+   {
+    "name": "CategoryTheory.ObjectProperty.SerreClassLocalization.abelian",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Abelian.SerreClass.Localization",
+    "line": 433,
+    "statement": "def abelian : Abelian D"
+   }
+  ],
+  "02UP": [
+   {
+    "name": "AlgebraicGeometry.exists_isFinite_morphismRestrict_of_finite_preimage_singleton",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.ZariskisMainTheorem",
+    "line": 403,
+    "statement": "lemma exists_isFinite_morphismRestrict_of_finite_preimage_singleton [IsProper f] (y : Y) (hx : (f ⁻¹' {y}).Finite) : ∃ V : Y.Opens, y ∈ V ∧ IsFinite (f ∣_ V)"
+   }
+  ],
+  "02VW": [
+   {
+    "name": "AlgebraicGeometry.Flat.epi_of_flat_of_surjective",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.Flat",
+    "line": 151,
+    "statement": "lemma epi_of_flat_of_surjective (f : X ⟶ Y) [Flat f] [Surjective f] : Epi f"
+   }
+  ],
+  "02XK": [
+   {
+    "name": "CategoryTheory.Functor.IsStronglyCartesian",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.FiberedCategory.Cartesian",
+    "line": 76,
+    "statement": "class IsStronglyCartesian : Prop where [toIsHomLift : IsHomLift p f φ] universal_property' {a' : 𝒳} (g : p.obj a' ⟶ R) (φ' : a' ⟶ b) [IsHomLift p (g ≫ f) φ'] : ∃! χ : a' ⟶ a, IsHomLift p g χ ∧ χ ≫ φ = φ' attribute [instance] IsStronglyCartesian.toIsHomLift end namespace IsCartesian variable {R S : 𝒮} {a b : 𝒳} (f : R ⟶ S) (φ : a ⟶ b) [IsCartesian p f φ] section"
+   },
+   {
+    "name": "CategoryTheory.Functor.IsStronglyCocartesian",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.FiberedCategory.Cocartesian",
+    "line": 71,
+    "statement": "class IsStronglyCocartesian : Prop where [toIsHomLift : IsHomLift p f φ] universal_property' {b' : 𝒳} (g : S ⟶ p.obj b') (φ' : a ⟶ b') [IsHomLift p (f ≫ g) φ'] : ∃! χ : b ⟶ b', IsHomLift p g χ ∧ φ ≫ χ = φ' attribute [instance] IsStronglyCocartesian.toIsHomLift end namespace IsCocartesian variable {R S : 𝒮} {a b : 𝒳} (f : R ⟶ S) (φ : a ⟶ b) [IsCocartesian p f φ] section"
+   }
+  ],
+  "030A": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.Polynomial.IsIntegral",
+    "line": 180,
+    "statement": "instance {R : Type*} [CommRing R] [IsDomain R] [IsIntegrallyClosed R] : IsIntegrallyClosed R[X]"
+   }
+  ],
+  "030E": [
+   {
+    "name": "AlgebraicIndependent",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.AlgebraicIndependent.Defs",
+    "line": 54,
+    "statement": "@[stacks 030E \"(1)\"] def AlgebraicIndependent : Prop"
+   },
+   {
+    "name": "IsTranscendenceBasis",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.AlgebraicIndependent.Defs",
+    "line": 173,
+    "statement": "@[stacks 030E \"(4)\"] def IsTranscendenceBasis (x : ι → A) : Prop"
+   }
+  ],
+  "030F": [
+   {
+    "name": "IsTranscendenceBasis.lift_cardinalMk_eq",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.AlgebraicIndependent.TranscendenceBasis",
+    "line": 430,
+    "statement": "theorem lift_cardinalMk_eq (hx : IsTranscendenceBasis R x) (hy : IsTranscendenceBasis R y) : lift.{u'} #ι = lift.{u} #ι'"
+   },
+   {
+    "name": "IsTranscendenceBasis.cardinalMk_eq",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.AlgebraicIndependent.TranscendenceBasis",
+    "line": 435,
+    "statement": "@[stacks 030F] theorem cardinalMk_eq {ι' : Type u} {y : ι' → A} (hx : IsTranscendenceBasis R x) (hy : IsTranscendenceBasis R y) : #ι = #ι'"
+   }
+  ],
+  "030G": [
+   {
+    "name": "Algebra.trdeg",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.AlgebraicIndependent.Basic",
+    "line": 45,
+    "statement": "@[stacks 030G] def Algebra.trdeg : Cardinal.{v}"
+   }
+  ],
+  "030H": [
+   {
+    "name": "lift_trdeg_add_eq",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.AlgebraicIndependent.TranscendenceBasis",
+    "line": 537,
+    "statement": "@[stacks 030H] theorem lift_trdeg_add_eq [Nontrivial R] [NoZeroDivisors A] [FaithfulSMul R S] [FaithfulSMul S A] : lift.{w} (trdeg R S) + lift.{v} (trdeg S A) = lift.{v} (trdeg R A)"
+   },
+   {
+    "name": "trdeg_add_eq",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.AlgebraicIndependent.TranscendenceBasis",
+    "line": 546,
+    "statement": "@[stacks 030H] theorem trdeg_add_eq [Nontrivial R] {A : Type v} [CommRing A] [NoZeroDivisors A] [Algebra R A] [Algebra S A] [FaithfulSMul R S] [FaithfulSMul S A] [IsScalarTower R S A] : trdeg R S + trdeg S A = trdeg R A"
+   }
+  ],
+  "030K": [
+   {
+    "name": "separableClosure.isPurelyInseparable",
+    "kind": "instance",
+    "module": "Mathlib.FieldTheory.PurelyInseparable.Basic",
+    "line": 481,
+    "statement": "instance separableClosure.isPurelyInseparable [Algebra.IsAlgebraic F E] : IsPurelyInseparable (separableClosure F E) E"
+   },
+   {
+    "name": "separableClosure.isSeparable",
+    "kind": "instance",
+    "module": "Mathlib.FieldTheory.SeparableClosure",
+    "line": 151,
+    "statement": "instance separableClosure.isSeparable : Algebra.IsSeparable F (separableClosure F E)"
+   }
+  ],
+  "030L": [
+   {
+    "name": "Field.sepDegree",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.SeparableClosure",
+    "line": 271,
+    "statement": "def sepDegree"
+   },
+   {
+    "name": "Field.insepDegree",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.SeparableClosure",
+    "line": 276,
+    "statement": "def insepDegree"
+   }
+  ],
+  "030N": [
+   {
+    "name": "Field.exists_primitive_element",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.PrimitiveElement",
+    "line": 213,
+    "statement": "theorem exists_primitive_element : ∃ α : E, F⟮α⟯ = ⊤"
+   },
+   {
+    "name": "Field.exists_primitive_element_iff_finite_intermediateField",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.PrimitiveElement",
+    "line": 337,
+    "statement": "theorem exists_primitive_element_iff_finite_intermediateField : (Algebra.IsAlgebraic F E ∧ ∃ α : E, F⟮α⟯ = ⊤) ↔ Finite (IntermediateField F E)"
+   }
+  ],
+  "030T": [
+   {
+    "name": "Algebra.IsGeometricallyReduced.of_forall_fg",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Nilpotent.GeometricallyReduced",
+    "line": 93,
+    "statement": "theorem IsGeometricallyReduced.of_forall_fg (h : ∀ B : Subalgebra k A, B.FG → IsGeometricallyReduced k B) : IsGeometricallyReduced k A"
+   }
+  ],
+  "030W": [
+   {
+    "name": "exists_isTranscendenceBasis_and_isSeparable_of_linearIndepOn_pow_of_essFiniteType",
+    "kind": "lemma",
+    "module": "Mathlib.FieldTheory.SeparablyGenerated",
+    "line": 287,
+    "statement": "lemma exists_isTranscendenceBasis_and_isSeparable_of_linearIndepOn_pow_of_essFiniteType [Algebra.EssFiniteType k K] : ∃ s : Finset K, IsTranscendenceBasis k ((↑) : s → K) ∧ Algebra.IsSeparable (adjoin k (s : Set K)) K"
+   }
+  ],
+  "0310": [
+   {
+    "name": "Module.associatedPrimes.mem_associatedPrimes_of_comap_mem_associatedPrimes_of_isLocalizedModule",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Ideal.AssociatedPrime.Localization",
+    "line": 40,
+    "statement": "lemma mem_associatedPrimes_of_comap_mem_associatedPrimes_of_isLocalizedModule (p : Ideal R') (ass : p.comap (algebraMap R R') ∈ associatedPrimes R M) : p ∈ associatedPrimes R' M'"
+   },
+   {
+    "name": "Module.associatedPrimes.comap_mem_associatedPrimes_of_mem_associatedPrimes_of_isLocalizedModule_of_fg",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Ideal.AssociatedPrime.Localization",
+    "line": 84,
+    "statement": "lemma comap_mem_associatedPrimes_of_mem_associatedPrimes_of_isLocalizedModule_of_fg (p : Ideal R') (ass : p ∈ associatedPrimes R' M') (fg : (p.comap (algebraMap R R')).FG) : p.comap (algebraMap R R') ∈ associatedPrimes R M"
+   },
+   {
+    "name": "Module.associatedPrimes.preimage_comap_associatedPrimes_eq_associatedPrimes_of_isLocalizedModule",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Ideal.AssociatedPrime.Localization",
+    "line": 122,
+    "statement": "lemma preimage_comap_associatedPrimes_eq_associatedPrimes_of_isLocalizedModule [IsNoetherianRing R] : (Ideal.comap (algebraMap R R')) ⁻¹' (associatedPrimes R M) = associatedPrimes R' M'"
+   }
+  ],
+  "0317": [
+   {
+    "name": "IsAdicComplete",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.AdicCompletion.Basic",
+    "line": 56,
+    "statement": "class IsAdicComplete : Prop extends IsHausdorff I M, IsPrecomplete I M variable {I M} theorem IsHausdorff.haus (_ : IsHausdorff I M) : ∀ x : M, (∀ n : ℕ, x ≡ 0 [SMOD (I ^ n • ⊤ : Submodule R M)]) → x = 0"
+   }
+  ],
+  "031I": [
+   {
+    "name": "Algebra.Algebra.FormallySmooth.iff_split_injection",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Smooth.Basic",
+    "line": 294,
+    "statement": "theorem iff_split_injection [Algebra P A] [IsScalarTower R P A] (hf : Function.Surjective (algebraMap P A)) : Algebra.FormallySmooth R A ↔ ∃ l, l ∘ₗ (kerCotangentToTensor R P A) = LinearMap.id"
+   },
+   {
+    "name": "Algebra.Extension.formallySmooth_iff_split_injection",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Smooth.Basic",
+    "line": 314,
+    "statement": "theorem _root_.Algebra.Extension.formallySmooth_iff_split_injection (P : Algebra.Extension.{w} R A) [FormallySmooth R P.Ring] : Algebra.FormallySmooth R A ↔ ∃ l, l ∘ₗ P.cotangentComplex = LinearMap.id"
+   }
+  ],
+  "031L": [
+   {
+    "name": "Algebra.FormallySmooth.of_surjective_of_ker_eq_map_of_flat",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Smooth.Quotient",
+    "line": 100,
+    "statement": "lemma Algebra.FormallySmooth.of_surjective_of_ker_eq_map_of_flat [Module.Flat R S] (surj : Function.Surjective (algebraMap R R')) (surjS : Function.Surjective (algebraMap S S')) (eqmap : RingHom.ker (algebraMap S S') = (RingHom.ker (algebraMap R R')).map (algebraMap R S)) (sq0 : (RingHom.ker (algebraMap R R')) ^ 2 = ⊥) (smoothq : Algebra.FormallySmooth R' S') : Algebra.FormallySmooth R S"
+   }
+  ],
+  "035H": [
+   {
+    "name": "AlgebraicGeometry.Scheme.Hom.normalization",
+    "kind": "def",
+    "module": "Mathlib.AlgebraicGeometry.Normalization",
+    "line": 127,
+    "statement": "def normalization : Scheme"
+   }
+  ],
+  "0379": [
+   {
+    "name": "IsIrreducible.image",
+    "kind": "theorem",
+    "module": "Mathlib.Topology.Irreducible",
+    "line": 226,
+    "statement": "theorem IsIrreducible.image (H : IsIrreducible s) (f : X → Y) (hf : ContinuousOn f s) : IsIrreducible (f '' s)"
+   }
+  ],
+  "037A": [
+   {
+    "name": "irreducibleComponentsEquivOfIsPreirreducibleFiber",
+    "kind": "def",
+    "module": "Mathlib.Topology.Irreducible",
+    "line": 505,
+    "statement": "def irreducibleComponentsEquivOfIsPreirreducibleFiber : irreducibleComponents Y ≃o irreducibleComponents X where invFun W"
+   }
+  ],
+  "037G": [
+   {
+    "name": "PrimeSpectrum.isOpenMap_comap_algebraMap_tensorProduct_of_field",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.Chevalley",
+    "line": 72,
+    "statement": "theorem isOpenMap_comap_algebraMap_tensorProduct_of_field {K A B : Type*} [Field K] [CommRing A] [CommRing B] [Algebra K A] [Algebra K B] : IsOpenMap (PrimeSpectrum.comap (algebraMap A (A ⊗[K] B)))"
+   }
+  ],
+  "03A3": [
+   {
+    "name": "CategoryTheory.abelianOfAdjunction",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Abelian.Transfer",
+    "line": 88,
+    "statement": "def abelianOfAdjunction {C : Type u₁} [Category.{v₁} C] [Preadditive C] [HasFiniteProducts C] {D : Type u₂} [Category.{v₂} D] [Abelian D] (F : C ⥤ D) (G : D ⥤ C) [Functor.PreservesZeroMorphisms G] [PreservesFiniteLimits G] (i : F ⋙ G ≅ 𝟭 C) (adj : G ⊣ F) : Abelian C"
+   }
+  ],
+  "03GD": [
+   {
+    "name": "exists_derivative_mul_eq_and_isIntegral_coeff",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Smooth.IntegralClosure",
+    "line": 195,
+    "statement": "lemma exists_derivative_mul_eq_and_isIntegral_coeff {φ : S[X] →ₐ[R] B} (hφ : Function.Surjective φ) {f : S[X]} (hf : f.Monic) (hf' : ∀ i, IsIntegral R (f.coeff i)) (hfx : RingHom.ker φ.toRingHom = .span {f}) {y : B} (hy : IsIntegral R y) : ∃ (g : S[X]), φ f.derivative * y = φ g ∧ ∀ i, IsIntegral R (g.coeff i)"
+   }
+  ],
+  "03GE": [
+   {
+    "name": "mem_adjoin_map_integralClosure_of_isStandardEtale",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Smooth.IntegralClosure",
+    "line": 280,
+    "statement": "theorem mem_adjoin_map_integralClosure_of_isStandardEtale [Algebra.IsStandardEtale R S] (a : S ⊗[R] B) (hx : IsIntegral S a) : a ∈ Algebra.adjoin S ((integralClosure R B).map Algebra.TensorProduct.includeRight : Subalgebra R (S ⊗[R] B))"
+   }
+  ],
+  "03GP": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Normalization",
+    "line": 284,
+    "statement": "instance [IsIntegralHom f] : IsIso f.toNormalization"
+   }
+  ],
+  "03GV": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Normalization",
+    "line": 607,
+    "statement": "instance [Smooth g] : IsIso (f.normalizationPullback g)"
+   }
+  ],
+  "03GW": [
+   {
+    "name": "AlgebraicGeometry.Scheme.Hom.exists_isIso_morphismRestrict_toNormalization",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.ZariskisMainTheorem",
+    "line": 205,
+    "statement": "lemma Scheme.Hom.exists_isIso_morphismRestrict_toNormalization [LocallyOfFiniteType f] [IsSeparated f] [QuasiCompact f] : ∃ U : f.normalization.Opens, IsIso (f.toNormalization ∣_ U) ∧ (f.toNormalization ⁻¹ᵁ U).1 = { x | f.QuasiFiniteAt x }"
+   }
+  ],
+  "03L8": [
+   {
+    "name": "AlgebraicGeometry.QuasiCompactCover.of_hom",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Cover.QuasiCompact",
+    "line": 84,
+    "statement": "lemma of_hom {𝒱 : PreZeroHypercover.{w'} S} (f : 𝒱.Hom 𝒰) [QuasiCompactCover 𝒱] : QuasiCompactCover 𝒰"
+   }
+  ],
+  "04AP": [
+   {
+    "name": "CategoryTheory.Limits.HasBinaryCoproducts",
+    "kind": "abbrev",
+    "module": "Mathlib.CategoryTheory.Limits.Shapes.BinaryProducts",
+    "line": 893,
+    "statement": "abbrev HasBinaryCoproducts"
+   }
+  ],
+  "04AZ": [
+   {
+    "name": "CategoryTheory.IsCofiltered",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Filtered.Basic",
+    "line": 590,
+    "statement": "class IsCofiltered : Prop extends IsCofilteredOrEmpty C where [nonempty : Nonempty C] instance (priority"
+   }
+  ],
+  "04DE": [
+   {
+    "name": "AlgebraicGeometry.isAffineHom_of_isInducing",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.Affine",
+    "line": 239,
+    "statement": "lemma isAffineHom_of_isInducing (hf₁ : Topology.IsInducing f) (hf₂ : IsClosed (Set.range f)) : IsAffineHom f"
+   }
+  ],
+  "04E6": [
+   {
+    "name": "CategoryTheory.Functor.Final",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Limits.Final",
+    "line": 96,
+    "statement": "class Final (F : C ⥤ D) : Prop where out (d : D) : IsConnected (StructuredArrow d F) attribute [instance] Final.out class Initial (F : C ⥤ D) : Prop where out (d : D) : IsConnected (CostructuredArrow F d) attribute [instance] Initial.out instance final_op_of_initial (F : C ⥤ D) [Initial F] : Final F.op where"
+   }
+  ],
+  "04E7": [
+   {
+    "name": "CategoryTheory.Functor.Final.colimitIso",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Limits.Final",
+    "line": 349,
+    "statement": "def colimitIso [HasColimit G] : colimit (F ⋙ G) ≅ colimit G"
+   },
+   {
+    "name": "CategoryTheory.Functor.Initial.limitIso",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Limits.Final",
+    "line": 709,
+    "statement": "def limitIso [HasLimit G] : limit (F ⋙ G) ≅ limit G"
+   }
+  ],
+  "04F1": [
+   {
+    "name": "AlgebraicGeometry.FormallyUnramified.hom_ext",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.FormallyUnramified",
+    "line": 190,
+    "statement": "protected lemma hom_ext {Z' Z : Scheme} (i : Z' ⟶ Z) (hi : IsNilpotent i.ker) [IsClosedImmersion i] (f : X ⟶ Y) [FormallyUnramified f] {g₁ g₂ : Z ⟶ X} (hig : i ≫ g₁ = i ≫ g₂) (hgf : g₁ ≫ f = g₂ ≫ f) : g₁ = g₂"
+   }
+  ],
+  "04PR": [
+   {
+    "name": "Ideal.Pure",
+    "kind": "abbrev",
+    "module": "Mathlib.RingTheory.Ideal.Pure",
+    "line": 40,
+    "statement": "abbrev Ideal.Pure (I : Ideal R) : Prop"
+   }
+  ],
+  "04PS": [
+   {
+    "name": "Ideal.inf_eq_mul_of_pure",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Ideal.Pure",
+    "line": 60,
+    "statement": "lemma Ideal.inf_eq_mul_of_pure (I J : Ideal R) [I.Pure] : I ⊓ J = I * J"
+   },
+   {
+    "name": "Ideal.Pure.of_inf_eq_mul",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Ideal.Pure",
+    "line": 82,
+    "statement": "lemma Ideal.Pure.of_inf_eq_mul (I : Ideal R) (H : ∀ ⦃J : Ideal R⦄, J.FG → I ⊓ J = I * J) : I.Pure"
+   },
+   {
+    "name": "Ideal.exists_eq_mul_of_pure",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Ideal.Pure",
+    "line": 90,
+    "statement": "lemma Ideal.exists_eq_mul_of_pure {I : Ideal R} [I.Pure] {x : R} (hx : x ∈ I) : ∃ y ∈ I, x = x * y"
+   },
+   {
+    "name": "Ideal.le_ker_atPrime_of_forall_exists_eq_mul",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Ideal.Pure",
+    "line": 99,
+    "statement": "lemma Ideal.le_ker_atPrime_of_forall_exists_eq_mul {I : Ideal R} (h : ∀ x ∈ I, ∃ y ∈ I, x = x * y) {p : Ideal R} [p.IsPrime] (hle : I ≤ p) : I ≤ RingHom.ker (algebraMap R <| Localization.AtPrime p)"
+   }
+  ],
+  "04PT": [
+   {
+    "name": "Ideal.zeroLocus_inj_of_pure",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Ideal.Pure",
+    "line": 128,
+    "statement": "lemma Ideal.zeroLocus_inj_of_pure {I J : Ideal R} [I.Pure] [J.Pure] : zeroLocus (I : Set R) = zeroLocus J ↔ I = J"
+   }
+  ],
+  "04XU": [
+   {
+    "name": "AlgebraicGeometry.Scheme.Hom.isProperMap",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.UniversallyClosed",
+    "line": 157,
+    "statement": "lemma Scheme.Hom.isProperMap (f : X ⟶ Y) [UniversallyClosed f] : IsProperMap f"
+   }
+  ],
+  "04XV": [
+   {
+    "name": "AlgebraicGeometry.IsClosedImmersion.iff_isProper_and_mono",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.ZariskisMainTheorem",
+    "line": 391,
+    "statement": "lemma IsClosedImmersion.iff_isProper_and_mono : IsClosedImmersion f ↔ IsProper f ∧ Mono f"
+   }
+  ],
+  "0519": [
+   {
+    "name": "Module.Finite.of_surjective",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Finiteness.Basic",
+    "line": 252,
+    "statement": "theorem of_surjective [hM : Module.Finite R M] (f : M →ₛₗ[σ] P) (hf : Surjective f) : Module.Finite S P"
+   },
+   {
+    "name": "Module.Finite.of_exact",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Finiteness.Finsupp",
+    "line": 121,
+    "statement": "lemma _root_.Module.Finite.of_exact {f : M →ₗ[R] N} {g : N →ₗ[R] P} (h_exact : Function.Exact f g) (h_surj : Function.Surjective g) [Module.Finite R M] [Module.Finite R P] : Module.Finite R N"
+   }
+  ],
+  "052K": [
+   {
+    "name": "ValuationSubring.isMax_toLocalSubring",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Valuation.LocalSubring",
+    "line": 82,
+    "statement": "lemma ValuationSubring.isMax_toLocalSubring (R : ValuationSubring K) : IsMax R.toLocalSubring"
+   }
+  ],
+  "0539": [
+   {
+    "name": "Module.Flat.flat_iff_torsion_eq_bot_of_isBezout",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Flat.TorsionFree",
+    "line": 93,
+    "statement": "theorem flat_iff_torsion_eq_bot_of_isBezout [IsBezout R] [IsDomain R] : Flat R M ↔ torsion R M = ⊥"
+   }
+  ],
+  "054I": [
+   {
+    "name": "AlgebraicGeometry.Scheme.Hom.isConstructible_preimage",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.FinitePresentation",
+    "line": 169,
+    "statement": "lemma Scheme.Hom.isConstructible_preimage (f : X ⟶ Y) {s : Set Y} (hs : IsConstructible s) : IsConstructible (f ⁻¹' s)"
+   }
+  ],
+  "054J": [
+   {
+    "name": "AlgebraicGeometry.Scheme.Hom.isConstructible_image",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.FinitePresentation",
+    "line": 162,
+    "statement": "lemma Scheme.Hom.isConstructible_image (f : X ⟶ Y) [LocallyOfFinitePresentation f] [QuasiCompact f] [CompactSpace Y] [QuasiSeparatedSpace Y] {s : Set X} (hs : IsConstructible s) : IsConstructible (f '' s)"
+   }
+  ],
+  "054K": [
+   {
+    "name": "AlgebraicGeometry.Scheme.Hom.isLocallyConstructible_image",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.FinitePresentation",
+    "line": 118,
+    "statement": "nonrec lemma Scheme.Hom.isLocallyConstructible_image (f : X ⟶ Y) [hf : LocallyOfFinitePresentation f] [QuasiCompact f] {s : Set X} (hs : IsLocallyConstructible s) : IsLocallyConstructible (f '' s)"
+   }
+  ],
+  "0561": [
+   {
+    "name": "Algebra.FinitePresentation.of_restrict_scalars_finitePresentation",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.FinitePresentation",
+    "line": 210,
+    "statement": "theorem of_restrict_scalars_finitePresentation [Algebra A B] [IsScalarTower R A B] [FinitePresentation.{w₁, w₃} R B] [FiniteType R A] : FinitePresentation.{w₂, w₃} A B"
+   }
+  ],
+  "0563": [
+   {
+    "name": "RingHom.Finite",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Finiteness.Defs",
+    "line": 170,
+    "statement": "def Finite (f : A →+* B) : Prop"
+   }
+  ],
+  "0564": [
+   {
+    "name": "Module.FinitePresentation.of_finite_of_finitePresentation",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Finiteness.ModuleFinitePresentation",
+    "line": 80,
+    "statement": "lemma Module.FinitePresentation.of_finite_of_finitePresentation [Module.Finite R S] [Algebra.FinitePresentation R S] : Module.FinitePresentation R S"
+   }
+  ],
+  "058D": [
+   {
+    "name": "Module.Flat.tfae_equational_criterion",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Flat.EquationalCriterion",
+    "line": 117,
+    "statement": "theorem tfae_equational_criterion : List.TFAE [ Flat R M, ∀ I : Ideal R, Function.Injective (rTensor M I.subtype), ∀ {l : ℕ} {f : Fin l → R} {x : Fin l → M}, ∑ i, f i ⊗ₜ x i = (0 : R ⊗[R] M) → VanishesTrivially R f x, ∀ {l : ℕ} {f : Fin l → R} {x : Fin l → M}, ∑ i, f i • x i = 0 → IsTrivialRelation f x, ∀ {l : ℕ} {f : Fin l →₀ R} {x : (Fin l →₀ R) →ₗ[R] M}, x f = 0 → ∃ (k : ℕ) (a : (Fin l →₀ R) →ₗ[R] (Fin k →₀ R)) (y : (Fin k →₀ R) →ₗ[R] M), x = y ∘ₗ a ∧ a f = 0]"
+   },
+   {
+    "name": "Module.Flat.iff_forall_exists_factorization",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Flat.EquationalCriterion",
+    "line": 198,
+    "statement": "theorem iff_forall_exists_factorization : Flat R M ↔ ∀ {l : ℕ} {f : Fin l →₀ R} {x : (Fin l →₀ R) →ₗ[R] M}, x f = 0 → ∃ (k : ℕ) (a : (Fin l →₀ R) →ₗ[R] (Fin k →₀ R)) (y : (Fin k →₀ R) →ₗ[R] M), x = y ∘ₗ a ∧ a f = 0"
+   },
+   {
+    "name": "Module.Flat.of_forall_exists_factorization",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Flat.EquationalCriterion",
+    "line": 210,
+    "statement": "theorem of_forall_exists_factorization (h : ∀ {l : ℕ} {f : Fin l →₀ R} {x : (Fin l →₀ R) →ₗ[R] M}, x f = 0 → ∃ (k : ℕ) (a : (Fin l →₀ R) →ₗ[R] (Fin k →₀ R)) (y : (Fin k →₀ R) →ₗ[R] M), x = y ∘ₗ a ∧ a f = 0) : Flat R M"
+   },
+   {
+    "name": "Module.Flat.exists_factorization_of_apply_eq_zero_of_free",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Flat.EquationalCriterion",
+    "line": 222,
+    "statement": "theorem exists_factorization_of_apply_eq_zero_of_free [Flat R M] {N : Type*} [AddCommGroup N] [Module R N] [Free R N] [Module.Finite R N] {f : N} {x : N →ₗ[R] M} (h : x f = 0) : ∃ (k : ℕ) (a : N →ₗ[R] (Fin k →₀ R)) (y : (Fin k →₀ R) →ₗ[R] M), x = y ∘ₗ a ∧ a f = 0"
+   },
+   {
+    "name": "Module.Flat.exists_factorization_of_comp_eq_zero_of_free",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Flat.EquationalCriterion",
+    "line": 257,
+    "statement": "theorem exists_factorization_of_comp_eq_zero_of_free [Flat R M] {K N : Type*} [AddCommGroup K] [Module R K] [Module.Finite R K] [AddCommGroup N] [Module R N] [Free R N] [Module.Finite R N] {f : K →ₗ[R] N} {x : N →ₗ[R] M} (h : x ∘ₗ f = 0) : ∃ (k : ℕ) (a : N →ₗ[R] (Fin k →₀ R)) (y : (Fin k →₀ R) →ₗ[R] M), x = y ∘ₗ a ∧ a ∘ₗ f = 0"
+   }
+  ],
+  "058E": [
+   {
+    "name": "Module.Flat.exists_factorization_of_finitePresentation",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Flat.EquationalCriterion",
+    "line": 271,
+    "statement": "theorem exists_factorization_of_finitePresentation [Flat R M] {P : Type*} [AddCommGroup P] [Module R P] [FinitePresentation R P] (h₁ : P →ₗ[R] M) : ∃ (k : ℕ) (h₂ : P →ₗ[R] (Fin k →₀ R)) (h₃ : (Fin k →₀ R) →ₗ[R] M), h₁ = h₃ ∘ₗ h₂"
+   }
+  ],
+  "05GG": [
+   {
+    "name": "AdicCompletion.pow_smul_top_eq_ker_eval",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.AdicCompletion.Completeness",
+    "line": 153,
+    "statement": "theorem pow_smul_top_eq_ker_eval {n : ℕ} (h : I.FG) : I ^ n • ⊤ = (eval I M n).ker"
+   },
+   {
+    "name": "AdicCompletion.isAdicComplete",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.AdicCompletion.Completeness",
+    "line": 182,
+    "statement": "theorem isAdicComplete (h : I.FG) : IsAdicComplete I (AdicCompletion I M) where prec' x hx"
+   }
+  ],
+  "05K9": [
+   {
+    "name": "Ideal.IsOka",
+    "kind": "structure",
+    "module": "Mathlib.RingTheory.Ideal.Oka",
+    "line": 38,
+    "statement": "structure IsOka (P : Ideal R → Prop) : Prop where top : P ⊤ oka {I : Ideal R} {a : R} : P (I ⊔ span {a}) → P (I.colon (span {a})) → P I namespace IsOka variable {P : Ideal R → Prop} (hP : IsOka P) include hP @[stacks 05KE] theorem isPrime_of_maximal_not {I : Ideal R} (hI : Maximal (¬P ·) I) : I.IsPrime where ne_top' hI'"
+   }
+  ],
+  "05KE": [
+   {
+    "name": "Ideal.IsOka.isPrime_of_maximal_not",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Ideal.Oka",
+    "line": 49,
+    "statement": "theorem isPrime_of_maximal_not {I : Ideal R} (hI : Maximal (¬P ·) I) : I.IsPrime where ne_top' hI'"
+   }
+  ],
+  "05PP": [
+   {
+    "name": "CategoryTheory.Abelian.freyd_mitchell",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Abelian.FreydMitchell",
+    "line": 168,
+    "statement": "theorem freyd_mitchell (C : Type u) [Category.{v} C] [Abelian C] : ∃ (R : Type (max u v)) (_ : Ring R) (F : C ⥤ ModuleCat.{max u v} R), F.Full ∧ F.Faithful ∧ PreservesFiniteLimits F ∧ PreservesFiniteColimits F"
+   }
+  ],
+  "05QK": [
+   {
+    "name": "CategoryTheory.Triangulated.Octahedron",
+    "kind": "structure",
+    "module": "Mathlib.CategoryTheory.Triangulated.Triangulated",
+    "line": 71,
+    "statement": "structure Octahedron {X₁ X₂ X₃ Z₁₂ Z₂₃ Z₁₃ : C} {u₁₂ : X₁ ⟶ X₂} {u₂₃ : X₂ ⟶ X₃} {u₁₃ : X₁ ⟶ X₃} (comm : u₁₂ ≫ u₂₃ = u₁₃) {v₁₂ : X₂ ⟶ Z₁₂} {w₁₂ : Z₁₂ ⟶ X₁⟦(1 : ℤ)⟧} (h₁₂ : Triangle.mk u₁₂ v₁₂ w₁₂ ∈ distTriang C) {v₂₃ : X₃ ⟶ Z₂₃} {w₂₃ : Z₂₃ ⟶ X₂⟦(1 : ℤ)⟧} (h₂₃ : Triangle.mk u₂₃ v₂₃ w₂₃ ∈ distTriang C) {v₁₃ : X₃ ⟶ Z₁₃} {w₁₃ : Z₁₃ ⟶ X₁⟦(1 : ℤ)⟧} (h₁₃ : Triangle.mk u₁₃ v₁₃ w₁₃ ∈ distTriang C) where m₁ : Z₁₂ ⟶ Z₁₃ m₃ : Z₁₃ ⟶ Z₂₃ comm₁ : v₁₂ ≫ m₁ = u₂₃ ≫ v₁₃ comm₂ : m₁ ≫ w₁₃ = w₁₂ comm₃ : v₁₃ ≫ m₃ = v₂₃ comm₄ : w₁₃ ≫ u₁₂⟦1⟧' = m₃ ≫ w₂₃"
+   },
+   {
+    "name": "CategoryTheory.IsTriangulated",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Triangulated.Triangulated",
+    "line": 305,
+    "statement": "class IsTriangulated : Prop where octahedron_axiom : ∀ {X₁ X₂ X₃ Z₁₂ Z₂₃ Z₁₃ : C} {u₁₂ : X₁ ⟶ X₂} {u₂₃ : X₂ ⟶ X₃} {u₁₃ : X₁ ⟶ X₃} (comm : u₁₂ ≫ u₂₃ = u₁₃) {v₁₂ : X₂ ⟶ Z₁₂} {w₁₂ : Z₁₂ ⟶ X₁⟦(1 : ℤ)⟧} (h₁₂ : Triangle.mk u₁₂ v₁₂ w₁₂ ∈ distTriang C) {v₂₃ : X₃ ⟶ Z₂₃} {w₂₃ : Z₂₃ ⟶ X₂⟦(1 : ℤ)⟧} (h₂₃ : Triangle.mk u₂₃ v₂₃ w₂₃ ∈ distTriang C) {v₁₃ : X₃ ⟶ Z₁₃} {w₁₃ : Z₁₃ ⟶ X₁⟦(1 : ℤ)⟧} (h₁₃ : Triangle.mk u₁₃ v₁₃ w₁₃ ∈ distTriang C), Nonempty (Octahedron comm h₁₂ h₂₃ h₁₃) variable {C} @[no_expose] def Triangulated.someOctahedron [IsTriangulated C]"
+   }
+  ],
+  "06NC": [
+   {
+    "name": "AlgebraicGeometry.Flat.isIso_of_surjective_of_mono",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.FlatMono",
+    "line": 25,
+    "statement": "lemma Flat.isIso_of_surjective_of_mono {X Y : Scheme.{u}} (f : X ⟶ Y) [Flat f] [QuasiCompact f] [Surjective f] [Mono f] : IsIso f"
+   }
+  ],
+  "06RR": [
+   {
+    "name": "IsLocalRing.eq_of_eval_eq_zero_of_not_isUnit_sub",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Henselian",
+    "line": 266,
+    "statement": "theorem IsLocalRing.eq_of_eval_eq_zero_of_not_isUnit_sub {R : Type*} [CommRing R] [IsLocalRing R] {f : Polynomial R} {a b : R} (ha : f.eval a = 0) (hb : f.eval b = 0) (h : ¬ IsUnit (a - b)) (h' : IsUnit (f.derivative.eval a)) : a = b"
+   }
+  ],
+  "074D": [
+   {
+    "name": "ModuleCat.matrixEquivalence",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Morita.Matrix",
+    "line": 187,
+    "statement": "def ModuleCat.matrixEquivalence (i : ι) : ModuleCat R ≌ ModuleCat (Matrix ι ι R) where functor"
+   }
+  ],
+  "079B": [
+   {
+    "name": "CategoryTheory.AB4",
+    "kind": "abbrev",
+    "module": "Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Basic",
+    "line": 232,
+    "statement": "abbrev AB4 [HasCoproducts C]"
+   },
+   {
+    "name": "CategoryTheory.AB4StarOfSize",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Basic",
+    "line": 248,
+    "statement": "class AB4StarOfSize [HasProducts.{w} C] where ofShape (α : Type w) : HasExactLimitsOfShape (Discrete α) C attribute [instance] AB4StarOfSize.ofShape abbrev AB4Star [HasProducts C]"
+   },
+   {
+    "name": "CategoryTheory.AB5",
+    "kind": "abbrev",
+    "module": "Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Basic",
+    "line": 308,
+    "statement": "abbrev AB5 [HasFilteredColimits C]"
+   },
+   {
+    "name": "CategoryTheory.AB5StarOfSize",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Basic",
+    "line": 333,
+    "statement": "class AB5StarOfSize [HasCofilteredLimitsOfSize.{w, w'} C] where ofShape (J : Type w') [Category.{w} J] [IsCofiltered J] : HasExactLimitsOfShape J C attribute [instance] AB5StarOfSize.ofShape abbrev AB5Star [HasCofilteredLimits C]"
+   },
+   {
+    "name": "CategoryTheory.IsGrothendieckAbelian",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Abelian.GrothendieckCategory.Basic",
+    "line": 70,
+    "statement": "class IsGrothendieckAbelian [Abelian C] : Prop where locallySmall : LocallySmall.{w} C"
+   }
+  ],
+  "079H": [
+   {
+    "name": "CategoryTheory.IsGrothendieckAbelian.enoughInjectives",
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Abelian.GrothendieckCategory.EnoughInjectives",
+    "line": 379,
+    "statement": "instance enoughInjectives : EnoughInjectives C where presentation X"
+   }
+  ],
+  "07BJ": [
+   {
+    "name": "IsLocalRing.local_hom_TFAE",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.LocalRing.RingHom.Basic",
+    "line": 80,
+    "statement": "theorem local_hom_TFAE (f : R →+* S) : List.TFAE [IsLocalHom f, f '' maximalIdeal R ⊆ maximalIdeal S, (maximalIdeal R).map f ≤ maximalIdeal S, maximalIdeal R ≤ (maximalIdeal S).comap f, (maximalIdeal S).comap f = maximalIdeal R]"
+   }
+  ],
+  "07CF": [
+   {
+    "name": "Algebra.Generators.exists_presentation_of_basis_cotangent",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Extension.Cotangent.Basis",
+    "line": 280,
+    "statement": "public lemma exists_presentation_of_basis_cotangent [Algebra.FinitePresentation R S] {α : Type*} (P : Generators R S α) [Finite α] {σ : Type*} (b₀ : Module.Basis σ S P.toExtension.Cotangent) : ∃ (P' : Presentation R S (Unit ⊕ α) (Unit ⊕ σ)) (b : Module.Basis (Unit ⊕ σ) S P'.toExtension.Cotangent), P'.val ∘ Sum.inr = P.val ∧ ∀ r, b r = Extension.Cotangent.mk ⟨P'.relation r, P'.relation_mem_ker r⟩"
+   },
+   {
+    "name": "Algebra.Generators.exists_presentation_of_free_cotangent",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Extension.Cotangent.Basis",
+    "line": 332,
+    "statement": "public lemma exists_presentation_of_free_cotangent [Algebra.FinitePresentation R S] {α : Type*} (P : Generators R S α) [Finite α] [Module.Free S P.toExtension.Cotangent] : ∃ (P' : Presentation R S (Unit ⊕ α) (Unit ⊕ Fin (Module.finrank S P.toExtension.Cotangent))) (b : Module.Basis (Unit ⊕ Fin (Module.finrank S P.toExtension.Cotangent)) S P'.toExtension.Cotangent), P'.val ∘ Sum.inr = P.val ∧ ∀ r, b r = Extension.Cotangent.mk ⟨P'.relation r, P'.relation_mem_ker r⟩"
+   }
+  ],
+  "07GE": [
+   {
+    "name": "CategoryTheory.Pretopology.trivial",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.Pretopology",
+    "line": 178,
+    "statement": "def trivial : Pretopology C where coverings X"
+   }
+  ],
+  "07VB": [
+   {
+    "name": "IsOpenMap.enatCard_connectedComponents_le_encard_preimage_singleton",
+    "kind": "lemma",
+    "module": "Mathlib.Topology.Connected.CardComponents",
+    "line": 42,
+    "statement": "lemma IsOpenMap.enatCard_connectedComponents_le_encard_preimage_singleton [ConnectedSpace Y] (y : Y) : ENat.card (ConnectedComponents X) ≤ (f ⁻¹' {y}).encard"
+   }
+  ],
+  "089R": [
+   {
+    "name": "Module.Grassmannian",
+    "kind": "structure",
+    "module": "Mathlib.RingTheory.Grassmannian",
+    "line": 68,
+    "statement": "@[stacks 089R] structure Grassmannian extends Submodule R M where finite_quotient : Module.Finite R (M ⧸ toSubmodule) projective_quotient : Projective R (M ⧸ toSubmodule) rankAtStalk_eq : ∀ p, rankAtStalk (R"
+   }
+  ],
+  "08JZ": [
+   {
+    "name": "Algebra.Generators.liftBaseChange_injective_of_isLocalizationAway",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Extension.Cotangent.LocalizationAway",
+    "line": 128,
+    "statement": "lemma liftBaseChange_injective_of_isLocalizationAway : Function.Injective (LinearMap.liftBaseChange T (Extension.Cotangent.map ((Generators.localizationAway T g).toComp P).toExtensionHom))"
+   },
+   {
+    "name": "Algebra.Generators.cotangentCompLocalizationAwayEquiv",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Extension.Cotangent.LocalizationAway",
+    "line": 200,
+    "statement": "def cotangentCompLocalizationAwayEquiv : ((localizationAway T g).comp P).toExtension.Cotangent ≃ₗ[T] T ⊗[S] P.toExtension.Cotangent × (Generators.localizationAway T g).toExtension.Cotangent"
+   }
+  ],
+  "08WD": [
+   {
+    "name": "Algebra.Etale.of_formallyUnramified_of_flat",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Smooth.Fiber",
+    "line": 248,
+    "statement": "lemma Etale.of_formallyUnramified_of_flat {R S : Type*} [CommRing R] [CommRing S] [Algebra R S] [Algebra.FinitePresentation R S] [Module.Flat R S] [FormallyUnramified R S] : Etale R S"
+   }
+  ],
+  "08YG": [
+   {
+    "name": "SpectralSpace",
+    "kind": "class",
+    "module": "Mathlib.Topology.Spectral.Basic",
+    "line": 38,
+    "statement": "class SpectralSpace (X : Type*) [TopologicalSpace X] : Prop extends T0Space X, CompactSpace X, QuasiSober X, QuasiSeparatedSpace X, PrespectralSpace X theorem Topology.IsOpenEmbedding.spectralSpace [SpectralSpace Y] [CompactSpace X] (hf : IsOpenEmbedding f) : SpectralSpace X where __"
+   },
+   {
+    "name": "IsSpectralMap",
+    "kind": "structure",
+    "module": "Mathlib.Topology.Spectral.Hom",
+    "line": 43,
+    "statement": "structure IsSpectralMap (f : α → β) : Prop extends Continuous f where isCompact_preimage_of_isOpen ⦃s : Set β⦄ : IsOpen s → IsCompact s → IsCompact (f ⁻¹' s) theorem IsCompact.preimage_of_isOpen (hf : IsSpectralMap f) (h₀ : IsCompact s) (h₁ : IsOpen s) : IsCompact (f ⁻¹' s)"
+   },
+   {
+    "name": "PrespectralSpace",
+    "kind": "class",
+    "module": "Mathlib.Topology.Spectral.Prespectral",
+    "line": 29,
+    "statement": "class PrespectralSpace (X : Type*) [TopologicalSpace X] : Prop where isTopologicalBasis : IsTopologicalBasis { U : Set X | IsOpen U ∧ IsCompact U } lemma PrespectralSpace.of_isTopologicalBasis {B : Set (Set X)} (basis : IsTopologicalBasis B) (isCompact_basis : ∀ U ∈ B, IsCompact U) : PrespectralSpace X where isTopologicalBasis"
+   }
+  ],
+  "0900": [
+   {
+    "name": "CompHaus.toProfiniteObj",
+    "kind": "def",
+    "module": "Mathlib.Topology.Category.Profinite.Basic",
+    "line": 97,
+    "statement": "def CompHaus.toProfiniteObj (X : CompHaus.{u}) : Profinite.{u} where toTop"
+   },
+   {
+    "name": "ConnectedComponents.t2",
+    "kind": "instance",
+    "module": "Mathlib.Topology.Separation.Regular",
+    "line": 780,
+    "statement": "instance ConnectedComponents.t2 [T2Space X] [CompactSpace X] : T2Space (ConnectedComponents X)"
+   }
+  ],
+  "0901": [
+   {
+    "name": "compactSpace_withConstructibleTopology",
+    "kind": "instance",
+    "module": "Mathlib.Topology.Spectral.ConstructibleTopology",
+    "line": 92,
+    "statement": "instance compactSpace_withConstructibleTopology [CompactSpace X] [QuasiSober X] [PrespectralSpace X] [QuasiSeparatedSpace X] : CompactSpace (WithConstructibleTopology X)"
+   }
+  ],
+  "090P": [
+   {
+    "name": "Subring.exists_le_valuationSubring_of_isIntegrallyClosedIn",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Valuation.LocalSubring",
+    "line": 158,
+    "statement": "@[stacks 090P \"part (1)\"] lemma Subring.exists_le_valuationSubring_of_isIntegrallyClosedIn {x : K} {R : Subring K} (hxR : x ∉ R) [IsIntegrallyClosedIn R K] : ∃ V : ValuationSubring K, R ≤ V.toSubring ∧ x ∉ V"
+   },
+   {
+    "name": "LocalSubring.exists_le_valuationSubring_of_isIntegrallyClosedIn",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Valuation.LocalSubring",
+    "line": 175,
+    "statement": "@[stacks 090P \"part (2)\"] lemma LocalSubring.exists_le_valuationSubring_of_isIntegrallyClosedIn {x : K} {R : LocalSubring K} (hxR : x ∉ R.toSubring) [IsIntegrallyClosedIn R.toSubring K] : ∃ V : ValuationSubring K, R ≤ V.toLocalSubring ∧ x ∉ V"
+   }
+  ],
+  "092B": [
+   {
+    "name": "Algebra.WeaklyEtale",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.Etale.Weakly",
+    "line": 37,
+    "statement": "class WeaklyEtale (R S : Type*) [CommRing R] [CommRing S] [Algebra R S] where flat : Module.Flat R S"
+   }
+  ],
+  "092H": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.Etale.Weakly",
+    "line": 62,
+    "statement": "instance {T : Type*} [CommRing T] [Algebra R T] [WeaklyEtale R S] : WeaklyEtale T (T ⊗[R] S) where flat_lmul'"
+   }
+  ],
+  "092J": [
+   {
+    "name": "Algebra.WeaklyEtale.trans",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Etale.Weakly",
+    "line": 79,
+    "statement": "lemma trans (R : Type u₁) (S : Type u₂) [CommRing R] [CommRing S] [Algebra R S] (T : Type u₃) [CommRing T] [Algebra R T] [Algebra S T] [IsScalarTower R S T] [WeaklyEtale R S] [WeaklyEtale S T] : WeaklyEtale R T"
+   }
+  ],
+  "092N": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.Etale.Weakly",
+    "line": 54,
+    "statement": "instance (priority"
+   }
+  ],
+  "094P": [
+   {
+    "name": "AlgebraicGeometry.WeaklyEtale",
+    "kind": "class",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.WeaklyEtale",
+    "line": 44,
+    "statement": "class WeaklyEtale : Prop where flat : Flat f"
+   }
+  ],
+  "0951": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.WeaklyEtale",
+    "line": 103,
+    "statement": "instance : MorphismProperty.HasOfPostcompProperty @WeaklyEtale @WeaklyEtale"
+   }
+  ],
+  "096E": [
+   {
+    "name": "Algebra.IsLocalIso",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.LocalIso",
+    "line": 42,
+    "statement": "class Algebra.IsLocalIso (R S : Type*) [CommSemiring R] [CommSemiring S] [Algebra R S] : Prop where exists_notMem_isStandardOpenImmersion (q : Ideal S) [q.IsPrime] : ∃ g ∉ q, IsStandardOpenImmersion R (Localization.Away g) namespace Algebra.IsLocalIso variable {R S : Type*} [CommSemiring R] [CommSemiring S] [Algebra R S] variable (R S) in lemma span_isStandardOpenImmersion_eq_top [Algebra.IsLocalIso R S] : Ideal.span {g : S | Algebra.IsStandardOpenImmersion R (Localization.Away g)} = ⊤"
+   }
+  ],
+  "098K": [
+   {
+    "name": "AlgebraicGeometry.Scheme.ProEt",
+    "kind": "def",
+    "module": "Mathlib.AlgebraicGeometry.Sites.Proetale",
+    "line": 97,
+    "statement": "protected def ProEt (S : Scheme.{u}) : Type _"
+   }
+  ],
+  "09DW": [
+   {
+    "name": "IsGalois.intermediateFieldEquivSubgroup",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.Galois.Basic",
+    "line": 353,
+    "statement": "def intermediateFieldEquivSubgroup [FiniteDimensional F E] [IsGalois F E] : IntermediateField F E ≃o (Subgroup Gal(E/F))ᵒᵈ where toFun"
+   }
+  ],
+  "09FD": [
+   {
+    "name": "Field",
+    "kind": "class",
+    "module": "Mathlib.Algebra.Field.Defs",
+    "line": 180,
+    "statement": "class Field (K : Type u) extends CommRing K, DivisionRing K instance (priority"
+   },
+   {
+    "name": "Subfield",
+    "kind": "structure",
+    "module": "Mathlib.Algebra.Field.Subfield.Defs",
+    "line": 132,
+    "statement": "structure Subfield (K : Type u) [DivisionRing K] extends Subring K where inv_mem' : ∀ x ∈ carrier, x⁻¹ ∈ carrier add_decl_doc Subfield.toSubring namespace Subfield @[reducible] def toAddSubgroup (s : Subfield K) : AddSubgroup K"
+   }
+  ],
+  "09FE": [
+   {
+    "name": "IsDomain",
+    "kind": "class",
+    "module": "Mathlib.Algebra.Ring.Defs",
+    "line": 439,
+    "statement": "class IsDomain (α : Type u) [Semiring α] : Prop extends IsCancelMulZero α, Nontrivial α namespace IsMulCommutative scoped instance (priority"
+   }
+  ],
+  "09FJ": [
+   {
+    "name": "IsFractionRing.toField",
+    "kind": "abbrev",
+    "module": "Mathlib.RingTheory.Localization.FractionRing",
+    "line": 225,
+    "statement": "noncomputable abbrev toField : Field K where __"
+   }
+  ],
+  "09FK": [
+   {
+    "name": "RatFunc.instField",
+    "kind": "instance",
+    "module": "Mathlib.FieldTheory.RatFunc.Basic",
+    "line": 480,
+    "statement": "instance instField [IsDomain K] : Field K⟮X⟯ where inv_zero"
+   }
+  ],
+  "09FN": [
+   {
+    "name": "Module.Free.of_divisionRing",
+    "kind": "instance",
+    "module": "Mathlib.LinearAlgebra.Basis.VectorSpace",
+    "line": 154,
+    "statement": "instance (priority"
+   }
+  ],
+  "09FR": [
+   {
+    "name": "Rat.cast_injective",
+    "kind": "lemma",
+    "module": "Mathlib.Data.Rat.Cast.CharZero",
+    "line": 25,
+    "statement": "lemma cast_injective : Injective ((↑) : ℚ → α)"
+   }
+  ],
+  "09FS": [
+   {
+    "name": "Fin.charP",
+    "kind": "instance",
+    "module": "Mathlib.Algebra.CharP.Basic",
+    "line": 196,
+    "statement": "instance charP (n : ℕ) [NeZero n] : CharP (Fin n) n where cast_eq_zero_iff _"
+   },
+   {
+    "name": "Rat.instCharZero",
+    "kind": "instance",
+    "module": "Mathlib.Algebra.Ring.Rat",
+    "line": 57,
+    "statement": "instance instCharZero : CharZero ℚ where cast_injective a b hab"
+   }
+  ],
+  "09FX": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.AdjoinRoot",
+    "line": 134,
+    "statement": "instance [CommSemiring S] [Algebra S R] : Algebra S (AdjoinRoot f)"
+   },
+   {
+    "name": "AdjoinRoot.instField",
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.AdjoinRoot",
+    "line": 521,
+    "statement": "noncomputable instance instField [Fact (Irreducible f)] : Field (AdjoinRoot f) where __"
+   }
+  ],
+  "09FZ": [
+   {
+    "name": "IntermediateField.adjoin",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.IntermediateField.Adjoin.Defs",
+    "line": 34,
+    "statement": "def adjoin : IntermediateField F E"
+   },
+   {
+    "name": "IntermediateField.FG",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.IntermediateField.Adjoin.Defs",
+    "line": 650,
+    "statement": "def FG (S : IntermediateField F E) : Prop"
+   }
+  ],
+  "09G0": [
+   {
+    "name": "Complex.rank_rat_complex",
+    "kind": "lemma",
+    "module": "Mathlib.LinearAlgebra.Complex.FiniteDimensional",
+    "line": 72,
+    "statement": "lemma Complex.rank_rat_complex : Module.rank ℚ ℂ = continuum"
+   }
+  ],
+  "09G1": [
+   {
+    "name": "IntermediateField.adjoinRootEquivAdjoin",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.IntermediateField.Adjoin.Basic",
+    "line": 396,
+    "statement": "noncomputable def adjoinRootEquivAdjoin (h : IsIntegral F α) : AdjoinRoot (minpoly F α) ≃ₐ[F] F⟮α⟯"
+   }
+  ],
+  "09G3": [
+   {
+    "name": "Module.rank",
+    "kind": "irreducible_def",
+    "module": "Mathlib.LinearAlgebra.Dimension.Basic",
+    "line": 68,
+    "statement": "protected irreducible_def Module.rank : Cardinal"
+   }
+  ],
+  "09G4": [
+   {
+    "name": "Complex.finrank_real_complex",
+    "kind": "theorem",
+    "module": "Mathlib.LinearAlgebra.Complex.FiniteDimensional",
+    "line": 31,
+    "statement": "theorem finrank_real_complex : finrank ℝ ℂ = 2"
+   }
+  ],
+  "09G5": [
+   {
+    "name": "Module.Finite.right",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.Tower",
+    "line": 55,
+    "statement": "theorem right [hf : Module.Finite F A] : Module.Finite K A"
+   }
+  ],
+  "09G9": [
+   {
+    "name": "rank_mul_rank",
+    "kind": "theorem",
+    "module": "Mathlib.LinearAlgebra.Dimension.Free",
+    "line": 58,
+    "statement": "theorem rank_mul_rank (A : Type v) [AddCommMonoid A] [Module K A] [Module F A] [IsScalarTower F K A] [Module.Free K A] : Module.rank F K * Module.rank K A = Module.rank F A"
+   }
+  ],
+  "09GA": [
+   {
+    "name": "NumberField",
+    "kind": "class",
+    "module": "Mathlib.NumberTheory.NumberField.Basic",
+    "line": 42,
+    "statement": "class NumberField (K : Type*) [Field K] : Prop where [to_charZero : CharZero K] [to_finiteDimensional : FiniteDimensional ℚ K] open Function Module open scoped nonZeroDivisors namespace NumberField variable (K L : Type*) [Field K] [Field L] attribute [instance] NumberField.to_charZero NumberField.to_finiteDimensional"
+   }
+  ],
+  "09GC": [
+   {
+    "name": "IsAlgebraic",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Algebraic.Defs",
+    "line": 45,
+    "statement": "def IsAlgebraic (x : A) : Prop"
+   },
+   {
+    "name": "Algebra.IsAlgebraic",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.Algebraic.Defs",
+    "line": 68,
+    "statement": "protected class Algebra.IsAlgebraic : Prop where isAlgebraic : ∀ x : A, IsAlgebraic R x variable (R A) in protected class Algebra.Transcendental : Prop where transcendental : ∃ x : A, Transcendental R x variable (R A) in lemma Algebra.nontrivial_of_isAlgebraic [Algebra.IsAlgebraic R A] : Nontrivial R"
+   }
+  ],
+  "09GF": [
+   {
+    "name": "IsAlgebraic.tower_top",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Algebraic.Basic",
+    "line": 454,
+    "statement": "theorem IsAlgebraic.tower_top {x : A} (A_alg : IsAlgebraic K x) : IsAlgebraic L x"
+   },
+   {
+    "name": "Algebra.IsAlgebraic.tower_top",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Algebraic.Basic",
+    "line": 466,
+    "statement": "theorem Algebra.IsAlgebraic.tower_top [Algebra.IsAlgebraic K A] : Algebra.IsAlgebraic L A"
+   }
+  ],
+  "09GG": [
+   {
+    "name": "Algebra.IsAlgebraic.of_finite",
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.Algebraic.Integral",
+    "line": 109,
+    "statement": "instance Algebra.IsAlgebraic.of_finite [Module.Finite R A] : Algebra.IsAlgebraic R A"
+   }
+  ],
+  "09GH": [
+   {
+    "name": "fg_adjoin_of_finite",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.IntegralClosure.IsIntegral.Basic",
+    "line": 214,
+    "statement": "theorem fg_adjoin_of_finite {s : Set A} (hfs : s.Finite) (his : ∀ x ∈ s, IsIntegral R x) : (Algebra.adjoin R s).toSubmodule.FG"
+   }
+  ],
+  "09GI": [
+   {
+    "name": "algebraicClosure",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.AlgebraicClosure",
+    "line": 40,
+    "statement": "def algebraicClosure : IntermediateField F E"
+   }
+  ],
+  "09GJ": [
+   {
+    "name": "Algebra.IsAlgebraic.trans",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Algebraic.Integral",
+    "line": 351,
+    "statement": "@[stacks 09GJ] theorem IsAlgebraic.trans [Algebra.IsAlgebraic R S] [alg : Algebra.IsAlgebraic S A] : Algebra.IsAlgebraic R A"
+   }
+  ],
+  "09GK": [
+   {
+    "name": "Algebraic.cardinalMk_le_max",
+    "kind": "theorem",
+    "module": "Mathlib.Algebra.AlgebraicCard",
+    "line": 93,
+    "statement": "theorem cardinalMk_le_max : #{ x : A // IsAlgebraic R x } ≤ max #R ℵ₀"
+   },
+   {
+    "name": "Algebra.IsAlgebraic.cardinalMk_le_max",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Algebraic.Cardinality",
+    "line": 71,
+    "statement": "theorem cardinalMk_le_max : #L ≤ max #R ℵ₀"
+   }
+  ],
+  "09GM": [
+   {
+    "name": "minpoly",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.Minpoly.Basic",
+    "line": 41,
+    "statement": "noncomputable def minpoly (x : B) : A[X]"
+   }
+  ],
+  "09GN": [
+   {
+    "name": "IntermediateField.adjoin.finrank",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.IntermediateField.Adjoin.Basic",
+    "line": 468,
+    "statement": "theorem adjoin.finrank {x : L} (hx : IsIntegral K x) : Module.finrank K K⟮x⟯ = (minpoly K x).natDegree"
+   }
+  ],
+  "09GQ": [
+   {
+    "name": "IntermediateField.eq_bot_of_isAlgClosed_of_isAlgebraic",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.IsAlgClosed.Basic",
+    "line": 257,
+    "statement": "theorem IntermediateField.eq_bot_of_isAlgClosed_of_isAlgebraic {k K : Type*} [Field k] [Field K] [IsAlgClosed k] [Algebra k K] (L : IntermediateField k K) [Algebra.IsAlgebraic k L] : L = ⊥"
+   }
+  ],
+  "09GR": [
+   {
+    "name": "IsAlgClosed",
+    "kind": "class",
+    "module": "Mathlib.FieldTheory.IsAlgClosed.Basic",
+    "line": 62,
+    "statement": "class IsAlgClosed : Prop where splits : ∀ p : k[X], p.Splits @[deprecated (since"
+   },
+   {
+    "name": "IsAlgClosed.exists_root",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.IsAlgClosed.Basic",
+    "line": 90,
+    "statement": "theorem exists_root [IsAlgClosed k] (p : k[X]) (hp : p.degree ≠ 0) : ∃ x, IsRoot p x"
+   },
+   {
+    "name": "IsAlgClosed.of_exists_root",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.IsAlgClosed.Basic",
+    "line": 193,
+    "statement": "theorem of_exists_root (H : ∀ p : k[X], p.Monic → Irreducible p → ∃ x, p.eval x = 0) : IsAlgClosed k"
+   },
+   {
+    "name": "IsAlgClosed.degree_eq_one_of_irreducible",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.IsAlgClosed.Basic",
+    "line": 228,
+    "statement": "theorem degree_eq_one_of_irreducible [IsAlgClosed k] {p : k[X]} (hp : Irreducible p) : p.degree = 1"
+   }
+  ],
+  "09GS": [
+   {
+    "name": "IsAlgClosure",
+    "kind": "class",
+    "module": "Mathlib.FieldTheory.IsAlgClosed.Basic",
+    "line": 276,
+    "statement": "class IsAlgClosure (R : Type u) (K : Type v) [CommRing R] [Field K] [Algebra R K] [IsTorsionFree R K] : Prop where isAlgClosed : IsAlgClosed K isAlgebraic : Algebra.IsAlgebraic R K attribute [instance] IsAlgClosure.isAlgebraic theorem isAlgClosure_iff (K : Type v) [Field K] [Algebra k K] : IsAlgClosure k K ↔ IsAlgClosed K ∧ Algebra.IsAlgebraic k K"
+   }
+  ],
+  "09GT": [
+   {
+    "name": "AlgebraicClosure",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure",
+    "line": 127,
+    "statement": "def AlgebraicClosure : Type u"
+   }
+  ],
+  "09GU": [
+   {
+    "name": "IsAlgClosed.lift",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.IsAlgClosed.Basic",
+    "line": 359,
+    "statement": "noncomputable def lift : S →ₐ[R] M"
+   }
+  ],
+  "09GV": [
+   {
+    "name": "IsAlgClosure.equiv",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.IsAlgClosed.Basic",
+    "line": 414,
+    "statement": "noncomputable def equiv : L ≃ₐ[R] M"
+   }
+  ],
+  "09H0": [
+   {
+    "name": "Irreducible.hasSeparableContraction",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Polynomial.SeparableDegree",
+    "line": 103,
+    "statement": "theorem _root_.Irreducible.hasSeparableContraction (q : ℕ) [hF : ExpChar F q] {f : F[X]} (irred : Irreducible f) : HasSeparableContraction q f"
+   }
+  ],
+  "09H1": [
+   {
+    "name": "Polynomial.Separable",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.Separable",
+    "line": 49,
+    "statement": "def Separable (f : R[X]) : Prop"
+   },
+   {
+    "name": "IsSeparable",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.Separable",
+    "line": 545,
+    "statement": "def IsSeparable (x : K) : Prop"
+   },
+   {
+    "name": "Algebra.IsSeparable",
+    "kind": "class",
+    "module": "Mathlib.FieldTheory.Separable",
+    "line": 555,
+    "statement": "protected class Algebra.IsSeparable : Prop where isSeparable' : ∀ x : K, IsSeparable F x variable {K} theorem Algebra.IsSeparable.isSeparable [Algebra.IsSeparable F K] : ∀ x : K, IsSeparable F x"
+   }
+  ],
+  "09H2": [
+   {
+    "name": "IsSeparable.tower_top",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.Separable",
+    "line": 630,
+    "statement": "theorem IsSeparable.tower_top {x : E} (h : IsSeparable F x) : IsSeparable L x"
+   },
+   {
+    "name": "Algebra.isSeparable_tower_top_of_isSeparable",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.Separable",
+    "line": 638,
+    "statement": "theorem Algebra.isSeparable_tower_top_of_isSeparable [Algebra.IsSeparable F E] : Algebra.IsSeparable L E"
+   }
+  ],
+  "09H3": [
+   {
+    "name": "Polynomial.nodup_aroots_iff_of_splits",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.Separable",
+    "line": 469,
+    "statement": "theorem nodup_aroots_iff_of_splits [Algebra F K] {f : F[X]} (hf : f ≠ 0) (h : (f.map (algebraMap F K)).Splits) : (f.aroots K).Nodup ↔ f.Separable"
+   }
+  ],
+  "09HA": [
+   {
+    "name": "Field.finSepDegree_le_finrank",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.SeparableDegree",
+    "line": 748,
+    "statement": "theorem finSepDegree_le_finrank [FiniteDimensional F E] : finSepDegree F E ≤ finrank F E"
+   },
+   {
+    "name": "Field.finSepDegree_eq_finrank_iff",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.SeparableDegree",
+    "line": 779,
+    "statement": "theorem finSepDegree_eq_finrank_iff [FiniteDimensional F E] : finSepDegree F E = finrank F E ↔ Algebra.IsSeparable F E"
+   }
+  ],
+  "09HB": [
+   {
+    "name": "Algebra.IsSeparable.trans",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.SeparableDegree",
+    "line": 840,
+    "statement": "theorem Algebra.IsSeparable.trans [Algebra E K] [IsScalarTower F E K] [Algebra.IsSeparable F E] [Algebra.IsSeparable E K] : Algebra.IsSeparable F K"
+   }
+  ],
+  "09HC": [
+   {
+    "name": "separableClosure",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.SeparableClosure",
+    "line": 83,
+    "statement": "def separableClosure : IntermediateField F E where carrier"
+   }
+  ],
+  "09HE": [
+   {
+    "name": "isPurelyInseparable_iff_pow_mem",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.PurelyInseparable.Basic",
+    "line": 211,
+    "statement": "theorem isPurelyInseparable_iff_pow_mem : IsPurelyInseparable F E ↔ ∀ x : E, ∃ n : ℕ, x ^ q ^ n ∈ (algebraMap F E).range"
+   }
+  ],
+  "09HF": [
+   {
+    "name": "X_pow_sub_C_irreducible_of_prime",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.KummerPolynomial",
+    "line": 98,
+    "statement": "theorem X_pow_sub_C_irreducible_of_prime {p : ℕ} (hp : p.Prime) {a : K} (ha : ∀ b : K, b ^ p ≠ a) : Irreducible (X ^ p - C a)"
+   }
+  ],
+  "09HH": [
+   {
+    "name": "perfectClosure",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.PurelyInseparable.PerfectClosure",
+    "line": 62,
+    "statement": "def perfectClosure : IntermediateField F E where __"
+   }
+  ],
+  "09HJ": [
+   {
+    "name": "Field.finSepDegree_eq",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.PurelyInseparable.Basic",
+    "line": 580,
+    "statement": "theorem finSepDegree_eq [Algebra.IsAlgebraic F E] : finSepDegree F E = Cardinal.toNat (sepDegree F E)"
+   },
+   {
+    "name": "Field.finSepDegree_eq_of_isAlgClosed",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.SeparableDegree",
+    "line": 241,
+    "statement": "theorem finSepDegree_eq_of_isAlgClosed [Algebra.IsAlgebraic F E] [IsAlgClosed K] : finSepDegree F E = Nat.card (E →ₐ[F] K)"
+   }
+  ],
+  "09HK": [
+   {
+    "name": "Field.sepDegree_mul_sepDegree_of_isAlgebraic",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.PurelyInseparable.Tower",
+    "line": 185,
+    "statement": "theorem sepDegree_mul_sepDegree_of_isAlgebraic (K : Type v) [Field K] [Algebra F K] [Algebra E K] [IsScalarTower F E K] [Algebra.IsAlgebraic F E] : sepDegree F E * sepDegree E K = sepDegree F K"
+   },
+   {
+    "name": "Field.insepDegree_mul_insepDegree_of_isAlgebraic",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.PurelyInseparable.Tower",
+    "line": 200,
+    "statement": "theorem insepDegree_mul_insepDegree_of_isAlgebraic (K : Type v) [Field K] [Algebra F K] [Algebra E K] [IsScalarTower F E K] [Algebra.IsAlgebraic F E] : insepDegree F E * insepDegree E K = insepDegree F K"
+   },
+   {
+    "name": "Field.finInsepDegree_mul_finInsepDegree_of_isAlgebraic",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.PurelyInseparable.Tower",
+    "line": 208,
+    "statement": "theorem finInsepDegree_mul_finInsepDegree_of_isAlgebraic [Algebra.IsAlgebraic F E] : finInsepDegree F E * finInsepDegree E K = finInsepDegree F K"
+   },
+   {
+    "name": "Field.finSepDegree_mul_finSepDegree_of_isAlgebraic",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.SeparableDegree",
+    "line": 290,
+    "statement": "theorem finSepDegree_mul_finSepDegree_of_isAlgebraic [Algebra E K] [IsScalarTower F E K] [Algebra.IsAlgebraic E K] : finSepDegree F E * finSepDegree E K = finSepDegree F K"
+   }
+  ],
+  "09HM": [
+   {
+    "name": "Normal",
+    "kind": "class",
+    "module": "Mathlib.FieldTheory.Normal.Defs",
+    "line": 35,
+    "statement": "class Normal : Prop extends Algebra.IsAlgebraic F K where splits' (x : K) : Splits ((minpoly F x).map (algebraMap F K)) variable {F K} theorem Normal.isIntegral (_ : Normal F K) (x : K) : IsIntegral F x"
+   }
+  ],
+  "09HN": [
+   {
+    "name": "Normal.tower_top_of_normal",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.Normal.Defs",
+    "line": 67,
+    "statement": "theorem Normal.tower_top_of_normal [h : Normal F E] : Normal K E"
+   }
+  ],
+  "09HP": [
+   {
+    "name": "IntermediateField.normal_iInf",
+    "kind": "instance",
+    "module": "Mathlib.FieldTheory.Normal.Basic",
+    "line": 141,
+    "statement": "instance normal_iInf {ι : Type*} [hι : Nonempty ι] (t : ι → IntermediateField F K) [h : ∀ i, Normal F (t i)] : Normal F (⨅ i, t i : IntermediateField F K)"
+   },
+   {
+    "name": "IntermediateField.normal_inf",
+    "kind": "instance",
+    "module": "Mathlib.FieldTheory.Normal.Basic",
+    "line": 156,
+    "statement": "instance normal_inf (E E' : IntermediateField F K) [Normal F E] [Normal F E'] : Normal F (E ⊓ E' : IntermediateField F K)"
+   }
+  ],
+  "09HQ": [
+   {
+    "name": "IntermediateField.normal_iff_forall_fieldRange_eq",
+    "kind": "lemma",
+    "module": "Mathlib.FieldTheory.Normal.Closure",
+    "line": 287,
+    "statement": "lemma normal_iff_forall_fieldRange_eq : Normal F K ↔ ∀ σ : K →ₐ[F] L, σ.fieldRange = K"
+   }
+  ],
+  "09HR": [
+   {
+    "name": "AlgEquiv.aut",
+    "kind": "instance",
+    "module": "Mathlib.Algebra.Algebra.Equiv",
+    "line": 632,
+    "statement": "instance aut : Group (A₁ ≃ₐ[R] A₁) where mul ϕ ψ"
+   }
+  ],
+  "09HS": [
+   {
+    "name": "card_algHom_le_finrank",
+    "kind": "theorem",
+    "module": "Mathlib.LinearAlgebra.FreeModule.Finite.Matrix",
+    "line": 91,
+    "statement": "theorem card_algHom_le_finrank : Nat.card (M →ₐ[K] L) ≤ finrank K M"
+   }
+  ],
+  "09HU": [
+   {
+    "name": "Normal.of_isSplittingField",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.Normal.Basic",
+    "line": 63,
+    "statement": "theorem Normal.of_isSplittingField (p : F[X]) [hFEp : IsSplittingField F E p] : Normal F E"
+   },
+   {
+    "name": "Polynomial.SplittingField.splits",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.SplittingField.Construction",
+    "line": 272,
+    "statement": "protected theorem splits : Splits (f.map (algebraMap K (SplittingField f)))"
+   }
+  ],
+  "09HV": [
+   {
+    "name": "Polynomial.SplittingField",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.SplittingField.Construction",
+    "line": 214,
+    "statement": "def SplittingField (f : K[X])"
+   },
+   {
+    "name": "Polynomial.IsSplittingField",
+    "kind": "class",
+    "module": "Mathlib.FieldTheory.SplittingField.IsSplittingField",
+    "line": 47,
+    "statement": "class IsSplittingField (f : K[X]) : Prop where splits' : Splits (f.map (algebraMap K L)) adjoin_rootSet' : Algebra.adjoin K (f.rootSet L : Set L) = ⊤ namespace IsSplittingField variable {K} theorem splits (f : K[X]) [IsSplittingField K L f] : Splits (f.map (algebraMap K L))"
+   }
+  ],
+  "09HX": [
+   {
+    "name": "isCyclic_of_card_pow_eq_one_le",
+    "kind": "theorem",
+    "module": "Mathlib.GroupTheory.SpecificGroups.Cyclic",
+    "line": 143,
+    "statement": "theorem isCyclic_of_card_pow_eq_one_le : IsCyclic α"
+   }
+  ],
+  "09HY": [
+   {
+    "name": "FiniteField.card",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.Finite.Basic",
+    "line": 256,
+    "statement": "theorem card (p : ℕ) [CharP K p] : ∃ n : ℕ+, Nat.Prime p ∧ q = p ^ (n : ℕ)"
+   },
+   {
+    "name": "Field.exists_primitive_element_of_finite_top",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.PrimitiveElement",
+    "line": 59,
+    "statement": "theorem exists_primitive_element_of_finite_top [Finite E] : ∃ α : E, F⟮α⟯ = ⊤"
+   }
+  ],
+  "09I0": [
+   {
+    "name": "IsGalois",
+    "kind": "class",
+    "module": "Mathlib.FieldTheory.Galois.Basic",
+    "line": 58,
+    "statement": "class IsGalois : Prop where [to_isSeparable : Algebra.IsSeparable F E] [to_normal : Normal F E] variable {F E} theorem isGalois_iff : IsGalois F E ↔ Algebra.IsSeparable F E ∧ Normal F E"
+   }
+  ],
+  "09I1": [
+   {
+    "name": "IsGalois.card_aut_eq_finrank",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.Galois.Basic",
+    "line": 110,
+    "statement": "theorem card_aut_eq_finrank [FiniteDimensional F E] [IsGalois F E] : Nat.card Gal(E/F) = finrank F E"
+   },
+   {
+    "name": "IsGalois.of_card_aut_eq_finrank",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.Galois.Basic",
+    "line": 493,
+    "statement": "theorem of_card_aut_eq_finrank [FiniteDimensional F E] (h : Nat.card Gal(E/F) = finrank F E) : IsGalois F E"
+   }
+  ],
+  "09I2": [
+   {
+    "name": "IsGalois.tower_top_of_isGalois",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.Galois.Basic",
+    "line": 153,
+    "statement": "theorem IsGalois.tower_top_of_isGalois [IsGalois F E] : IsGalois K E"
+   }
+  ],
+  "09I3": [
+   {
+    "name": "FixedPoints.finrank_eq_card",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.Fixed",
+    "line": 341,
+    "statement": "theorem finrank_eq_card [Fintype G] [FaithfulSMul G F] : finrank (FixedPoints.subfield G F) F = Fintype.card G"
+   },
+   {
+    "name": "IsGalois.of_fixed_field",
+    "kind": "instance",
+    "module": "Mathlib.FieldTheory.Galois.Basic",
+    "line": 95,
+    "statement": "instance of_fixed_field (G : Type*) [Group G] [Finite G] [MulSemiringAction G E] : IsGalois (FixedPoints.subfield G E) E"
+   }
+  ],
+  "09SJ": [
+   {
+    "name": "CategoryTheory.ObjectProperty.IsStrongTriangulatedGenerator",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Triangulated.Generators",
+    "line": 124,
+    "statement": "def IsStrongTriangulatedGenerator : Prop"
+   },
+   {
+    "name": "CategoryTheory.ObjectProperty.IsClassicalTriangulatedGenerator",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Triangulated.Generators",
+    "line": 191,
+    "statement": "def IsClassicalTriangulatedGenerator : Prop"
+   }
+  ],
+  "09YD": [
+   {
+    "name": "Topology.IsConstructible.image_of_isOpenEmbedding",
+    "kind": "lemma",
+    "module": "Mathlib.Topology.Constructible",
+    "line": 264,
+    "statement": "lemma IsConstructible.image_of_isOpenEmbedding (hfopen : IsOpenEmbedding f) (hfcomp : IsRetrocompact (range f)) (hs : IsConstructible s) : IsConstructible (f '' s)"
+   }
+  ],
+  "09YE": [
+   {
+    "name": "IsRetrocompact.preimage_of_isClosedEmbedding",
+    "kind": "lemma",
+    "module": "Mathlib.Topology.Constructible",
+    "line": 159,
+    "statement": "lemma IsRetrocompact.preimage_of_isClosedEmbedding {s : Set Y} (hf : IsClosedEmbedding f) (hf' : IsCompact (range f)ᶜ) (hs : IsRetrocompact s) : IsRetrocompact (f ⁻¹' s)"
+   },
+   {
+    "name": "Topology.IsConstructible.preimage_of_isClosedEmbedding",
+    "kind": "lemma",
+    "module": "Mathlib.Topology.Constructible",
+    "line": 259,
+    "statement": "lemma IsConstructible.preimage_of_isClosedEmbedding {s : Set Y} (hf : IsClosedEmbedding f) (hf' : IsCompact (range f)ᶜ) (hs : IsConstructible s) : IsConstructible (f ⁻¹' s)"
+   }
+  ],
+  "09YG": [
+   {
+    "name": "Topology.IsConstructible.image_of_isClosedEmbedding",
+    "kind": "lemma",
+    "module": "Mathlib.Topology.Constructible",
+    "line": 276,
+    "statement": "lemma IsConstructible.image_of_isClosedEmbedding (hf : IsClosedEmbedding f) (hfcomp : IsRetrocompact (range f)ᶜ) (hs : IsConstructible s) : IsConstructible (f '' s)"
+   }
+  ],
+  "0A1Z": [
+   {
+    "name": "AlgebraicGeometry.Scheme.RationalMap.IsDominant",
+    "kind": "class",
+    "module": "Mathlib.AlgebraicGeometry.Birational.Dominant",
+    "line": 73,
+    "statement": "protected class RationalMap.IsDominant (f : X ⤏ Y) : Prop where out : Quotient.liftOn f (fun g ↦ IsDominant g.hom) <| fun _ _ h ↦ propext (PartialMap.isDominant_hom_iff_of_equiv _ _ h) @[simp] lemma PartialMap.isDominant_toRationalMap_iff (f : X.PartialMap Y) : f.toRationalMap.IsDominant ↔ IsDominant f.hom"
+   }
+  ],
+  "0AH8": [
+   {
+    "name": "AlgebraicGeometry.exists_finite_imageι_comp_morphismRestrict_of_finite_image_preimage",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.ZariskisMainTheorem",
+    "line": 421,
+    "statement": "lemma exists_finite_imageι_comp_morphismRestrict_of_finite_image_preimage {X Y S : Scheme} (f : X ⟶ Y) (g : Y ⟶ S) (s : S) (H : (f '' ((f ≫ g) ⁻¹' {s})).Finite) [IsProper (f ≫ g)] [IsSeparated g] [LocallyOfFiniteType g] : ∃ U : S.Opens, s ∈ U ∧ IsFinite ((f.imageι ≫ g) ∣_ U)"
+   }
+  ],
+  "0AUW": [
+   {
+    "name": "IsDedekindDomain.flat_iff_torsion_eq_bot",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Flat.TorsionFree",
+    "line": 138,
+    "statement": "theorem _root_.IsDedekindDomain.flat_iff_torsion_eq_bot [IsDedekindDomain R] : Flat R M ↔ torsion R M = ⊥"
+   }
+  ],
+  "0AXN": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.AlgebraicGeometry.Normalization",
+    "line": 345,
+    "statement": "instance [IsReduced X] : IsReduced f.normalization"
+   }
+  ],
+  "0B31": [
+   {
+    "name": "Subtype.t0Space",
+    "kind": "instance",
+    "module": "Mathlib.Topology.Separation.Basic",
+    "line": 231,
+    "statement": "instance Subtype.t0Space [T0Space X] {p : X → Prop} : T0Space (Subtype p)"
+   }
+  ],
+  "0B52": [
+   {
+    "name": "Module.supportDim_le_supportDim_quotSMulTop_succ",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.KrullDimension.Regular",
+    "line": 140,
+    "statement": "theorem supportDim_le_supportDim_quotSMulTop_succ {x : R} (hx : x ∈ maximalIdeal R) : supportDim R M ≤ supportDim R (QuotSMulTop x M) + 1"
+   },
+   {
+    "name": "Module.supportDim_quotSMulTop_succ_eq_of_notMem_minimalPrimes_of_mem_maximalIdeal",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.KrullDimension.Regular",
+    "line": 164,
+    "statement": "theorem supportDim_quotSMulTop_succ_eq_of_notMem_minimalPrimes_of_mem_maximalIdeal {x : R} (hn : ∀ p ∈ (annihilator R M).minimalPrimes, x ∉ p) (hx : x ∈ maximalIdeal R) : supportDim R (QuotSMulTop x M) + 1 = supportDim R M"
+   }
+  ],
+  "0BA8": [
+   {
+    "name": "AlgebraicGeometry.finite_irreducibleComponents_of_isNoetherian",
+    "kind": "theorem",
+    "module": "Mathlib.AlgebraicGeometry.Noetherian",
+    "line": 361,
+    "statement": "theorem finite_irreducibleComponents_of_isNoetherian [IsNoetherian X] : (irreducibleComponents X).Finite"
+   }
+  ],
+  "0BC3": [
+   {
+    "name": "Module.IsStablyFree",
+    "kind": "class",
+    "module": "Mathlib.Algebra.Module.StablyFree.Basic",
+    "line": 33,
+    "statement": "class IsStablyFree (R : Type u) [Ring R] (M : Type*) [AddCommGroup M] [Module R M] : Prop where private exist_free_prod' : ∃ (N : Type u) (_ : AddCommGroup N) (_ : Module R N) (_ : Module.Finite R N) (_ : Free R N), Free R (M × N) variable (R : Type u) [Ring R] (M : Type v) [AddCommGroup M] [Module R M] (N : Type w) [AddCommGroup N] [Module R N] theorem IsStablyFree.exist_free_prod [IsStablyFree R M] : ∃ (N : Type u) (_ : AddCommGroup N) (_ : Module R N) (_ : Module.Finite R N) (_ : Free R N), Free R (M × N)"
+   }
+  ],
+  "0BCH": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.PicardGroup",
+    "line": 857,
+    "statement": "instance (R) [CommRing R] [IsDomain R] [Nonempty (NormalizedGCDMonoid R)] : Subsingleton (Pic R)"
+   }
+  ],
+  "0BCK": [
+   {
+    "name": "AlgebraicGeometry.Scheme.IsQuasiAffine.of_isImmersion",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.QuasiAffine",
+    "line": 53,
+    "statement": "lemma IsQuasiAffine.of_isImmersion [Y.IsQuasiAffine] [IsImmersion f] [CompactSpace X] : X.IsQuasiAffine"
+   }
+  ],
+  "0BFD": [
+   {
+    "name": "AlgebraicGeometry.isCommMonObj_of_isProper_of_geometricallyIntegral",
+    "kind": "theorem",
+    "module": "Mathlib.AlgebraicGeometry.Group.Abelian",
+    "line": 133,
+    "statement": "theorem isCommMonObj_of_isProper_of_geometricallyIntegral (G : Over (Spec (.of K))) [IsProper G.hom] [GeometricallyIntegral G.hom] [GrpObj G] : IsCommMonObj G"
+   }
+  ],
+  "0BID": [
+   {
+    "name": "Subalgebra.isField_of_algebraic",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Algebraic.Basic",
+    "line": 700,
+    "statement": "theorem Subalgebra.isField_of_algebraic [Algebra.IsAlgebraic K L] : IsField A"
+   }
+  ],
+  "0BIF": [
+   {
+    "name": "Algebra.norm",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Norm.Defs",
+    "line": 61,
+    "statement": "noncomputable def norm : S →* R"
+   },
+   {
+    "name": "Algebra.trace",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Trace.Defs",
+    "line": 71,
+    "statement": "noncomputable def trace : S →ₗ[R] R"
+   }
+  ],
+  "0BIJ": [
+   {
+    "name": "Algebra.trace_comp_trace",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Trace.Defs",
+    "line": 146,
+    "statement": "theorem trace_comp_trace [Algebra S T] [IsScalarTower R S T] [Module.Free R S] [Module.Finite R S] [Module.Free S T] [Module.Finite S T] : (trace R S).comp ((trace S T).restrictScalars R) = trace R T"
+   }
+  ],
+  "0BIK": [
+   {
+    "name": "Algebra.traceForm",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Trace.Defs",
+    "line": 171,
+    "statement": "noncomputable def traceForm : BilinForm R S"
+   }
+  ],
+  "0BIL": [
+   {
+    "name": "traceForm_nondegenerate",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Trace.Basic",
+    "line": 504,
+    "statement": "theorem traceForm_nondegenerate [FiniteDimensional K L] [Algebra.IsSeparable K L] : (traceForm K L).Nondegenerate"
+   },
+   {
+    "name": "traceForm_nondegenerate_tfae",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Trace.Basic",
+    "line": 510,
+    "statement": "theorem traceForm_nondegenerate_tfae [FiniteDimensional K L] : [Algebra.IsSeparable K L, Algebra.trace K L ≠ 0, (traceForm K L).Nondegenerate].TFAE"
+   }
+  ],
+  "0BME": [
+   {
+    "name": "AlgHom.liftNormal",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.Normal.Basic",
+    "line": 190,
+    "statement": "noncomputable def AlgHom.liftNormal [h : Normal F E] : E →ₐ[F] E"
+   },
+   {
+    "name": "AlgHom.restrictNormal",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.Normal.Defs",
+    "line": 151,
+    "statement": "def AlgHom.restrictNormal [Normal F E] : E →ₐ[F] E"
+   }
+  ],
+  "0BMF": [
+   {
+    "name": "IsNormalClosure",
+    "kind": "class",
+    "module": "Mathlib.FieldTheory.Normal.Closure",
+    "line": 42,
+    "statement": "class IsNormalClosure : Prop where splits (x : K) : ((minpoly F x).map (algebraMap F L)).Splits adjoin_rootSet : ⨆ x : K, adjoin F ((minpoly F x).rootSet L) = ⊤ @[stacks 0BMF] noncomputable def IntermediateField.normalClosure : IntermediateField F L"
+   },
+   {
+    "name": "IntermediateField.normalClosure",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.Normal.Closure",
+    "line": 50,
+    "statement": "noncomputable def IntermediateField.normalClosure : IntermediateField F L"
+   }
+  ],
+  "0BMG": [
+   {
+    "name": "normalClosure.normal",
+    "kind": "instance",
+    "module": "Mathlib.FieldTheory.Normal.Closure",
+    "line": 169,
+    "statement": "instance normal [h : Normal F L] : Normal F (normalClosure F K L)"
+   },
+   {
+    "name": "normalClosure.is_finiteDimensional",
+    "kind": "instance",
+    "module": "Mathlib.FieldTheory.Normal.Closure",
+    "line": 175,
+    "statement": "instance is_finiteDimensional [FiniteDimensional F K] : FiniteDimensional F (normalClosure F K L)"
+   }
+  ],
+  "0BMJ": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.FieldTheory.KrullTopology",
+    "line": 143,
+    "statement": "instance (K L : Type*) [Field K] [Field L] [Algebra K L] : IsTopologicalGroup Gal(L/K)"
+   }
+  ],
+  "0BN4": [
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.CategoryTheory.Galois.Equivalence",
+    "line": 88,
+    "statement": "instance : (functorToContAction F).IsEquivalence where end PreGaloisCategory end CategoryTheory"
+   },
+   {
+    "name": "CategoryTheory.PreGaloisCategory.exists_lift_of_continuous",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Galois.EssSurj",
+    "line": 269,
+    "statement": "theorem exists_lift_of_continuous (X : Action FintypeCat (Aut F)) [TopologicalSpace X.V] [DiscreteTopology X.V] [ContinuousSMul (Aut F) X.V] : ∃ A, Nonempty ((functorToAction F).obj A ≅ X)"
+   }
+  ],
+  "0BR3": [
+   {
+    "name": "IntermediateField.splits_of_mem_adjoin",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.Normal.Basic",
+    "line": 121,
+    "statement": "theorem splits_of_mem_adjoin {L} [Field L] [Algebra F L] {S : Set K} (splits : ∀ x ∈ S, IsIntegral F x ∧ ((minpoly F x).map (algebraMap F L)).Splits) {x : K} (hx : x ∈ adjoin F S) : ((minpoly F x).map (algebraMap F L)).Splits"
+   }
+  ],
+  "0BR4": [
+   {
+    "name": "Normal.algHomEquivAut",
+    "kind": "def",
+    "module": "Mathlib.FieldTheory.Normal.Defs",
+    "line": 208,
+    "statement": "def Normal.algHomEquivAut [Normal F E] : (E →ₐ[F] K₁) ≃ Gal(E/F) where toFun σ"
+   }
+  ],
+  "0BR8": [
+   {
+    "name": "PrimeSpectrum.isHomeomorph_comap",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.Homeomorph",
+    "line": 39,
+    "statement": "lemma PrimeSpectrum.isHomeomorph_comap (f : R →+* S) (H : ∀ (x : S), ∃ n > 0, x ^ n ∈ f.range) (hker : RingHom.ker f ≤ nilradical R) : IsHomeomorph (comap f)"
+   }
+  ],
+  "0BRA": [
+   {
+    "name": "PrimeSpectrum.isHomeomorph_comap_of_isPurelyInseparable",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.Homeomorph",
+    "line": 65,
+    "statement": "lemma PrimeSpectrum.isHomeomorph_comap_of_isPurelyInseparable [IsPurelyInseparable k K] : IsHomeomorph (comap <| algebraMap R (R ⊗[k] K))"
+   }
+  ],
+  "0BSI": [
+   {
+    "name": "CategoryTheory.MorphismProperty.IsStableUnderComposition.ind_of_preIndSpreads",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.MorphismProperty.Ind",
+    "line": 190,
+    "statement": "lemma IsStableUnderComposition.ind_of_preIndSpreads [∀ X : C, (IsFinitelyAccessibleCategory.{w} (Under X))] [HasPushouts C] [P.IsStableUnderComposition] [P.IsStableUnderCobaseChange] [PreIndSpreads.{w} P] (H : P ≤ isFinitelyPresentable.{w} C) : (ind.{w} P).IsStableUnderComposition where comp_mem {X Y Z} f g hf hg"
+   }
+  ],
+  "0BX5": [
+   {
+    "name": "AlgebraicGeometry.IsProper.eq_valuativeCriterion",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.ValuativeCriterion",
+    "line": 328,
+    "statement": "lemma IsProper.eq_valuativeCriterion : @IsProper = ValuativeCriterion ⊓ @QuasiCompact ⊓ @QuasiSeparated ⊓ @LocallyOfFiniteType"
+   },
+   {
+    "name": "AlgebraicGeometry.IsProper.of_valuativeCriterion",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.ValuativeCriterion",
+    "line": 339,
+    "statement": "lemma IsProper.of_valuativeCriterion [QuasiCompact f] [QuasiSeparated f] [LocallyOfFiniteType f] (H : ValuativeCriterion f) : IsProper f"
+   }
+  ],
+  "0BX6": [
+   {
+    "name": "AlgebraicGeometry.spread_out_unique_of_isGermInjective",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.SpreadingOut",
+    "line": 198,
+    "statement": "lemma spread_out_unique_of_isGermInjective {x : X} [X.IsGermInjectiveAt x] (f g : X ⟶ Y) (e : f x = g x) (H : f.stalkMap x = Y.presheaf.stalkSpecializes (Inseparable.of_eq e.symm).specializes ≫ g.stalkMap x) : ∃ (U : X.Opens), x ∈ U ∧ U.ι ≫ f = U.ι ≫ g"
+   },
+   {
+    "name": "AlgebraicGeometry.spread_out_of_isGermInjective",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.SpreadingOut",
+    "line": 329,
+    "statement": "lemma spread_out_of_isGermInjective [LocallyOfFiniteType sY] {x : X} [X.IsGermInjectiveAt x] {y : Y} (e : sX x = sY y) (φ : Y.presheaf.stalk y ⟶ X.presheaf.stalk x) (h : sY.stalkMap y ≫ φ = S.presheaf.stalkSpecializes (Inseparable.of_eq e).specializes ≫ sX.stalkMap x) : ∃ (U : X.Opens) (hxU : x ∈ U) (f : U.toScheme ⟶ Y), Spec.map φ ≫ Y.fromSpecStalk y = U.fromSpecStalkOfMem x hxU ≫ f ∧ f ≫ sY = U.ι ≫ sX"
+   }
+  ],
+  "0CKL": [
+   {
+    "name": "linearIndependent_monoidHom",
+    "kind": "theorem",
+    "module": "Mathlib.LinearAlgebra.LinearIndependent.Basic",
+    "line": 497,
+    "statement": "theorem linearIndependent_monoidHom (G : Type*) [MulOneClass G] (L : Type*) [CommRing L] [IsDomain L] : LinearIndependent L (M"
+   }
+  ],
+  "0CKM": [
+   {
+    "name": "linearIndependent_algHom_toLinearMap",
+    "kind": "lemma",
+    "module": "Mathlib.LinearAlgebra.LinearIndependent.Lemmas",
+    "line": 468,
+    "statement": "lemma linearIndependent_algHom_toLinearMap (K M L) [CommSemiring K] [Semiring M] [Algebra K M] [CommRing L] [IsDomain L] [Algebra K L] : LinearIndependent L (AlgHom.toLinearMap : (M →ₐ[K] L) → M →ₗ[K] L)"
+   }
+  ],
+  "0CY7": [
+   {
+    "name": "finite_of_finite_type_of_isJacobsonRing",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Jacobson.Ring",
+    "line": 676,
+    "statement": "lemma finite_of_finite_type_of_isJacobsonRing (R S : Type*) [CommRing R] [Field S] [Algebra R S] [IsJacobsonRing R] [Algebra.FiniteType R S] : Module.Finite R S"
+   }
+  ],
+  "0DV0": [
+   {
+    "name": "CategoryTheory.Adjunction.comp",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Adjunction.Basic",
+    "line": 584,
+    "statement": "def comp : F ⋙ H ⊣ I ⋙ G"
+   }
+  ],
+  "0DVA": [
+   {
+    "name": "AlgebraicGeometry.isSeparated_of_injective",
+    "kind": "lemma",
+    "module": "Mathlib.AlgebraicGeometry.Morphisms.Separated",
+    "line": 219,
+    "statement": "lemma isSeparated_of_injective (hf : Function.Injective f) : IsSeparated f"
+   }
+  ],
+  "0EXK": [
+   {
+    "name": "separableClosure.isGalois",
+    "kind": "instance",
+    "module": "Mathlib.FieldTheory.IsSepClosed",
+    "line": 323,
+    "statement": "instance separableClosure.isGalois [Normal F E] : IsGalois F (separableClosure F E) where to_isSeparable"
+   }
+  ],
+  "0EXM": [
+   {
+    "name": "IsGalois.normalClosure",
+    "kind": "instance",
+    "module": "Mathlib.FieldTheory.Galois.Basic",
+    "line": 587,
+    "statement": "instance IsGalois.normalClosure : IsGalois k (normalClosure k K F) where to_isSeparable"
+   }
+  ],
+  "0FCF": [
+   {
+    "name": "CategoryTheory.isArtinianObject",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Subobject.ArtinianObject",
+    "line": 48,
+    "statement": "def isArtinianObject : ObjectProperty C"
+   },
+   {
+    "name": "CategoryTheory.IsArtinianObject",
+    "kind": "abbrev",
+    "module": "Mathlib.CategoryTheory.Subobject.ArtinianObject",
+    "line": 56,
+    "statement": "abbrev IsArtinianObject : Prop"
+   }
+  ],
+  "0FCG": [
+   {
+    "name": "CategoryTheory.isNoetherianObject",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Subobject.NoetherianObject",
+    "line": 47,
+    "statement": "def isNoetherianObject : ObjectProperty C"
+   },
+   {
+    "name": "CategoryTheory.IsNoetherianObject",
+    "kind": "abbrev",
+    "module": "Mathlib.CategoryTheory.Subobject.NoetherianObject",
+    "line": 55,
+    "statement": "abbrev IsNoetherianObject : Prop"
+   }
+  ],
+  "0FFK": [
+   {
+    "name": "CategoryTheory.MonoidalCategory",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Monoidal.Category",
+    "line": 162,
+    "statement": "class MonoidalCategory (C : Type u) [𝒞 : Category.{v} C] extends MonoidalCategoryStruct C where tensorHom_def {X₁ Y₁ X₂ Y₂ : C} (f : X₁ ⟶ Y₁) (g : X₂ ⟶ Y₂) : f ⊗ₘ g = (f ▷ X₂) ≫ (Y₁ ◁ g)"
+   }
+  ],
+  "0FFW": [
+   {
+    "name": "CategoryTheory.SymmetricCategory",
+    "kind": "class",
+    "module": "Mathlib.CategoryTheory.Monoidal.Braided.Basic",
+    "line": 367,
+    "statement": "class SymmetricCategory (C : Type u) [Category.{v} C] [MonoidalCategory.{v} C] extends BraidedCategory.{v} C where symmetry : ∀ X Y : C, (β_ X Y).hom ≫ (β_ Y X).hom = 𝟙 (X ⊗ Y)"
+   }
+  ],
+  "0FX1": [
+   {
+    "name": "CategoryTheory.ObjectProperty.extensionProduct_assoc",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.Triangulated.Subcategory",
+    "line": 288,
+    "statement": "lemma extensionProduct_assoc [IsTriangulated C] : extensionProduct (extensionProduct P Q) R = extensionProduct P (extensionProduct Q R)"
+   }
+  ],
+  "0FX2": [
+   {
+    "name": "CategoryTheory.ObjectProperty.extensionProduct_retractClosure_retractClosure_le",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.Triangulated.Subcategory",
+    "line": 315,
+    "statement": "lemma extensionProduct_retractClosure_retractClosure_le : extensionProduct P.retractClosure Q.retractClosure ≤ (extensionProduct P Q).retractClosure"
+   },
+   {
+    "name": "CategoryTheory.ObjectProperty.retractClosure_extensionProduct_retractClosure_retractClosure",
+    "kind": "lemma",
+    "module": "Mathlib.CategoryTheory.Triangulated.Subcategory",
+    "line": 332,
+    "statement": "lemma retractClosure_extensionProduct_retractClosure_retractClosure : (extensionProduct P.retractClosure Q.retractClosure).retractClosure = (extensionProduct P Q).retractClosure"
+   }
+  ],
+  "0FXB": [
+   {
+    "name": "CategoryTheory.ObjectProperty.rightOrthogonal",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.ObjectProperty.Orthogonal",
+    "line": 38,
+    "statement": "def rightOrthogonal : ObjectProperty C"
+   },
+   {
+    "name": "CategoryTheory.ObjectProperty.leftOrthogonal",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.ObjectProperty.Orthogonal",
+    "line": 47,
+    "statement": "def leftOrthogonal : ObjectProperty C"
+   }
+  ],
+  "0G1M": [
+   {
+    "name": "Algebra.IsAlgebraic.rank_fractionRing_polynomial",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Algebraic.Integral",
+    "line": 658,
+    "statement": "@[stacks 0G1M] theorem rank_fractionRing_polynomial : Module.rank (FractionRing R[X]) (FractionRing S[X]) = Module.rank R S"
+   },
+   {
+    "name": "Algebra.IsAlgebraic.rank_fractionRing_mvPolynomial",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Algebraic.Integral",
+    "line": 664,
+    "statement": "@[stacks 0G1M] theorem rank_fractionRing_mvPolynomial (σ : Type u) : Module.rank (FractionRing (MvPolynomial σ R)) (FractionRing (MvPolynomial σ S)) = lift.{u} (Module.rank R S)"
+   }
+  ],
+  "0H71": [
+   {
+    "name": "exists_isTranscendenceBasis_and_isSeparable_of_linearIndepOn_pow_of_adjoin_eq_top",
+    "kind": "lemma",
+    "module": "Mathlib.FieldTheory.SeparablyGenerated",
+    "line": 263,
+    "statement": "lemma exists_isTranscendenceBasis_and_isSeparable_of_linearIndepOn_pow_of_adjoin_eq_top (ha : IntermediateField.adjoin k (Set.range a) = ⊤) (ha' : IsTranscendenceBasis k fun i : {i // i ≠ n} ↦ a i) : ∃ i : ι, IsTranscendenceBasis k (fun j : {j // j ≠ i} ↦ a j) ∧ Algebra.IsSeparable (adjoin k (a '' {i}ᶜ)) K"
+   }
+  ]
+ }
+}

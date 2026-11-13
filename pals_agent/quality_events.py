@@ -197,6 +197,7 @@ _LEAN_COMPILE_CODES: Final = frozenset({
     "lean.disallowed_native_evaluation", "lean.disallowed_interactive_command",
     "lean.disallowed_axiom", "lean.disallowed_ambiguous_lexing",
     "pals.target_declaration_invalid", "pals.scheme_statement_weakened",
+    "pals.scheme_candidate_incomplete",
     # A profile's statement-origin check rejected a constant from an unreviewed library: a verdict
     # about the proof text, like the other `lean.disallowed_*` rejections.
     "lean.statement_uses_untrusted_library",
