@@ -61,6 +61,7 @@ from pals_agent.models import (
     library_trust_of,
 )
 from pals_agent.natural_draft_evidence import NaturalDraftRetrievalResult
+from pals_agent.profile_selection import select_library_profile
 from pals_agent.proof_fastpaths import (
     _HARNESS_MISMATCH_CODE,
     _MODEL_DECIDES_CODES,
@@ -235,6 +236,10 @@ class ProofPipeline:
     request_linked_typed_retriever: ProofFlowRetriever | None = None
     # Local mode only. Absent, a request can only be verified by ``verifier`` (the default profile).
     profile_verifiers: ProfileRoutedVerifier | None = None
+    # Local mode only, off by default: pick ``library_profile`` from the request text when the
+    # caller gave none (``profile_selection.select_library_profile``). A profile that is needed
+    # but not served raises ``LibraryProfileNotEnabled``; the default library never stands in.
+    route_library_profile: bool = False
     # Opt-in latency shortcuts, both off by default; see pals_agent/proof_fastpaths.py.
     # ``harness_splice`` restores a fixed formal statement the model re-typed with only
     # layout differences instead of paying for a model-driven restart.
@@ -388,6 +393,12 @@ class ProofPipeline:
         library_profile: str | None = None,
         routine: bool = False,
     ) -> ProofRunResult:
+        if (
+            library_profile is None
+            and self.route_library_profile
+            and self.verification_mode == "local"
+        ):
+            library_profile = select_library_profile(statement)
         if library_profile is not None:
             return self.for_library_profile(library_profile).run_statement(
                 statement=statement,

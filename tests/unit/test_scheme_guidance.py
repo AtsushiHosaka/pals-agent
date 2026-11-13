@@ -207,3 +207,10 @@ def test_incomplete_check_runs_only_without_a_pinned_formal_statement() -> None:
     pinned = ProofRequest(id="p", prompt=SPEC_QC, formal_statement="theorem t : True")
     assert SCHEME_INCOMPLETE_CODE in [d.code for d in validate_generated_lean(free, partial)]
     assert SCHEME_INCOMPLETE_CODE not in [d.code for d in validate_generated_lean(pinned, partial)]
+
+
+def test_equivalence_requests_get_the_two_directions_guidance() -> None:
+    iff = "Show that Spec R is connected if and only if the only idempotents of R are 0 and 1."
+    assert "BOTH directions" in scheme_guidance(iff)
+    assert "BOTH directions" in scheme_guidance("スキーム Spec R が連結であることと同値な環の条件")
+    assert "BOTH directions" not in scheme_guidance(SPEC_QC)

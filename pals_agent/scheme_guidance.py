@@ -88,6 +88,25 @@ Cohomology of sheaves on schemes (derived pushforward, higher direct images) is 
 library: if the request needs it, say so in the Draft rather than formalizing a weaker claim.
 """
 
+_EQUIVALENCE_CUE: Final = re.compile(
+    r"\b(?:if\s+and\s+only\s+if|iff|equivalent|equivalence)\b|同値|必要十分|⇔|↔", re.IGNORECASE
+)
+_EQUIVALENCE_GUIDANCE: Final = """\
+The request is an equivalence between a property of a scheme (or of `Spec R`, or of its
+topological space) and a property of a ring. State ONE theorem `A ↔ B` whose two sides are
+exactly the two properties named in the request, and prove BOTH directions. Do not state a
+conjunction of separate facts, one direction only, or a lemma about only the ring or only the
+space. To pass between the scheme and the ring, state the bridge explicitly as a `have`:
+- Topology of the spectrum: `PrimeSpectrum R` is the topological space of `Spec R`; clopen subsets
+  correspond to idempotents: `PrimeSpectrum.isIdempotentElemEquivClopens`.
+- Connectedness: `connectedSpace_iff_clopen`, `isClopen_iff` (clopen sets of a preconnected
+  space are `∅` or `univ`), `isPreconnected_iff_subset_of_disjoint`.
+- Irreducible vs the nilradical: `PrimeSpectrum.irreducibleSpace_iff_isPrime_nilradical`.
+- Integral / reduced: `affine_isIntegral_iff`, `affine_isReduced_iff`.
+- A nontriviality hypothesis (`[Nontrivial R]`) belongs in the statement exactly when the request
+  has it (the empty space is not connected).
+"""
+
 
 def _cue_text(*parts: str | None) -> str:
     return "\n".join(part for part in parts if part)
@@ -113,6 +132,8 @@ def scheme_guidance(*parts: str | None) -> str:
         and "AlgebraicGeometry" in text
         and not _NOT_SCHEME_THEORY.search(text)
     ):
+        if _EQUIVALENCE_CUE.search(text):
+            return _GUIDANCE + _EQUIVALENCE_GUIDANCE
         return _GUIDANCE
     return ""
 
