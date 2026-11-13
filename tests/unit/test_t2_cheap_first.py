@@ -129,3 +129,14 @@ def test_the_effort_the_client_really_gets(monkeypatch: pytest.MonkeyPatch) -> N
     monkeypatch.delenv(t2_lane.CHEAP_FIRST_ENV)
     with t2_lane.candidate_variant(0):
         assert _prove_effort(terra) == "medium"  # switch off
+
+
+def test_the_first_attempt_also_takes_the_fast_candidates_style_instruction(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Documented, not hidden: cheap-first is the effort and this instruction together."""
+    _flags(monkeypatch)
+    monkeypatch.setenv(t2_lane.CHEAP_FIRST_ENV, "true")
+    with t2_lane.candidate_variant(0):
+        assert t2_lane.variant_instruction() == t2_lane.VARIANT_INSTRUCTIONS[0]
+    assert t2_lane.variant_instruction() == ""
