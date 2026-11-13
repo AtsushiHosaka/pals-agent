@@ -1369,6 +1369,14 @@
    "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
   },
   {
+   "id": "tests.unit.test_fast_answer::test_a_rejected_explanation_is_written_again_with_the_objection",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
+  },
+  {
+   "id": "tests.unit.test_fast_answer::test_without_retries_a_rejected_explanation_stays_rejected",
+   "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
+  },
+  {
    "id": "tests.unit.test_fast_answer::test_an_unavailable_explanation_review_is_a_rejection",
    "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
   },
