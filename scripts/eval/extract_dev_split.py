@@ -15,10 +15,13 @@ import json
 from pathlib import Path
 
 KEEP = "dev_unseen"
+ALLOWED = ("dev_unseen", "tuning")  # never held_out
 
 
-def extract(manifest: dict) -> dict:
-    kept = [p for p in manifest["problems"] if p.get("split") == KEEP]
+def extract(manifest: dict, splits: tuple[str, ...] = (KEEP,)) -> dict:
+    if not set(splits) <= set(ALLOWED):
+        raise SystemExit(f"refusing: only {ALLOWED} may be extracted")
+    kept = [p for p in manifest["problems"] if p.get("split") in splits]
     return {"faithfulness_rule": manifest.get("faithfulness_rule", ""), "problems": kept}
 
 
@@ -26,8 +29,9 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--manifest", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--splits", default=KEEP, help="comma list of dev_unseen,tuning")
     args = ap.parse_args()
-    out = extract(json.loads(args.manifest.read_text()))
+    out = extract(json.loads(args.manifest.read_text()), tuple(args.splits.split(",")))
     args.out.write_text(json.dumps(out, ensure_ascii=False, indent=2))
     print(f"wrote {len(out['problems'])} {KEEP} items to {args.out}")
 

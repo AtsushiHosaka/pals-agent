@@ -304,6 +304,11 @@ class ProofPipeline:
     # released and before its usage scope ends; a positive value makes the pipeline wait instead
     # (and delays the answer by up to that long).
     accounting_wait_seconds: float = 0.0
+    # Default None: nothing changes.  An object with ``propose(statement, formal_statement=...)``
+    # (pals_agent.fast_first_attempt.FastFirstAttempt) that may supply the FIRST candidate source.
+    # The source goes through the same preflight and the API's compile as any generated one; when
+    # it proposes nothing, or fails the preflight, the first attempt is generated as before.
+    fast_first_attempt: Any = None
 
     def __post_init__(self) -> None:
         t2_lane.validate_flags()  # a malformed T2 switch fails here, not mid-job after spend
@@ -994,6 +999,33 @@ class ProofPipeline:
             code = normalise_source_header(code)
         return generated if code == generated.lean_code else replace(generated, lean_code=code)
 
+    def _fast_first_candidate(self, request: ProofRequest) -> GeneratedProof | None:
+        """The fast first attempt's source when it passes the same checks a generated one must;
+        None (and the ordinary generation) otherwise.  Never raises."""
+        try:
+            proposal = self.fast_first_attempt.propose(
+                request.prompt, formal_statement=request.formal_statement
+            )
+            for source in proposal.sources:
+                if validate_generated_lean(
+                    request, source,
+                    verification_harness=request.formal_statement,
+                    require_single_target=True,
+                ):
+                    continue
+                target = extract_single_target_declaration(source)
+                if target is None or not target_matches_statement(request.prompt, target):
+                    continue
+                return GeneratedProof(
+                    lean_code=source,
+                    model="fast-first-attempt",
+                    raw_model_output="[fast-first-attempt]",
+                    provider="pals-fast-first-attempt",
+                )
+        except Exception:  # noqa: BLE001 - the ordinary first attempt is always available
+            return None
+        return None
+
     def _generate_attempt(
         self,
         *,
@@ -1106,6 +1138,19 @@ class ProofPipeline:
                     raw_model_output=f"[template] {template.prover_id}",
                     provider="pals-template",
                 )
+
+        if (
+            feedback is None
+            and self.fast_first_attempt is not None
+            and self.verification_mode == "api_reconcile"
+        ):
+            fast = self._fast_first_candidate(request)
+            if fast is not None:
+                _emit(
+                    on_status, "proving", diagnostics, None, None,
+                    {**context, "dsp_stage": "prove", "fast_first_attempt": True},
+                )
+                return fast
 
         staged_generator = _staged_generator(self.generator)
         if staged_generator is not None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import os
 from dataclasses import replace
 
@@ -83,6 +84,7 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
     natural = NaturalDspDraftRetriever(ApiProofReuseCatalog(settings))
     typed = build_profile_routed_runtime(settings) if settings.typed_catalog_enabled else None
     return ProofPipeline(
+        fast_first_attempt=build_fast_first_attempt(settings),
         generator=generator,
         verifier=None,
         artifact_store=build_artifact_store(settings),
@@ -120,6 +122,37 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
             else None
         ),
     )
+
+
+def build_fast_first_attempt(settings: AgentSettings) -> object | None:
+    """None unless PALS_FAST_FIRST_ATTEMPT_ENABLED=true (default off: nothing is imported)."""
+    import os as _os
+
+    if _os.environ.get("PALS_FAST_FIRST_ATTEMPT_ENABLED", "false") != "true":
+        if _os.environ.get("PALS_FAST_FIRST_ATTEMPT_ENABLED", "false") != "false":
+            raise ValueError("PALS_FAST_FIRST_ATTEMPT_ENABLED must be true or false")
+        return None
+    import json as _json
+
+    from pals_agent.fast_first_attempt import FastFirstAttempt, deadline_seconds
+
+    # The model measured for this lane: the release's light model (the PROOF_REUSE_JUDGE binding,
+    # gpt-6-luna) with reasoning off.  The strong Lean-generation binding is too slow for the
+    # deadline (merged call and both fidelity reviews must fit in it).
+    binding = fixed_model_default(ModelRole.PROOF_REUSE_JUDGE)
+    deadline = deadline_seconds()
+    client = dataclasses.replace(_release_openai_client(settings), reasoning_effort="none")
+
+    def model(prompt: str, schema: dict[str, object]) -> dict[str, object]:
+        raw = client.generate(
+            model=binding.model, prompt=prompt, response_schema=schema, timeout_seconds=deadline,
+        )
+        value = _json.loads(raw)
+        if not isinstance(value, dict):
+            raise ValueError("model reply is not an object")
+        return value
+
+    return FastFirstAttempt(model, deadline_s=deadline)
 
 
 def build_recipe_attempt_planner(settings: AgentSettings) -> RecipeAttemptPlannerV1 | None:

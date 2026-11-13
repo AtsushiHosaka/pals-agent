@@ -59,6 +59,11 @@ def main() -> None:
     )
     ap.add_argument("--first-attempt-only", action="store_true",
                     help="stop after the first submitted candidate (first-attempt rate and time)")
+    ap.add_argument("--fast-first", choices=["off", "on", "on_sieve"], default="off",
+                    help="PALS_FAST_FIRST_ATTEMPT: off; on (no resident check); on_sieve (the "
+                         "resident Lean compiles the candidates before one is proposed)")
+    ap.add_argument("--fast-model", default="gpt-6-luna:none", help="model:effort of the merged call")
+    ap.add_argument("--fast-deadline", type=float, default=8.0)
     ap.add_argument("--efforts", help="override the race's two efforts, e.g. none,low")
     ap.add_argument("--pin-effort", help="pin one effort on the prove client (single candidate arms)")
     for name in ("lean", "lake", "project", "elan-home"):
@@ -81,8 +86,8 @@ def main() -> None:
     if args.problems_file is not None:
         problems = json.loads(args.problems_file.read_text())["problems"]
         # The freshman-v1 held_out split is for the final check only: never loaded here.
-        if any(p["split"] != "dev_unseen" for p in problems):
-            raise SystemExit("problems-file must contain dev_unseen items only")
+        if any(p["split"] not in {"dev_unseen", "tuning"} for p in problems):
+            raise SystemExit("problems-file must contain dev_unseen or tuning items only")
         if args.ids:
             wanted = args.ids.split(",")
             problems = [next(p for p in problems if p["id"] == i) for i in wanted]
@@ -133,7 +138,33 @@ def main() -> None:
     )
     explainer, reviewer = (None, None) if args.no_answer else run_stages.build_answer_stage(args)
     env = run_stages.set_arm(args.arm)
+    fast_events: list[dict[str, Any]] = []
+    fast = None
+    if args.fast_first != "off":
+        import json as _json
+
+        from pals_agent.fast_first_attempt import FastFirstAttempt, resident_sieve
+        from pals_agent.lean_verifier.resident import ResidentWorker
+
+        fast_name, _, fast_effort = args.fast_model.partition(":")
+        fast_client = dataclasses.replace(client, reasoning_effort=fast_effort or None)
+
+        def fast_model(prompt: str, schema: dict[str, Any]) -> dict[str, Any]:
+            raw = fast_client.generate(
+                model=fast_name, prompt=prompt, response_schema=schema,
+                timeout_seconds=args.fast_deadline,
+            )
+            return _json.loads(raw)
+
+        fast = FastFirstAttempt(
+            fast_model,
+            sieve=resident_sieve(ResidentWorker(resident, scratch_dir=scratch))
+            if args.fast_first == "on_sieve" else None,
+            deadline_s=args.fast_deadline,
+            observer=fast_events.append,
+        )
     pipeline = ProofPipeline(
+        fast_first_attempt=fast,
         generator=generator,
         verifier=None,
         verification_mode="api_reconcile",
@@ -206,6 +237,7 @@ def main() -> None:
         carry_stack = ExitStack()
         carry = None
         evidence.clear()
+        fast_events.clear()
         nested["carry"] = None
         final = None
         seed = None
@@ -323,6 +355,8 @@ def main() -> None:
             "flags": env,
             "submits_detail": submits,
             "worker_carry_evidence": dict(evidence),
+            "fast_first": {"mode": args.fast_first, "events": list(fast_events)},
+            "load_end": round(os.getloadavg()[0], 1),
         }
         with (args.out / "records.jsonl").open("a") as fh:
             fh.write(json.dumps(row) + "\n")
