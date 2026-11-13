@@ -64,6 +64,7 @@ PROMPT_STATIC_PREFIX_ENV = "PALS_PROMPT_STATIC_PREFIX_ENABLED"
 FULL_MATHLIB_IMPORT_ENV = "PALS_PROMPT_FULL_MATHLIB_IMPORT_ENABLED"
 CONDITIONAL_GUIDANCE_ENV = "PALS_PROMPT_CONDITIONAL_GUIDANCE_ENABLED"
 DRAFT_STRUCTURED_FIELDS_ENV = "PALS_DRAFT_STRUCTURED_FIELDS_ENABLED"
+REQUIREMENT_PRESERVING_ENV = "PALS_REQUIREMENT_PRESERVING_STATEMENT_ENABLED"
 
 
 def _flag(name: str) -> bool:
@@ -92,6 +93,67 @@ def conditional_guidance_enabled() -> bool:
 def draft_structured_fields_enabled() -> bool:
     """True when the Draft stage also asks for FINAL_ANSWER and HARD_STEPS fields."""
     return _flag(DRAFT_STRUCTURED_FIELDS_ENV)
+
+
+def requirement_preserving_enabled() -> bool:
+    """True when generation prompts add the statement-requirement guidance (default off)."""
+    return _flag(REQUIREMENT_PRESERVING_ENV)
+
+
+# Requirement kinds a request can impose on the Lean *statement* itself (not on the proof only).
+# Matching is deliberately specific: a false match only adds a reminder, but a missed one leaves
+# the statement free to drop the requirement and fail the semantic review after Lean succeeded.
+_EXPLICIT_WITNESS_REQUEST = re.compile(
+    r"(?i)明示的な|具体的な\s*(?:N|δ|値|式|例|数)|(?:N|δ)\s*を\s*(?:ε|与え|明示|具体)"
+    r"|\bexplicit(?:ly)?\s+(?:\w+\s+)?(?:N|delta|δ|witness|value|bound|example|formula)\b"
+    r"|\b(?:give|exhibit|construct)\s+(?:an?\s+)?(?:explicit|concrete)\b"
+    r"|\bN\s*\(\s*ε\s*\)|\bδ\s*\(\s*ε\s*\)|[Nδ]\s*を\s*ε\s*の式"
+)
+_NAMED_DEFINITION_REQUEST = re.compile(
+    r"(?i)定義\s*(?:を|に|から)?\s*(?:使|用い|もと|基づ|従)|定義どおり|定義に沿"
+    r"|ε\s*[-–−‐]\s*[δN]|イプシロン\s*[-–−‐]?\s*デルタ|epsilon[\s-]*(?:delta|N)"
+    r"|\busing the (?:\w+[- ]){0,3}definition\b|\bfrom the definition\b|\bby the definition\b"
+)
+
+_REQUIREMENT_GUIDANCE = """
+Requirements of this request that the Lean theorem statement itself must carry:
+{kinds}
+A semantic review compares the verified Lean statement with the request after Lean accepts the
+proof, and it rejects a statement that states only a weaker or library-level consequence. So
+state the requirement in the statement, then prove that statement. Do not replace it by a
+library predicate whose unfolding the reader would have to supply, and do not move the
+requirement into a comment or into the proof body.
+"""
+
+_REQUIREMENT_KIND_LINES = {
+    "witness": (
+        "- An explicit witness (an N, a delta, a value or an example) is requested: put the "
+        "witness in the statement as a concrete expression of the given data (for a limit, "
+        "`∀ ε > 0, ∀ n, <explicit expression in ε> ≤ n → <inequality>`; for continuity, "
+        "the delta written out as an expression in epsilon and the point). A statement that "
+        "only asserts `∃ N` or `∃ δ`, or uses `Filter.Tendsto`, does not give the witness."
+    ),
+    "definition": (
+        "- A specific definition or method is requested: state the property in the unfolded "
+        "form of that definition (for an epsilon-delta or epsilon-N definition, the explicit "
+        "quantifier form over epsilon and delta or N) instead of a library predicate such as "
+        "`Continuous`, `ContinuousAt`, `Tendsto` or `deriv`, and prove it along that route."
+    ),
+}
+
+
+def requirement_guidance(prompt: str) -> str:
+    """Generic statement-requirement guidance for a request, or "" (flag off or no match)."""
+    if not requirement_preserving_enabled():
+        return ""
+    kinds = []
+    if _EXPLICIT_WITNESS_REQUEST.search(prompt):
+        kinds.append(_REQUIREMENT_KIND_LINES["witness"])
+    if _NAMED_DEFINITION_REQUEST.search(prompt):
+        kinds.append(_REQUIREMENT_KIND_LINES["definition"])
+    if not kinds:
+        return ""
+    return _REQUIREMENT_GUIDANCE.format(kinds="\n".join(kinds))
 
 
 class TextGenerationClient(Protocol):
@@ -1469,11 +1531,13 @@ Sketch:
 
 
 def _problem_section(request: ProofRequest) -> str:
+    guidance = requirement_guidance(request.prompt)
     if not isolation_enabled():
-        return f"Problem:\n{request.prompt}"
+        return f"Problem:\n{request.prompt}{guidance}"
     return (
         f"{UNTRUSTED_NOTICE}\n\nProblem (learner data to formalize and prove):\n"
         + untrusted_block("problem", request.prompt, max_chars=MAX_PROBLEM_CHARS)
+        + guidance
     )
 
 

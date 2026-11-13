@@ -1,0 +1,122 @@
+{
+ "problems": [
+  {
+   "id": "req_epsn_ja",
+   "language": "ja",
+   "statement": "数列 $a_n=\\dfrac{1}{n+1}$ が $0$ に収束することを、ε-N の定義を使って、明示的な N を与えて示せ。",
+   "statement_sha256": "47099481f5ad2e9a0a2cb9c7629d356a7a0e841a36f861349e20414078c1ab7d",
+   "split": "tuning",
+   "field": "sequences-limits",
+   "tier": "medium",
+   "tier_basis": "declared",
+   "expected_answer": null,
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "shared": null,
+   "source": "answer-accuracy-regression-v1",
+   "tags": [
+    "requirement"
+   ]
+  },
+  {
+   "id": "req_epsn_en",
+   "language": "en",
+   "statement": "Show that the sequence 1/(n+1) converges to 0 by giving an explicit N(ε) in terms of ε.",
+   "statement_sha256": "4f5fdab4f50168b90501288bf3fb49d6c1f3a9ccce5d49d7590b41c828c074a4",
+   "split": "tuning",
+   "field": "sequences-limits",
+   "tier": "medium",
+   "tier_basis": "declared",
+   "expected_answer": null,
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "shared": null,
+   "source": "answer-accuracy-regression-v1",
+   "tags": [
+    "requirement"
+   ]
+  },
+  {
+   "id": "req_defn_x2",
+   "language": "ja",
+   "statement": "関数 $x^2$ が実数全体で連続であることを、連続の ε-δ 定義を使って示せ。",
+   "statement_sha256": "5d368e3c6b79ae480eaaffd7dd22cfdb83bf3047db25378c6e3af6c46d044dde",
+   "split": "tuning",
+   "field": "sequences-limits",
+   "tier": "medium",
+   "tier_basis": "declared",
+   "expected_answer": null,
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "shared": null,
+   "source": "answer-accuracy-regression-v1",
+   "tags": [
+    "requirement"
+   ]
+  },
+  {
+   "id": "req_defn_linear",
+   "language": "ja",
+   "statement": "$f(x)=3x+1$ が実数全体で連続であることを、ε-δ 定義を使い、δ を ε の式で明示して示せ。",
+   "statement_sha256": "faeb35c3633d59f59f1e13b8d6b0009d3be5358aef1b1fd6aa4c5d04b74bfbfc",
+   "split": "tuning",
+   "field": "sequences-limits",
+   "tier": "medium",
+   "tier_basis": "declared",
+   "expected_answer": null,
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "shared": null,
+   "source": "answer-accuracy-regression-v1",
+   "tags": [
+    "requirement"
+   ]
+  },
+  {
+   "id": "ctl_epsn_plain",
+   "language": "ja",
+   "statement": "数列 $a_n=\\dfrac{1}{n+1}$ が $0$ に収束することを示せ。",
+   "statement_sha256": "0a65c9c11663e32b6a05d5dc5ed33ec9b269b2899aacd39920ef65a8c2542b8f",
+   "split": "tuning",
+   "field": "sequences-limits",
+   "tier": "medium",
+   "tier_basis": "declared",
+   "expected_answer": null,
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "shared": null,
+   "source": "answer-accuracy-regression-v1",
+   "tags": [
+    "control"
+   ]
+  },
+  {
+   "id": "ctl_even_sum",
+   "language": "ja",
+   "statement": "整数 $a,b$ がともに偶数ならば $a+b$ も偶数であることを示せ。",
+   "statement_sha256": "c658210d8a15fdeea153d1eefe05944d15935eb4c0ce92174ad9d3df10802591",
+   "split": "tuning",
+   "field": "sequences-limits",
+   "tier": "medium",
+   "tier_basis": "declared",
+   "expected_answer": null,
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "shared": null,
+   "source": "answer-accuracy-regression-v1",
+   "tags": [
+    "control"
+   ]
+  }
+ ],
+ "schema_version": "answer-accuracy-regression-v1-formalization",
+ "version": 1,
+ "split_checksum": "n/a",
+ "split_salt": "n/a"
+}

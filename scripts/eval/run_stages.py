@@ -41,9 +41,11 @@ FLAG_NAMES = {
     "nodraft": "PALS_T2_NO_DRAFT_ENABLED",
     "names": "PALS_T2_NAME_SAFETY_ENABLED",
     "hetero": "PALS_T2_HETERO_RACE_ENABLED",
+    "reqpres": "PALS_REQUIREMENT_PRESERVING_STATEMENT_ENABLED",
 }
 ARM_FLAGS: dict[str, set[str]] = {
     "base": set(),
+    "reqpres": {"reqpres"},
     "static": {"static"},
     "combined": {"static", "import", "cond"},
     "fields": {"fields"},
