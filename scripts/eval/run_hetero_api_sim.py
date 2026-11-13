@@ -64,6 +64,10 @@ def main() -> None:
                          "resident Lean compiles the candidates before one is proposed)")
     ap.add_argument("--fast-model", default="gpt-6-luna:none", help="model:effort of the merged call")
     ap.add_argument("--fast-deadline", type=float, default=8.0)
+    ap.add_argument("--explain-effort", choices=["none", "low"], default=None,
+                    help="PALS_EXPLAIN_EFFORT: the explanation writer's reasoning effort")
+    ap.add_argument("--output-review", action="store_true",
+                    help="also run (and time) the explanation output review after the explanation")
     ap.add_argument("--efforts", help="override the race's two efforts, e.g. none,low")
     ap.add_argument("--pin-effort", help="pin one effort on the prove client (single candidate arms)")
     for name in ("lean", "lake", "project", "elan-home"):
@@ -137,6 +141,16 @@ def main() -> None:
         model="gpt-6.1-terra", provider="openai", client=client, use_release_role_bindings=True
     )
     explainer, reviewer = (None, None) if args.no_answer else run_stages.build_answer_stage(args)
+    output_reviewer = None
+    if args.output_review and not args.no_answer:
+        from pals_agent.explanations import LeanGroundedOutputReviewer
+        from pals_agent.model_roles import ModelRole, fixed_model_default
+
+        out_binding = fixed_model_default(ModelRole.EXPLAIN)
+        output_reviewer = LeanGroundedOutputReviewer(
+            client=dataclasses.replace(client, max_output_tokens=6000),
+            model=out_binding.model, provider=out_binding.provider,
+        )
     env = run_stages.set_arm(args.arm)
     fast_events: list[dict[str, Any]] = []
     fast = None
@@ -314,7 +328,7 @@ def main() -> None:
                 answer: dict[str, Any] = {}
                 if final is not None and not args.no_answer:
                     answer = run_stages.answer_stage(
-                        final, problem, explainer, reviewer
+                        final, problem, explainer, reviewer, output_reviewer
                     )
                 answer_s = time.monotonic() - t0
                 carry_stack.close()  # the worker settles what nobody adopted

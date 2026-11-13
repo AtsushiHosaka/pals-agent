@@ -228,8 +228,14 @@ def build_generator(settings: AgentSettings) -> HybridLeanGenerator:
 
 def build_proof_explainer(settings: AgentSettings) -> LeanProofExplainer:
     binding = fixed_model_default(ModelRole.EXPLAIN)
+    client = _release_openai_client(settings)
+    effort = os.environ.get("PALS_EXPLAIN_EFFORT", "")
+    if effort:  # unset: the release binding's effort, unchanged
+        if effort not in {"none", "low"}:
+            raise ValueError("PALS_EXPLAIN_EFFORT must be none or low")
+        client = dataclasses.replace(client, reasoning_effort=effort)  # type: ignore[arg-type]
     return LeanProofExplainer(
-        client=_release_openai_client(settings),
+        client=client,
         model=binding.model,
         provider=binding.provider,
         max_attempts=3,
