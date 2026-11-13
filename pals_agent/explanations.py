@@ -871,6 +871,7 @@ class LeanProofExplainer:
                     language=language,
                     require_linear_ending=True,
                     strict_prose=True,
+                    require_result_in_conclusion=asks_for_explicit_result(theorem_statement),
                 ),
                 # A rejected candidate may have failed on its figure, so a correction omits it.
                 None if review_feedback else _optional_figure(value.get("figure"), lean_code),
@@ -1086,6 +1087,43 @@ def _optional_figure(
     return (call, bindings) if labels_occur_in(call, lean_code) else None
 
 
+_COMPUTATION_REQUEST = re.compile(
+    r"(?i)\b(?:compute|calculate|evaluate|find|determine|solve|what is|how many|simplify)\b"
+    r"|求め|計算|いくつ|値は|解け|解を|求值|求出|计算|計算|求解|多少"
+)
+_FORMULA_WITH_VALUE = re.compile(r"\$[^$]*(?:=|\d)[^$]*\$")
+
+
+def asks_for_value(theorem_statement: str) -> bool:
+    """The request asks to find, compute or decide something, so the answer must be stated."""
+    return _COMPUTATION_REQUEST.search(theorem_statement) is not None
+
+
+# A deliberately narrow cue for the conclusion rule (v1 generation): the request itself orders a
+# result ("求めよ", "compute ..."). Proof requests that merely contain a cue word ("いくつかの",
+# "計算機を使わずに", "find ... を示せ", "determine whether") must not match, because a false
+# match costs the learner a rewrite.
+_RESULT_ORDER = re.compile(
+    r"(?i)(?:求めよ|求めなさい|求めてください|求めて下さい|計算せよ|計算しなさい|計算してください"
+    r"|を求め(?=[、，,])|を決定せよ|判定せよ|解け(?![るな])"
+    r"|\b(?:compute|calculate|evaluate|solve)\b|\bfind (?:the|all|every)\b|\bwhat is\b)"
+)
+_PROOF_ORDER = re.compile(r"(?i)\bprove\b|\bshow that\b|\bwhether\b")
+
+
+def asks_for_explicit_result(theorem_statement: str) -> bool:
+    """The request orders a result and is not a proof request."""
+    return (
+        _RESULT_ORDER.search(theorem_statement) is not None
+        and _PROOF_ORDER.search(theorem_statement) is None
+    )
+
+
+# Any math span: the conclusion must state its result as a formula rather than only say that the
+# proof is complete.
+_ANY_FORMULA = re.compile(r"\$[^$]+\$")
+
+
 def _parse_explanation(
     payload: dict[str, Any],
     lean_code: str,
@@ -1093,6 +1131,7 @@ def _parse_explanation(
     language: str = "ja",
     require_linear_ending: bool = False,
     strict_prose: bool = False,
+    require_result_in_conclusion: bool = False,
 ) -> tuple[str, tuple[ExplanationSection, ...], str]:
     _require_output_language(language)
     overview = _required_bounded_language_text(
@@ -1155,6 +1194,14 @@ def _parse_explanation(
         _require_prose_language([overview, *(s.summary for s in sections), conclusion], language)
     if require_linear_ending:
         _reject_repeated_final_equation(sections[-1].summary, conclusion)
+    if require_result_in_conclusion and not _ANY_FORMULA.search(conclusion):
+        # A conclusion such as "the claim has been confirmed" is not an answer. New generations
+        # only: saved explanations are parsed without this rule and stay readable.
+        raise ValueError(
+            "The request asks for a result, so the conclusion must state the explicit result "
+            "(the value, expression or decision) inside a $...$ formula, not only that the "
+            "proof is complete."
+        )
     return overview, tuple(sections), conclusion
 
 
@@ -2171,6 +2218,7 @@ def _has_x_squared_epsilon_delta(text: str) -> bool:
         .replace("\\delta", "δ")
         .replace("\\lvert", "|")
         .replace("\\rvert", "|")
+        .replace("\\vert", "|")
         .replace("\\cdot", "*")
         .replace("\\times", "*")
         .replace("≤", "<=")
@@ -2194,6 +2242,8 @@ def _has_x_squared_epsilon_delta(text: str) -> bool:
         "δ>0" in compact
         or "0<δ" in compact
         or (construction is not None and re.search(r">0", construction.group("choice")) is not None)
+        # "δ=min(...) は正です" / "positive": the same fact stated in words after the choice.
+        or re.search(r"δ[^。]{0,200}?(?:は正(?![しと])|正の数|正である|positive)", compact) is not None
     )
     factorization = re.search(
         (
@@ -2206,13 +2256,17 @@ def _has_x_squared_epsilon_delta(text: str) -> bool:
     applies_delta_neighborhood = (
         factorization is not None and 0 <= neighborhood_position < factorization.start()
     )
-    applies_epsilon_bound = (
-        factorization is not None
-        and re.search(
-            r"[^$。、；;]{0,240}<=?ε",
-            compact[factorization.end() :],
+    # The final bound is a statement about |x²-a²|, either "|x²-a²|<ε" or a chain such as
+    # "|x²-a²|≤|x-a|(2|a|+1)<ε/(2|a|+1)(2|a|+1)=ε" that ends at ε. It sits in its own $...$
+    # span, so each span after the factorization is searched on its own; a bound that is
+    # still divided by something ("<ε/(...)") is not the final bound.
+    applies_epsilon_bound = factorization is not None and any(
+        re.search(
+            r"\|(?:x\^2-a\^2|a\^2-x\^2|f\(x\)-f\(a\)|f\(a\)-f\(x\))\|[^$]*?(?:<=?|=)ε(?![/(A-Za-z0-9*^\\])",
+            span,
         )
         is not None
+        for span in compact[factorization.end() :].split("$")
     )
     return (
         has_delta_construction

@@ -1,0 +1,122 @@
+[
+ {
+  "id": "dual_power",
+  "issue": "#233",
+  "kind": "computation",
+  "language": "ja",
+  "statement": "可換環 R の元 ε が ε²=0 を満たすとき、(1+ε)^n を n と ε で表せ。",
+  "lean": "import Mathlib\n\ntheorem dual_power (R : Type*) [CommRing R] (e : R) (h : e * e = 0) (n : ℕ) :\n    (1 + e) ^ n = 1 + (n : R) * e := by\n  induction n with\n  | zero => simp\n  | succ k ih =>\n    rw [pow_succ, ih]\n    push_cast\n    have : (k : R) * e * e = 0 := by rw [mul_assoc, h, mul_zero]\n    linear_combination this\n",
+  "draft": "方針: n に関する帰納法。(1+ε)^(k+1)=(1+kε)(1+ε)=1+(k+1)ε+kε²、ε²=0 なので 1+(k+1)ε。答えは 1+nε。",
+  "answer_regex": [
+   "1\\s*\\+\\s*(\\(?\\s*n\\s*(:\\s*R)?\\s*\\)?)\\s*(\\\\varepsilon|\\\\epsilon|ε|e)\\b|1\\s*\\+\\s*n\\s*(\\\\varepsilon|\\\\epsilon|ε|e)"
+  ]
+ },
+ {
+  "id": "dual_sum",
+  "issue": "#233",
+  "kind": "computation",
+  "language": "ja",
+  "statement": "可換環 R の元 ε が ε²=0 を満たすとき、総和 Σ_{k=0}^{n-1} (1+ε)^k を求めよ（n は自然数、答えは n と ε と二項係数で表す）。",
+  "lean": "import Mathlib\n\ntheorem dual_sum (R : Type*) [CommRing R] (e : R) (h : e * e = 0) (n : ℕ) :\n    (∑ k ∈ Finset.range n, (1 + e) ^ k) = (n : R) + (n.choose 2 : R) * e := by\n  have hp : ∀ k : ℕ, (1 + e) ^ k = 1 + (k : R) * e := by\n    intro k\n    induction k with\n    | zero => simp\n    | succ k ih =>\n      rw [pow_succ, ih]\n      push_cast\n      have : (k : R) * e * e = 0 := by rw [mul_assoc, h, mul_zero]\n      linear_combination this\n  simp_rw [hp]\n  rw [Finset.sum_add_distrib, ← Finset.sum_mul]\n  simp only [Finset.sum_const, Finset.card_range, nsmul_eq_mul, mul_one]\n  have hc : (∑ i ∈ Finset.range n, (i : R)) = (n.choose 2 : R) := by\n    have h2 : (∑ i ∈ Finset.range n, i) = n.choose 2 := by\n      rw [Finset.sum_range_id, Nat.choose_two_right]\n    rw [← h2]\n    push_cast\n    rfl\n  rw [hc]\n",
+  "draft": "方針: まず (1+ε)^k=1+kε を帰納法で示す。総和は n + (Σk)ε で、Σ_{k<n}k=C(n,2)。答えは n + C(n,2)ε。",
+  "answer_regex": [
+   "(n\\s*\\+\\s*\\\\?(binom|dbinom|tbinom)\\s*\\{n\\}\\s*\\{2\\}|n\\s*\\+\\s*\\\\?\\(?\\s*\\\\?binom|C\\(n,\\s*2\\)|\\\\binom\\{n\\}\\{2\\}|n\\(n-1\\)\\s*/\\s*2|\\\\frac\\{n\\(n-1\\)\\}\\{2\\})"
+  ]
+ },
+ {
+  "id": "roots_quadratic",
+  "issue": "#233",
+  "kind": "computation",
+  "language": "ja",
+  "statement": "実数 x についての方程式 x²−5x+6=0 の解をすべて求めよ。",
+  "lean": "import Mathlib\n\ntheorem roots_quadratic : {x : ℝ | x ^ 2 - 5 * x + 6 = 0} = {2, 3} := by\n  ext x\n  simp only [Set.mem_setOf_eq, Set.mem_insert_iff, Set.mem_singleton_iff]\n  constructor\n  · intro h\n    have : (x - 2) * (x - 3) = 0 := by linear_combination h\n    rcases mul_eq_zero.mp this with h1 | h1\n    · left; linarith\n    · right; linarith\n  · rintro (rfl | rfl) <;> norm_num\n",
+  "draft": "方針: 左辺は (x−2)(x−3) と因数分解できるので、解は x=2 と x=3 のみ。両方向（解であること、他に解がないこと）を示す。",
+  "answer_regex": [
+   "(2\\D.{0,40}3|3\\D.{0,40}2)"
+  ]
+ },
+ {
+  "id": "det_nonzero",
+  "issue": "#233",
+  "kind": "computation",
+  "language": "ja",
+  "statement": "実数成分の行列$A=\\begin{pmatrix}1&2\\\\3&5\\end{pmatrix}$の行列式は$0$か。厳密に計算して判定せよ。",
+  "lean": "theorem det_not_zero : Matrix.det !![(1 : ℝ), 2; 3, 5] ≠ 0 := by\n  rw [Matrix.det_fin_two_of]\n  norm_num\n",
+  "draft": "方針: 2×2行列の行列式の公式 ad−bc に代入すると 1·5−2·3=−1。−1≠0 なので行列式は0ではない。答えは「0ではない（−1）」。",
+  "answer_regex": [
+   "(0\\s*(で|で?は)ない|≠\\s*0|\\\\neq\\s*0|\\\\ne\\s*0|-1|−1)"
+  ]
+ },
+ {
+  "id": "cubic_derivative",
+  "issue": "#233",
+  "kind": "computation",
+  "language": "ja",
+  "statement": "実関数$f(x)=x^3-3x$について、任意の実数$x$での導関数を求め、その式を証明せよ。",
+  "lean": "theorem cubic_deriv (x : ℝ) : deriv (fun t : ℝ => t ^ 3 - 3 * t) x = 3 * x ^ 2 - 3 := by\n  have h : HasDerivAt (fun t : ℝ => t ^ 3 - 3 * t) (3 * x ^ 2 - 3) x := by\n    have h1 : HasDerivAt (fun t : ℝ => t ^ 3) (3 * x ^ 2) x := by\n      simpa using hasDerivAt_pow 3 x\n    have h2 : HasDerivAt (fun t : ℝ => 3 * t) 3 x := by\n      simpa using (hasDerivAt_id x).const_mul (3 : ℝ)\n    exact h1.sub h2\n  exact h.deriv\n",
+  "draft": "方針: x^3の導関数は3x^2（べき乗の微分）、3xの導関数は3（定数倍）。差の微分公式で合わせると f'(x)=3x^2−3。HasDerivAtで導関数の値を示し、deriv と一致させる。",
+  "answer_regex": [
+   "3\\s*x\\s*\\^?\\{?2\\}?\\s*[-−]\\s*3"
+  ]
+ },
+ {
+  "id": "even_sum",
+  "issue": "#252/#319",
+  "kind": "proof",
+  "language": "ja",
+  "statement": "整数 a, b がともに偶数ならば、a+b も偶数であることを示せ。",
+  "lean": "import Mathlib\n\ntheorem even_sum_of_even (a b : ℤ) (ha : Even a) (hb : Even b) : Even (a + b) :=\n  ha.add hb\n",
+  "draft": "方針: 偶数の和は偶数という既知の補題 Even.add をそのまま使う。a=2s, b=2t なら a+b=2(s+t)。",
+  "answer_regex": [
+   "偶数"
+  ]
+ },
+ {
+  "id": "prime_dvd",
+  "issue": "#252/#319",
+  "kind": "proof",
+  "language": "ja",
+  "statement": "素数 p が自然数の積 ab を割り切るならば、p は a または b を割り切ることを示せ。",
+  "lean": "import Mathlib\n\ntheorem prime_dvd_mul_split (p a b : ℕ) (hp : p.Prime) (h : p ∣ a * b) : p ∣ a ∨ p ∣ b :=\n  (Nat.Prime.dvd_mul hp).mp h\n",
+  "draft": "方針: 素数に対するユークリッドの補題（Nat.Prime.dvd_mul）をそのまま使う。",
+  "answer_regex": [
+   "(a|b).{0,30}(割り切|整除|約数)|\\\\mid"
+  ]
+ },
+ {
+  "id": "ratio_two",
+  "issue": "#252",
+  "kind": "proof",
+  "language": "ja",
+  "statement": "正の実数 a, b について、a/b + b/a ≥ 2 を示せ。",
+  "lean": "import Mathlib\n\ntheorem ratio_sum_ge_two (a b : ℝ) (ha : 0 < a) (hb : 0 < b) : 2 ≤ a / b + b / a := by\n  rw [div_add_div _ _ hb.ne' ha.ne', le_div_iff₀ (mul_pos hb ha)]\n  nlinarith [sq_nonneg (a - b)]\n",
+  "draft": "方針: 通分して (a²+b²)/(ab) ≥ 2 とし、分母 ab>0 を掛けて a²+b²−2ab=(a−b)²≥0 に帰着する。",
+  "answer_regex": [
+   "2\\s*(\\\\le|≤|\\\\leq|以下|\\\\ge)|\\\\ge(q)?\\s*2|≥\\s*2"
+  ]
+ },
+ {
+  "id": "sum_first_n",
+  "issue": "#252",
+  "kind": "proof",
+  "language": "ja",
+  "statement": "0以上の整数nについて、1+2+…+n=n(n+1)/2を数学的帰納法で証明してください。n=0の和は0とします。",
+  "lean": "theorem sum_first_n (n : ℕ) : (∑ i ∈ Finset.range (n + 1), (i : ℚ)) = n * (n + 1) / 2 := by\n  induction n with\n  | zero => simp\n  | succ k ih =>\n    rw [Finset.sum_range_succ, ih]\n    push_cast\n    ring\n",
+  "draft": "方針: nに関する帰納法。n=0は和が0で右辺も0。n=k+1では和の末尾に(k+1)を足し、帰納法の仮定を代入して、k(k+1)/2+(k+1)=(k+1)(k+2)/2を式変形（環の計算）で確認する。有理数で扱う。",
+  "answer_regex": [
+   "n\\s*\\(\\s*n\\s*\\+\\s*1\\s*\\)\\s*/\\s*2|\\\\frac\\{n\\(n\\+1\\)\\}\\{2\\}|\\\\frac\\{n\\s*\\(n\\s*\\+\\s*1\\)\\}\\{2\\}"
+  ]
+ },
+ {
+  "id": "x2_continuity",
+  "issue": "#223/#252",
+  "kind": "proof",
+  "language": "ja",
+  "statement": "関数 x² は実数全体で連続であることを、ε-δ 論法で示してください。",
+  "lean": "import Mathlib\n\ntheorem square_continuous_explicit_epsilon_delta : Continuous (fun x : ℝ => x ^ 2) := by\n  rw [Metric.continuous_iff]\n  intro a ε hε\n  have hden : 0 < 2 * |a| + 1 := by positivity\n  refine ⟨min 1 (ε / (2 * |a| + 1)), lt_min one_pos (div_pos hε hden), ?_⟩\n  intro x hx\n  rw [Real.dist_eq] at hx ⊢\n  have hone : |x - a| < 1 := lt_of_lt_of_le hx (min_le_left _ _)\n  have hdelta : |x - a| < ε / (2 * |a| + 1) := lt_of_lt_of_le hx (min_le_right _ _)\n  have hx_abs : |x| ≤ |a| + 1 := by\n    have htri : |x| ≤ |x - a| + |a| := by\n      calc |x| = |(x - a) + a| := by ring_nf\n        _ ≤ |x - a| + |a| := abs_add_le _ _\n    linarith\n  have hsum : |x + a| ≤ 2 * |a| + 1 := by\n    have htri : |x + a| ≤ |x| + |a| := abs_add_le x a\n    linarith\n  have hfactor : |x ^ 2 - a ^ 2| = |x - a| * |x + a| := by\n    rw [← abs_mul]\n    congr 1\n    ring\n  calc |x ^ 2 - a ^ 2| = |x - a| * |x + a| := hfactor\n    _ ≤ |x - a| * (2 * |a| + 1) := mul_le_mul_of_nonneg_left hsum (abs_nonneg _)\n    _ < ε / (2 * |a| + 1) * (2 * |a| + 1) := mul_lt_mul_of_pos_right hdelta hden\n    _ = ε := by field_simp\n",
+  "draft": "方針: 点 a と ε>0 を任意に取り、δ=min(1, ε/(2|a|+1)) とおく。|x−a|<δ なら |x²−a²|=|x−a||x+a| で、|x+a|≤2|a|+1 なので < ε。",
+  "answer_regex": [
+   "連続"
+  ]
+ }
+]

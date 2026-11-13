@@ -39,6 +39,43 @@ def extract_single_target_declaration(source: str) -> LeanTargetDeclaration | No
     return _parse_declaration(executable, declarations[0])
 
 
+def target_headers(source: str) -> tuple[int, list[str], str]:
+    """(number of top-level theorem/lemma/example declarations, their headers, the preamble).
+
+    The preamble is the text before the first such declaration (``variable``, ``def``, ``abbrev``
+    lines that may bind what a header names).
+
+    A header is the text between the declaration keyword and its top-level ``:=``: the name, all
+    binders and hypotheses, and the proposition. A declaration whose header cannot be delimited
+    is counted but contributes no header, so a caller never mistakes "unparseable" for "absent".
+    """
+    if not isinstance(source, str) or not source.strip():
+        return 0, [], ""
+    executable = _without_lean_comments_and_literals(source)
+    matches = _top_level_proof_declarations(executable)
+    headers: list[str] = []
+    preamble = ""
+    if matches:
+        preamble = " ".join(executable[: matches[0].start()].split())
+    for match in matches:
+        depth = 0
+        index = match.end()
+        while index < len(executable):
+            character = executable[index]
+            if character in "([{":
+                depth += 1
+            elif character in ")]}":
+                depth = max(0, depth - 1)
+            elif depth == 0 and executable.startswith(":=", index):
+                header = " ".join(executable[match.end() : index].split())
+                # A ``let``/``have`` in the type makes the first ``:=`` ambiguous: hold back.
+                if not re.search(r"\b(?:let|have|show)\b", header):
+                    headers.append(header)
+                break
+            index += 1
+    return len(matches), headers, preamble
+
+
 def _top_level_proof_declarations(source: str) -> list[re.Match[str]]:
     declarations: list[re.Match[str]] = []
     depth = 0

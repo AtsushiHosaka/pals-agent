@@ -8,6 +8,7 @@ import threading
 import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import nullcontext
 from contextvars import copy_context
 from dataclasses import asdict, dataclass, replace
 from typing import Any, Final, Literal, Protocol, cast
@@ -20,12 +21,13 @@ from pals_agent.artifacts import (
 )
 from pals_agent.draft_catalog import DraftCatalog, DraftSearchResult
 from pals_agent.explanations import target_matches_statement
+from pals_agent.lean_hygiene import normalise_source_header
 from pals_agent.lean_layout import normalise_signature_layout
 from pals_agent.lean_profiles import LibraryProfileNotEnabled, ProfileRoutedVerifier
 from pals_agent.lean_source_policy import (
     strip_lean_comments_and_strings as _strip_lean_comments_and_strings,
 )
-from pals_agent.lean_target import extract_single_target_declaration
+from pals_agent.lean_target import extract_single_target_declaration, target_headers
 from pals_agent.lean_templates import template_proof_for_request, template_proof_for_sketch
 from pals_agent.lemma_repair import (
     LemmaAliasTable,
@@ -56,6 +58,7 @@ from pals_agent.models import (
     RepairRouteSelectionError,
     VerificationHarnessSource,
     VerificationResult,
+    library_trust_of,
 )
 from pals_agent.natural_draft_evidence import NaturalDraftRetrievalResult
 from pals_agent.proof_fastpaths import (
@@ -67,6 +70,7 @@ from pals_agent.proof_fastpaths import (
 from pals_agent.proof_flow_evidence import DraftEvidence
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
 from pals_agent.runtime_latency import latency_stage
+from pals_agent.scheme_guidance import scheme_statement_diagnostics
 from pals_agent.sketch_repair import repair_sketch
 
 _THEOREM_DECLARATION_RE = re.compile(
@@ -980,11 +984,19 @@ class ProofPipeline:
             attempt += 1
             repairs_used += 1
 
-    def _layout(self, generated: GeneratedProof) -> GeneratedProof:
+    def _layout(self, generated: GeneratedProof, request: ProofRequest) -> GeneratedProof:
         """The one place a produced source takes its normalised layout (idempotent)."""
-        if not self.signature_layout_normalisation or not generated.lean_code:
+        if not generated.lean_code:
             return generated
-        code = normalise_signature_layout(generated.lean_code)
+        code = generated.lean_code
+        # Two independent fixes: the whitespace-only signature layout (its own setting) and the
+        # source hygiene (its own flag).
+        if self.signature_layout_normalisation:
+            code = normalise_signature_layout(code)
+        # A request with a formal statement carries its own header, which the output must contain
+        # verbatim (the harness check): its imports and opens are never rewritten.
+        if t2_lane.source_hygiene_enabled() and not request.formal_statement:
+            code = normalise_source_header(code)
         return generated if code == generated.lean_code else replace(generated, lean_code=code)
 
     def _fast_first_candidate(self, request: ProofRequest) -> GeneratedProof | None:
@@ -1026,17 +1038,25 @@ class ProofPipeline:
         on_status: StatusCallback | None,
     ) -> GeneratedProof:
         """Every first attempt and model repair, in the layout the deployed verifier can audit."""
-        return self._layout(
-            self._generate_attempt_spliced(
-                request=request,
-                problem_id=problem_id,
-                attempt=attempt,
-                repairs_used=repairs_used,
-                diagnostics=diagnostics,
-                feedback=feedback,
-                on_status=on_status,
-            )
+        # Cheap-first: only the first, un-raced attempt takes the fast effort; a repair never does.
+        cheap = (
+            t2_lane.cheap_first_enabled()
+            and feedback is None
+            and not t2_lane.parallel_candidates_enabled()
         )
+        with t2_lane.candidate_variant(0) if cheap else nullcontext():
+            return self._layout(
+                self._generate_attempt_spliced(
+                    request=request,
+                    problem_id=problem_id,
+                    attempt=attempt,
+                    repairs_used=repairs_used,
+                    diagnostics=diagnostics,
+                    feedback=feedback,
+                    on_status=on_status,
+                ),
+                request,
+            )
 
     def _generate_attempt_spliced(
         self,
@@ -1150,7 +1170,7 @@ class ProofPipeline:
                 race=(
                     (
                         lambda prove_once: self._race_first_attempt(
-                            request, lambda: self._layout(prove_once())
+                            request, lambda: self._layout(prove_once(), request)
                         )
                     )
                     if feedback is None
@@ -1565,7 +1585,7 @@ class ProofPipeline:
         patched = patcher(request, feedback)
         if patched is None or not patched.lean_code.strip():
             return None
-        patched = self._layout(patched)
+        patched = self._layout(patched, request)
         decision = RepairRouteDecision(
             route="prove",
             rationale="T2 patch repair from a sanitised failure summary.",
@@ -1810,7 +1830,7 @@ class ProofPipeline:
             sketch=seed.generated.sketch,
             provider="pals-deterministic",
         )
-        generated = self._layout(generated)
+        generated = self._layout(generated, request)
         route = RepairRouteDecision(
             route="prove",
             rationale="Deterministic substitution of a known wrong Mathlib lemma name.",
@@ -1982,6 +2002,7 @@ class ProofPipeline:
                 "termination_reason": termination_reason,
                 "termination_event": termination_event,
                 "diagnostics": [diagnostic.to_api() for diagnostic in diagnostics],
+                "library_trust": library_trust_of(verification),
             }
         if termination_reason == EARLY_STOP_REASON:
             # Counts only: the codes are in the stop diagnostic, never a statement or Lean text.
@@ -2126,6 +2147,14 @@ def validate_generated_lean(
         )
         if formal_diagnostics:
             return formal_diagnostics
+    if not formal_statement:
+        # With a pinned formal statement the harness check above already fixed the claim.
+        declaration_count, headers, preamble = target_headers(lean_code)
+        scheme_diagnostics = scheme_statement_diagnostics(
+            request.prompt, declaration_count, headers, preamble
+        )
+        if scheme_diagnostics:
+            return scheme_diagnostics
     return _validate_requested_proof_method(request, lean_code)
 
 

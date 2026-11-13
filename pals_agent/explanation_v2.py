@@ -27,6 +27,7 @@ from dataclasses import dataclass
 from typing import Any, Final
 
 from pals_agent.explanations import (
+    _FORMULA_WITH_VALUE,
     ExplanationDeadlineExceeded,
     ExplanationGenerationError,
     ExplanationSection,
@@ -44,6 +45,7 @@ from pals_agent.explanations import (
     _require_output_language,
     _validate_deadline_options,
     _validation_failure_reason,
+    asks_for_value,
 )
 from pals_agent.math_task import ANSWER_PRESENTATION
 
@@ -162,17 +164,6 @@ def derive_references(lean_code: str, payload: dict[str, Any]) -> dict[str, Any]
             references.append({"start_line": start, "end_line": end, "excerpt": excerpt})
         completed.append({**section, "references": references})
     return {**payload, "sections": completed}
-
-
-_COMPUTATION_REQUEST = re.compile(
-    r"(?i)\b(?:compute|calculate|evaluate|find|determine|solve|what is|how many|simplify)\b"
-    r"|求め|計算|いくつ|値は|解け|解を|求值|求出|计算|計算|求解|多少"
-)
-_FORMULA_WITH_VALUE = re.compile(r"\$[^$]*(?:=|\d)[^$]*\$")
-
-
-def asks_for_value(theorem_statement: str) -> bool:
-    return _COMPUTATION_REQUEST.search(theorem_statement) is not None
 
 
 def check_language(text: str, language: str, label: str) -> None:

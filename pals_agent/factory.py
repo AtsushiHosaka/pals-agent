@@ -60,6 +60,15 @@ def recipe_instantiation_enabled() -> bool:
     return os.environ.get("PALS_RECIPE_INSTANTIATION", "").strip().lower() in {"on", "true", "1"}
 
 
+def general_recipe_lane_stage():
+    """None unless PALS_GENERAL_RECIPE_LANE is on and a Lean workspace is configured."""
+    if os.environ.get("PALS_GENERAL_RECIPE_LANE", "").strip().lower() not in {"on", "true", "1"}:
+        return None
+    from pals_agent.general_recipe_stage import from_environment
+
+    return from_environment()
+
+
 def chat_template_fastpath_enabled() -> bool:
     """Default ON: a plain x² continuity request skips the recipe review and the chat router.
     PALS_CHAT_TEMPLATE_FASTPATH_ENABLED=off|false|0 turns it off."""
@@ -200,6 +209,7 @@ def build_proof_request_processor(
                 client=client, catalog=ApiProofReuseCatalog(settings),
                 instantiation_enabled=recipe_instantiation_enabled(),
                 grammar_instantiation=recipe_grammar_enabled(),
+                general_lane=general_recipe_lane_stage(),
             ),
         ),
     )
