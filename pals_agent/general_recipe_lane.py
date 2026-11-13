@@ -650,12 +650,15 @@ def answer(
     language: str = "ja",
     candidates: int = DEFAULT_CANDIDATES,
     deadline: float | None = None,
+    bound: bool = True,
 ) -> LaneResult:
     """Rank, compile the top candidates in ONE Lean process, accept the first that passes.
 
     ``deadline`` (``time.monotonic()`` scale) bounds ALL Lean runs together: each run gets at most
     the remaining time, and the second (bound-argument) stage is skipped once the first one timed
-    out or the time is used up.
+    out or the time is used up.  ``bound=False`` runs the plain stage only: the instances it
+    accepts are the ones the API's fixed wrapper (``recipe_instantiation.elaborate``) re-derives,
+    since every plain alternative applies the general theorem by construction.
     """
     t0 = time.monotonic()
     try:
@@ -670,7 +673,7 @@ def answer(
     if not ranked:
         return result
     scores = {recipe.recipe_id: score for score, recipe in ranked_all}
-    for with_bound in (False, True):
+    for with_bound in (False, True) if bound else (False,):
         stage = ranked_all[:BOUND_CANDIDATES] if with_bound else ranked
         source, rejected = build_source(
             [recipe for _, recipe in stage], request_formal, with_bound=with_bound

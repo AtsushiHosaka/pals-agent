@@ -514,6 +514,7 @@ def render_answer(
 MAX_ARITY: Final = 6
 MAX_PROPOSITION: Final = 2_000
 ELABORATION_VOCABULARY: Final = ("first", "exact", "_", "(name := literal)", "(by norm_num)",
+                                 "(intros; apply G <;> first | closers)",
                                  "(by decide)")
 _FORBIDDEN_IN_PROPOSITION = re.compile(
     r"(?<![\w'.])(by|show|change|unfold|simp|simpa|sorry|admit|axiom|decide|native_decide"
@@ -543,6 +544,11 @@ def check_proposition(requested: object) -> str:
     return text
 
 
+_SIDE_GOAL_CLOSERS: Final = (
+    "assumption | fun_prop | positivity | (norm_num; done) | linarith | (simp; done)"
+)
+
+
 def _alternatives(
     general: str, arity: int, hints: list[tuple[str, str]], *, mathlib: bool
 ) -> list[str]:
@@ -559,6 +565,11 @@ def _alternatives(
             if side <= arity:
                 arguments = ["_"] * (arity - side) + [f"(by {tactic})"] * side
                 alternatives.append("exact " + " ".join([general] + arguments))
+    if mathlib:
+        # Hypotheses of the general theorem that the request itself does not state: `apply` leaves
+        # them as side goals, closed only by this fixed list.  The declared type is the request's
+        # proposition, so the closers can discharge premises but never change the statement.
+        alternatives.append(f"(intros; apply {general} <;> first | {_SIDE_GOAL_CLOSERS})")
     return alternatives
 
 

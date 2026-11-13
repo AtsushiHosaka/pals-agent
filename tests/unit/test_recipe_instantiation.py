@@ -180,3 +180,32 @@ def test_shared_module_is_byte_identical_across_repositories():
 
     source = (Path(__file__).parents[2] / "pals_agent/recipe_instantiation.py").read_bytes()
     assert hashlib.sha256(source).hexdigest() == VECTORS["module_sha256"]
+
+
+HYPOTHESIS_RECIPE = (
+    "import Mathlib\n\ntheorem pow_le_pow_general (a b : ℝ) (ha : 0 ≤ a) (hab : a ≤ b) (n : ℕ) :\n"
+    "    a ^ n ≤ b ^ n := pow_le_pow_left₀ ha hab n\n"
+)
+
+
+def test_elaborated_wrapper_closes_hypotheses_with_a_fixed_closer_list():
+    from pals_agent.recipe_instantiation import check_alignment, elaborate
+
+    proposition = "∀ n : ℕ, (3 : ℝ) ^ n ≤ 5 ^ n"
+    instance = elaborate(HYPOTHESIS_RECIPE, proposition)
+    assert "exact pow_le_pow_general _ _ _ _ _" in instance.source
+    last = instance.source.rstrip().splitlines()[-1]
+    assert last == (
+        "  | (intros; apply pow_le_pow_general <;> first | assumption | fun_prop | positivity"
+        " | (norm_num; done) | linarith | (simp; done))"
+    )
+    assert instance.bindings == () and check_alignment(HYPOTHESIS_RECIPE, instance)
+    # the closers never leave the declared statement: it is the request, nothing else
+    assert f"theorem pals_recipe_instance : {proposition} := by" in instance.source
+
+
+def test_without_mathlib_no_side_goal_closers_are_emitted():
+    from pals_agent.recipe_instantiation import elaborate
+
+    plain = "theorem t (n : Nat) (h : 0 < n) : 0 < n := h\n"
+    assert "intros; apply" not in elaborate(plain, "∀ n : Nat, 0 < n → 0 < n").source
