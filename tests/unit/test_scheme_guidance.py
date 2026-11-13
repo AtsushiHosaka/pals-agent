@@ -179,5 +179,31 @@ def test_stacks_tags_resolve_to_mathlib_declarations() -> None:
     assert named_tags("Stacks Project Tag 02LS: show") == ["02LS"]
     block = stacks_tag_guidance("Stacks Project Tag 02LS: a morphism is finite iff proper and lqf")
     assert "IsFinite.iff_isProper_and_locallyQuasiFinite" in block
+    assert named_tags("tags 01K9 and 01KJ") == ["01K9", "01KJ"]
+    assert named_tags("see https://stacks.math.columbia.edu/tag/02LS") == ["02LS"]
     assert stacks_tag_guidance("Show the derivative of x^3 is 3x^2.") == ""
     assert stacks_tag_guidance("Tag 0ZZZ unknown") == ""
+
+
+def test_ordinary_partial_and_not_proved_wording_is_not_flagged() -> None:
+    from pals_agent.scheme_guidance import scheme_incomplete_diagnostics
+
+    for comment in (
+        "-- partial sums of the telescoping Finset.sum",
+        "/- the partial derivative of the sheaf -/",
+        "-- not proved by this lemma but by Mathlib",
+    ):
+        source = comment + "\n" + FAITHFUL
+        assert scheme_incomplete_diagnostics(SPEC_QC, source) == [], comment
+    for name in ("foo_partialOrder", "isOpen_partial_map"):
+        assert scheme_incomplete_diagnostics(SPEC_QC, f"theorem {name} : True := trivial") == []
+
+
+def test_incomplete_check_runs_only_without_a_pinned_formal_statement() -> None:
+    from pals_agent.scheme_guidance import SCHEME_INCOMPLETE_CODE
+
+    partial = "-- Partial work only.\n" + FAITHFUL
+    free = ProofRequest(id="p", prompt=SPEC_QC)
+    pinned = ProofRequest(id="p", prompt=SPEC_QC, formal_statement="theorem t : True")
+    assert SCHEME_INCOMPLETE_CODE in [d.code for d in validate_generated_lean(free, partial)]
+    assert SCHEME_INCOMPLETE_CODE not in [d.code for d in validate_generated_lean(pinned, partial)]

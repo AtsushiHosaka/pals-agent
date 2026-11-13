@@ -2155,9 +2155,9 @@ def validate_generated_lean(
         )
         if scheme_diagnostics:
             return scheme_diagnostics
-    incomplete_diagnostics = scheme_incomplete_diagnostics(request.prompt, lean_code)
-    if incomplete_diagnostics:
-        return incomplete_diagnostics
+        incomplete_diagnostics = scheme_incomplete_diagnostics(request.prompt, lean_code)
+        if incomplete_diagnostics:
+            return incomplete_diagnostics
     return _validate_requested_proof_method(request, lean_code)
 
 

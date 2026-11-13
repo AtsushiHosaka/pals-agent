@@ -20,9 +20,12 @@ from pathlib import Path
 from typing import Any, Final
 
 _DATA: Final = Path(__file__).with_name("content_dictionaries") / "mathlib-stacks-tags-v1.json"
+_TAG = r"[0-9][0-9A-Z]{3}"
 _TAG_NAMED: Final = re.compile(
-    r"\b(?:tags?|stacks(?:\s+project)?)\s*[:#]?\s*`?([0-9][0-9A-Z]{3})\b", re.IGNORECASE
+    rf"\b(?:tags?|stacks(?:\s+project)?)[\s:#`/]*((?:{_TAG}(?:\s*(?:,|and|&)\s*)?)+)\b",
+    re.IGNORECASE,
 )
+_ONE_TAG: Final = re.compile(rf"\b{_TAG}\b", re.IGNORECASE)
 _MAX_TAGS: Final = 3
 _MAX_DECLARATIONS: Final = 4
 
@@ -39,7 +42,12 @@ def _index() -> dict[str, Any]:
 
 def named_tags(text: str) -> list[str]:
     """The distinct tags a request names, in order (e.g. ``Tag 02LS``, ``Stacks Project 01KJ``)."""
-    return list(dict.fromkeys(match.group(1).upper() for match in _TAG_NAMED.finditer(text)))
+    found = (
+        tag.upper()
+        for match in _TAG_NAMED.finditer(text)
+        for tag in _ONE_TAG.findall(match.group(1))
+    )
+    return list(dict.fromkeys(found))
 
 
 def stacks_tag_guidance(*parts: str | None) -> str:
@@ -61,7 +69,9 @@ def stacks_tag_guidance(*parts: str | None) -> str:
         return ""
     return (
         "Stacks Project tags named in the request. Mathlib already has a declaration marked with "
-        "each tag (names are implied by the source's namespaces; confirm by using them). Prefer "
-        "stating the claim in this form and closing it with the declaration or with "
-        "`inferInstance`:\n" + "\n".join(lines) + "\n"
+        "each tag (names are implied by the source's namespaces; confirm by using them). When the "
+        "declaration states what the request asks, prefer that form and close it with the "
+        "declaration or with `inferInstance`; never weaken the request to match it:\n"
+        + "\n".join(lines)
+        + "\n"
     )

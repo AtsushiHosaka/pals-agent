@@ -167,13 +167,16 @@ _COMMENT: Final = re.compile(r"--[^\n]*|/-.*?-/", re.DOTALL)
 # What a model writes when it proves only a part and says so. Measured: every weakened scheme
 # candidate that was not rejected by the vocabulary check carried such a comment.
 _SELF_DECLARED_INCOMPLETE: Final = re.compile(
-    r"\bpartial\b|\bremains?\s+(?:open|unproved|unproven|to\s+be\s+proved)\b|"
-    r"\bnot\s+(?:yet\s+)?(?:proved|proven|established|formali[sz]ed)\b|\bunproved\b|"
-    r"\bunproven\b|\bno\s+lean\s+theorem\s+is\s+claimed\b|\bleft\s+(?:open|unproved)\b|"
-    r"\bcannot\s+verify\b",
+    r"\bpartial\s+(?:work|result|results|statement|proof|claim|version|formali[sz]ation|progress)\b|"
+    r"\bremains?\s+(?:open|unproved|unproven|to\s+be\s+proved)\b|"
+    r"\bnot\s+(?:yet\s+)?(?:proved|proven|established|formali[sz]ed)\s+(?:here|in\s+this)\b|"
+    r"\bunproved\b|\bunproven\b|\bno\s+lean\s+theorem\s+is\s+claimed\b|"
+    r"\bleft\s+(?:open|unproved)\b|\bcannot\s+verify\b",
     re.IGNORECASE,
 )
-_PARTIAL_NAME: Final = re.compile(r"\b(?:theorem|lemma)\s+\w*_?partial\w*", re.IGNORECASE)
+# A theorem named like a partial result (``foo_partial``); ``partialOrder`` or ``partial_map`` are
+# ordinary mathematical names and do not count.
+_PARTIAL_NAME: Final = re.compile(r"\b(?:theorem|lemma)\s+[\w.]*_partial\b")
 
 
 def scheme_incomplete_diagnostics(request_text: str, lean_code: str) -> list[Diagnostic]:

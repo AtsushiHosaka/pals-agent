@@ -18,45 +18,83 @@ import re
 import sys
 from pathlib import Path
 
-_ATTR = re.compile(r"@\[([^\]]*?\bstacks\s+([0-9A-Z]{4})\b[^\]]*)\]")
+_STACKS_IN_ATTRIBUTE = re.compile(r"\bstacks\s+([0-9A-Z]{4})\b")
+_MODIFIERS = r"(?:(?:public|private|protected|noncomputable|nonrec|unsafe|partial|meta)\s+)*"
 _DECL = re.compile(
-    r"^\s*(?:@\[[^\]]*\]\s*)*(?:(?:private|protected|noncomputable|nonrec|unsafe|partial)\s+)*"
-    r"(theorem|lemma|instance|def|abbrev|class|structure|inductive)\s*([^\s:({\[]*)"
+    r"^\s*(?:@\[[^\]]*\]\s*)*" + _MODIFIERS +
+    r"(theorem|lemma|instance|def|abbrev|class|structure|inductive|irreducible_def|opaque|axiom)"
+    r"\b[ \t]*([^\s:({\[]*)"
 )
-_NAMESPACE = re.compile(r"^\s*namespace\s+([A-Za-z_][\w.']*)")
-_SECTION = re.compile(r"^\s*section\b\s*([A-Za-z_][\w.']*)?")
-_END = re.compile(r"^\s*end\b\s*([A-Za-z_][\w.']*)?\s*$")
+_PRIVATE = re.compile(r"^\s*(?:@\[[^\]]*\]\s*)*(?:(?:public|noncomputable|nonrec)\s+)*private\b")
+_SCOPE_PREFIX = r"^\s*(?:@\[[^\]]*\]\s*)*(?:(?:public|noncomputable|meta|private|protected)\s+)*"
+_NAMESPACE = re.compile(_SCOPE_PREFIX + r"namespace\s+([A-Za-z_][\w.']*)")
+_SECTION = re.compile(_SCOPE_PREFIX + r"section\b[ \t]*([A-Za-z_][\w.']*)?")
+_MUTUAL = re.compile(r"^\s*mutual\b")
+_END = re.compile(r"^\s*end\b[ \t]*([A-Za-z_][\w.']*)?\s*$")
 MAX_STATEMENT = 600
+# An attribute that is not followed by a declaration within this many lines is dropped.
+MAX_ATTRIBUTE_GAP = 8
+_BLOCK_COMMENT = re.compile(r"/-.*?-/", re.DOTALL)
+_LINE_COMMENT = re.compile(r"--[^\n]*")
+
+
+def _blank_comments(text: str) -> str:
+    """Replace comments by spaces/newlines (line numbers are kept)."""
+
+    def blank(match: re.Match[str]) -> str:
+        return re.sub(r"[^\n]", " ", match.group(0))
+
+    return _LINE_COMMENT.sub(blank, _BLOCK_COMMENT.sub(blank, text))
 
 
 def extract(root: Path) -> dict[str, list[dict[str, object]]]:
     tags: dict[str, list[dict[str, object]]] = {}
     for path in sorted(root.rglob("*.lean")):
-        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+        text = _blank_comments(path.read_text(encoding="utf-8", errors="replace"))
+        lines = text.splitlines()
         module = "Mathlib." + ".".join(path.relative_to(root).with_suffix("").parts)
         stack: list[tuple[str, str]] = []  # (kind, name)
         pending: list[str] = []
-        for number, line in enumerate(lines, start=1):
+        pending_since = 0
+        number = 0
+        while number < len(lines):
+            line = lines[number]
+            number += 1
+            # Gather an attribute list that spans several lines.
+            if "@[" in line and line.count("[") > line.count("]"):
+                joined = line
+                while number < len(lines) and joined.count("[") > joined.count("]"):
+                    joined += " " + lines[number].strip()
+                    number += 1
+                line = joined
+            if pending and number - pending_since > MAX_ATTRIBUTE_GAP:
+                pending = []
             match = _NAMESPACE.match(line)
             if match:
                 stack.append(("namespace", match.group(1)))
                 continue
             match = _SECTION.match(line)
-            if match and not line.strip().startswith("--"):
+            if match:
                 stack.append(("section", match.group(1) or ""))
                 continue
-            if _END.match(line) and stack:
-                stack.pop()
+            if _MUTUAL.match(line):
+                stack.append(("section", ""))
                 continue
-            for attribute in _ATTR.finditer(line):
-                pending.append(attribute.group(2))
-            if not pending and "@[" not in line:
+            if _END.match(line):
+                if stack:
+                    stack.pop()
+                continue
+            for attribute in re.finditer(r"@\[[^\]]*\]", line):
+                for tag in _STACKS_IN_ATTRIBUTE.findall(attribute.group(0)):
+                    pending.append(tag)
+                    pending_since = number
+            if not pending:
                 continue
             declaration = _DECL.match(line)
-            if declaration is None and pending:
-                # The attribute sits on its own line; the declaration starts on a later one.
-                continue
             if declaration is None:
+                continue
+            if _PRIVATE.match(line):
+                pending = []  # a private name cannot be used from outside its file
                 continue
             kind, name = declaration.group(1), declaration.group(2)
             namespace = ".".join(n for k, n in stack if k == "namespace")
@@ -98,8 +136,9 @@ def main() -> int:
     payload = {
         "schema": "pals.mathlib-stacks-tags.v1",
         "mathlib_commit": args.commit,
-        "claims": "declarations carry the tag attribute in the source text; names are implied "
-        "by namespaces, not elaborated",
+        "claims": "declarations whose attribute names the tag in the source text; names are "
+        "implied by namespaces, not elaborated. Not every tag in Mathlib is covered (attributes on "
+        "`attribute [...]` lines and on `proof_wanted` are skipped, private names are dropped)",
         "tags": dict(sorted(tags.items())),
     }
     args.out.write_text(json.dumps(payload, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

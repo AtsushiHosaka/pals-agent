@@ -1,7 +1,7 @@
 {
  "schema": "pals.mathlib-stacks-tags.v1",
  "mathlib_commit": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
- "claims": "declarations carry the tag attribute in the source text; names are implied by namespaces, not elaborated",
+ "claims": "declarations whose attribute names the tag in the source text; names are implied by namespaces, not elaborated. Not every tag in Mathlib is covered (attributes on `attribute [...]` lines and on `proof_wanted` are skipped, private names are dropped)",
  "tags": {
   "0014": [
    {
@@ -9,7 +9,7 @@
     "kind": "class",
     "module": "Mathlib.CategoryTheory.Category.Basic",
     "line": 234,
-    "statement": "class Category (obj : Type u) : Type max u (v + 1) extends CategoryStruct.{v} obj where /-- Identity morphisms are left identities for composition. -/ id_comp : ∀ {X Y : obj} (f : X ⟶ Y), 𝟙 X ≫ f = f"
+    "statement": "class Category (obj : Type u) : Type max u (v + 1) extends CategoryStruct.{v} obj where id_comp : ∀ {X Y : obj} (f : X ⟶ Y), 𝟙 X ≫ f = f"
    }
   ],
   "0017": [
@@ -18,7 +18,7 @@
     "kind": "structure",
     "module": "Mathlib.CategoryTheory.Iso",
     "line": 53,
-    "statement": "structure Iso {C : Type u} [Category.{v} C] (X Y : C) where /-- The forward direction of an isomorphism. -/ hom : X ⟶ Y /-- The backwards direction of an isomorphism. -/ inv : Y ⟶ X /-- Composition of the two directions of an isomorphism is the identity on the source. -/ hom_inv_id : hom ≫ inv = 𝟙 X"
+    "statement": "structure Iso {C : Type u} [Category.{v} C] (X Y : C) where hom : X ⟶ Y inv : Y ⟶ X hom_inv_id : hom ≫ inv = 𝟙 X"
    }
   ],
   "0019": [
@@ -45,7 +45,7 @@
     "kind": "structure",
     "module": "Mathlib.CategoryTheory.Functor.Basic",
     "line": 40,
-    "statement": "structure Functor (C : Type u₁) [Category.{v₁} C] (D : Type u₂) [Category.{v₂} D] : Type max v₁ v₂ u₁ u₂ where /-- The action of a functor on objects. -/ obj : C → D /-- The action of a functor on morphisms. -/ map : ∀ {X Y : C}, (X ⟶ Y) → ((obj X) ⟶ (obj Y)) /-- A functor preserves identity morphisms. -/ map_id : ∀ X : C, map (𝟙 X) = 𝟙 (obj X)"
+    "statement": "structure Functor (C : Type u₁) [Category.{v₁} C] (D : Type u₂) [Category.{v₂} D] : Type max v₁ v₂ u₁ u₂ where obj : C → D map : ∀ {X Y : C}, (X ⟶ Y) → ((obj X) ⟶ (obj Y)) map_id : ∀ X : C, map (𝟙 X) = 𝟙 (obj X)"
    }
   ],
   "001C": [
@@ -54,7 +54,7 @@
     "kind": "class",
     "module": "Mathlib.CategoryTheory.EssentialImage",
     "line": 106,
-    "statement": "class EssSurj (F : C ⥤ D) : Prop where /-- All the objects of the target category are in the essential image. -/ mem_essImage (F) (Y : D) : F.essImage Y instance EssSurj.toEssImage : EssSurj F.toEssImage where mem_essImage"
+    "statement": "class EssSurj (F : C ⥤ D) : Prop where mem_essImage (F) (Y : D) : F.essImage Y instance EssSurj.toEssImage : EssSurj F.toEssImage where mem_essImage"
    },
    {
     "name": "CategoryTheory.Functor.Full",
@@ -68,7 +68,7 @@
     "kind": "class",
     "module": "Mathlib.CategoryTheory.Functor.FullyFaithful",
     "line": 52,
-    "statement": "class Faithful (F : C ⥤ D) : Prop where /-- `F.map` is injective for each `X Y : C`. -/ map_injective : ∀ {X Y : C}, Function.Injective (F.map : (X ⟶ Y) → (F.obj X ⟶ F.obj Y))"
+    "statement": "class Faithful (F : C ⥤ D) : Prop where map_injective : ∀ {X Y : C}, Function.Injective (F.map : (X ⟶ Y) → (F.obj X ⟶ F.obj Y))"
    }
   ],
   "001D": [
@@ -77,7 +77,7 @@
     "kind": "structure",
     "module": "Mathlib.CategoryTheory.ObjectProperty.FullSubcategory",
     "line": 39,
-    "statement": "structure FullSubcategory where /-- The category of which this is a full subcategory -/ obj : C /-- The predicate satisfied by all objects in this subcategory -/ property : P obj instance FullSubcategory.category : Category.{v} P.FullSubcategory"
+    "statement": "structure FullSubcategory where obj : C property : P obj instance FullSubcategory.category : Category.{v} P.FullSubcategory"
    }
   ],
   "001F": [
@@ -118,7 +118,7 @@
     "kind": "structure",
     "module": "Mathlib.CategoryTheory.Equivalence",
     "line": 87,
-    "statement": "structure Equivalence (C : Type u₁) (D : Type u₂) [Category.{v₁} C] [Category.{v₂} D] where mk' :: /-- The forwards direction of an equivalence. -/ functor : C ⥤ D /-- The backwards direction of an equivalence. -/ inverse : D ⥤ C /-- The composition `functor ⋙ inverse` is isomorphic to the identity. -/ unitIso : 𝟭 C ≅ functor ⋙ inverse /-- The composition `inverse ⋙ functor` is isomorphic to the identity. -/ counitIso : inverse ⋙ functor ≅ 𝟭 D /-- The triangle law for the forwards direction of an equivalence: the unit and counit compose to the identity when whiskered along the forwards directi"
+    "statement": "structure Equivalence (C : Type u₁) (D : Type u₂) [Category.{v₁} C] [Category.{v₂} D] where mk' :: functor : C ⥤ D inverse : D ⥤ C unitIso : 𝟭 C ≅ functor ⋙ inverse counitIso : inverse ⋙ functor ≅ 𝟭 D"
    }
   ],
   "001K": [
@@ -196,7 +196,7 @@
   ],
   "001T": [
    {
-    "name": "HasBinaryProducts",
+    "name": "CategoryTheory.Limits.HasBinaryProducts",
     "kind": "abbrev",
     "module": "Mathlib.CategoryTheory.Limits.Shapes.BinaryProducts",
     "line": 887,
@@ -218,7 +218,7 @@
     "kind": "structure",
     "module": "Mathlib.CategoryTheory.Limits.IsLimit",
     "line": 55,
-    "statement": "structure IsLimit (t : Cone F) where /-- There is a morphism from any cone point to `t.pt` -/ lift : ∀ s : Cone F, s.pt ⟶ t.pt /-- The map makes the triangle with the two natural transformations commute -/ fac : ∀ (s : Cone F) (j : J), lift s ≫ t.π.app j = s.π.app j"
+    "statement": "structure IsLimit (t : Cone F) where lift : ∀ s : Cone F, s.pt ⟶ t.pt fac : ∀ (s : Cone F) (j : J), lift s ≫ t.π.app j = s.π.app j"
    }
   ],
   "002F": [
@@ -227,7 +227,7 @@
     "kind": "structure",
     "module": "Mathlib.CategoryTheory.Limits.IsLimit",
     "line": 68,
-    "statement": "structure IsColimit (t : Cocone F) where /-- `t.pt` maps to all other cocone covertices -/ desc : ∀ s : Cocone F, t.pt ⟶ s.pt /-- The map `desc` makes the diagram with the natural transformations commute -/ fac : ∀ (s : Cocone F) (j : J), dsimp% t.ι.app j ≫ desc s = s.ι.app j"
+    "statement": "structure IsColimit (t : Cocone F) where desc : ∀ s : Cocone F, t.pt ⟶ s.pt fac : ∀ (s : Cocone F) (j : J), dsimp% t.ι.app j ≫ desc s = s.ι.app j"
    }
   ],
   "002N": [
@@ -272,7 +272,7 @@
     "kind": "class",
     "module": "Mathlib.CategoryTheory.IsConnected",
     "line": 75,
-    "statement": "class IsConnected (J : Type u₁) [Category.{v₁} J] : Prop extends IsPreconnected J where [is_nonempty : Nonempty J] attribute [instance 100] IsConnected.is_nonempty variable {J : Type u₁} [Category.{v₁} J] variable {K : Type u₂} [Category.{v₂} K] namespace IsPreconnected.IsoConstantAux set_option backward.privateInPublic true in /-- Implementation detail of `isoConstant`. -/ private def liftToDiscrete {α : Type u₂} (F : J ⥤ Discrete α) : J ⥤ Discrete J where obj j"
+    "statement": "class IsConnected (J : Type u₁) [Category.{v₁} J] : Prop extends IsPreconnected J where [is_nonempty : Nonempty J] attribute [instance 100] IsConnected.is_nonempty variable {J : Type u₁} [Category.{v₁} J] variable {K : Type u₂} [Category.{v₂} K] namespace IsPreconnected.IsoConstantAux set_option backward.privateInPublic true in private def liftToDiscrete {α : Type u₂} (F : J ⥤ Discrete α) : J ⥤ Discrete J where obj j"
    }
   ],
   "002U": [
@@ -297,7 +297,7 @@
     "kind": "class",
     "module": "Mathlib.CategoryTheory.Filtered.Basic",
     "line": 95,
-    "statement": "class IsFiltered : Prop extends IsFilteredOrEmpty C where /-- a filtered category must be non-empty -/ -- This should be an instance but it causes significant slowdown [nonempty : Nonempty C] instance (priority"
+    "statement": "class IsFiltered : Prop extends IsFilteredOrEmpty C where [nonempty : Nonempty C] instance (priority"
    }
   ],
   "0032": [
@@ -322,7 +322,7 @@
     "kind": "structure",
     "module": "Mathlib.CategoryTheory.Adjunction.Basic",
     "line": 109,
-    "statement": "structure Adjunction (F : C ⥤ D) (G : D ⥤ C) where /-- The unit of an adjunction -/ unit : 𝟭 C ⟶ F.comp G /-- The counit of an adjunction -/ counit : G.comp F ⟶ 𝟭 D /-- Equality of the composition of the unit and counit with the identity `F ⟶ FGF ⟶ F = 𝟙` -/ left_triangle_components (X : C) : dsimp% F.map (unit.app X) ≫ counit.app (F.obj X) = 𝟙 (F.obj X)"
+    "statement": "structure Adjunction (F : C ⥤ D) (G : D ⥤ C) where unit : 𝟭 C ⟶ F.comp G counit : G.comp F ⟶ 𝟭 D left_triangle_components (X : C) : dsimp% F.map (unit.app X) ≫ counit.app (F.obj X) = 𝟙 (F.obj X)"
    }
   ],
   "0038": [
@@ -347,7 +347,7 @@
     "kind": "class",
     "module": "Mathlib.CategoryTheory.Category.Basic",
     "line": 328,
-    "statement": "class Mono (f : X ⟶ Y) : Prop where /-- A morphism `f` is a monomorphism if it can be cancelled when postcomposed. -/ right_cancellation : ∀ {Z : C} (g h : Z ⟶ X), g ≫ f = h ≫ f → g = h @[to_dual] instance (X : C) : Epi (𝟙 X)"
+    "statement": "class Mono (f : X ⟶ Y) : Prop where right_cancellation : ∀ {Z : C} (g h : Z ⟶ X), g ≫ f = h ≫ f → g = h @[to_dual] instance (X : C) : Epi (𝟙 X)"
    }
   ],
   "003C": [
@@ -400,7 +400,7 @@
     "kind": "class",
     "module": "Mathlib.Topology.Irreducible",
     "line": 172,
-    "statement": "class IrreducibleSpace (X : Type*) [TopologicalSpace X] : Prop extends PreirreducibleSpace X where toNonempty : Nonempty X -- see Note [lower instance priority] attribute [instance 50] IrreducibleSpace.toNonempty theorem IrreducibleSpace.isIrreducible_univ (X : Type*) [TopologicalSpace X] [IrreducibleSpace X] : IsIrreducible (univ : Set X)"
+    "statement": "class IrreducibleSpace (X : Type*) [TopologicalSpace X] : Prop extends PreirreducibleSpace X where toNonempty : Nonempty X attribute [instance 50] IrreducibleSpace.toNonempty theorem IrreducibleSpace.isIrreducible_univ (X : Type*) [TopologicalSpace X] [IrreducibleSpace X] : IsIrreducible (univ : Set X)"
    }
   ],
   "004W": [
@@ -446,7 +446,7 @@
     "kind": "class",
     "module": "Mathlib.Topology.Separation.Basic",
     "line": 77,
-    "statement": "class T0Space (X : Type u) [TopologicalSpace X] : Prop where /-- Two inseparable points in a T₀ space are equal. -/ t0 : ∀ ⦃x y : X⦄, Inseparable x y → x = y theorem t0Space_iff_inseparable (X : Type u) [TopologicalSpace X] : T0Space X ↔ ∀ x y : X, Inseparable x y → x = y"
+    "statement": "class T0Space (X : Type u) [TopologicalSpace X] : Prop where t0 : ∀ ⦃x y : X⦄, Inseparable x y → x = y theorem t0Space_iff_inseparable (X : Type u) [TopologicalSpace X] : T0Space X ↔ ∀ x y : X, Inseparable x y → x = y"
    },
    {
     "name": "IsGenericPoint",
@@ -460,7 +460,7 @@
     "kind": "class",
     "module": "Mathlib.Topology.Sober",
     "line": 109,
-    "statement": "class QuasiSober (α : Type*) [TopologicalSpace α] : Prop where sober : ∀ {S : Set α}, IsIrreducible S → IsClosed S → ∃ x, IsGenericPoint x S /-- A generic point of the closure of an irreducible space. -/ noncomputable def IsIrreducible.genericPoint [QuasiSober α] {S : Set α} (hS : IsIrreducible S) : α"
+    "statement": "class QuasiSober (α : Type*) [TopologicalSpace α] : Prop where sober : ∀ {S : Set α}, IsIrreducible S → IsClosed S → ∃ x, IsGenericPoint x S noncomputable def IsIrreducible.genericPoint [QuasiSober α] {S : Set α} (hS : IsIrreducible S) : α"
    }
   ],
   "004Z": [
@@ -508,7 +508,7 @@
     "kind": "structure",
     "module": "Mathlib.Topology.Spectral.Hom",
     "line": 43,
-    "statement": "structure IsSpectralMap (f : α → β) : Prop extends Continuous f where /-- A function between topological spaces is spectral if it is continuous and the preimage of every compact open set is compact open. -/ isCompact_preimage_of_isOpen ⦃s : Set β⦄ : IsOpen s → IsCompact s → IsCompact (f ⁻¹' s) theorem IsCompact.preimage_of_isOpen (hf : IsSpectralMap f) (h₀ : IsCompact s) (h₁ : IsOpen s) : IsCompact (f ⁻¹' s)"
+    "statement": "structure IsSpectralMap (f : α → β) : Prop extends Continuous f where isCompact_preimage_of_isOpen ⦃s : Set β⦄ : IsOpen s → IsCompact s → IsCompact (f ⁻¹' s) theorem IsCompact.preimage_of_isOpen (hf : IsSpectralMap f) (h₀ : IsCompact s) (h₁ : IsOpen s) : IsCompact (f ⁻¹' s)"
    }
   ],
   "005B": [
@@ -1031,6 +1031,15 @@
     "statement": "theorem existsUnique_isIdempotentElem_eq_of_ker_isNilpotent (h : ∀ x ∈ RingHom.ker f, IsNilpotent x) (e : S) (he : e ∈ f.range) (he' : IsIdempotentElem e) : ∃! e' : R, IsIdempotentElem e' ∧ f e' = e"
    }
   ],
+  "00JA": [
+   {
+    "name": "MaximalSpectrum.toPiLocalizationEquiv",
+    "kind": "def",
+    "module": "Mathlib.RingTheory.Spectrum.Prime.Topology",
+    "line": 779,
+    "statement": "def _root_.MaximalSpectrum.toPiLocalizationEquiv : R ≃ₐ[R] MaximalSpectrum.PiLocalization R"
+   }
+  ],
   "00JB": [
    {
     "name": "isArtinianRing_iff_isFiniteLength",
@@ -1038,6 +1047,13 @@
     "module": "Mathlib.RingTheory.HopkinsLevitzki",
     "line": 135,
     "statement": "theorem isArtinianRing_iff_isFiniteLength : IsArtinianRing R ↔ IsFiniteLength R R"
+   },
+   {
+    "name": null,
+    "kind": "instance",
+    "module": "Mathlib.RingTheory.HopkinsLevitzki",
+    "line": 141,
+    "statement": "instance [IsArtinianRing R] : IsNoetherianRing R"
    }
   ],
   "00KH": [
@@ -1229,7 +1245,7 @@
     "kind": "lemma",
     "module": "Mathlib.RingTheory.ZariskisMainTheorem",
     "line": 232,
-    "statement": "lemma exists_leadingCoeff_pow_smul_mem_conductor (hRS : integralClosure R S = ⊥) -- `IsIntegrallyClosedIn` but without injective assumption (hφ : φ.toRingHom.Finite) (hp : φ p * t ∈ conductor R (φ X)) : ∃ n, p.leadingCoeff ^ n • t ∈ conductor R (φ X)"
+    "statement": "lemma exists_leadingCoeff_pow_smul_mem_conductor (hRS : integralClosure R S = ⊥) (hφ : φ.toRingHom.Finite) (hp : φ p * t ∈ conductor R (φ X)) : ∃ n, p.leadingCoeff ^ n • t ∈ conductor R (φ X)"
    }
   ],
   "00PY": [
@@ -1238,14 +1254,14 @@
     "kind": "lemma",
     "module": "Mathlib.RingTheory.ZariskisMainTheorem",
     "line": 260,
-    "statement": "lemma exists_leadingCoeff_pow_smul_mem_radical_conductor (hRS : integralClosure R S = ⊥) -- `IsIntegrallyClosedIn` but without injective assumption (hφ : φ.toRingHom.Finite) (hp : φ p * t ∈ (conductor R (φ X)).radical) (i : ℕ) : p.coeff i • t ∈ (conductor R (φ X)).radical"
+    "statement": "lemma exists_leadingCoeff_pow_smul_mem_radical_conductor (hRS : integralClosure R S = ⊥) (hφ : φ.toRingHom.Finite) (hp : φ p * t ∈ (conductor R (φ X)).radical) (i : ℕ) : p.coeff i • t ∈ (conductor R (φ X)).radical"
    },
    {
     "name": "isStronglyTranscendental_mk_radical_conductor",
     "kind": "lemma",
     "module": "Mathlib.RingTheory.ZariskisMainTheorem",
     "line": 294,
-    "statement": "lemma isStronglyTranscendental_mk_radical_conductor (hRS : integralClosure R S = ⊥) -- `IsIntegrallyClosedIn` but without injective assumption (x : S) (hx : (aeval (R"
+    "statement": "lemma isStronglyTranscendental_mk_radical_conductor (hRS : integralClosure R S = ⊥) (x : S) (hx : (aeval (R"
    }
   ],
   "00PZ": [
@@ -1264,15 +1280,6 @@
     "module": "Mathlib.RingTheory.Algebraic.StronglyTranscendental",
     "line": 123,
     "statement": "lemma isStronglyTranscendental_mk_of_mem_minimalPrimes [IsReduced S] {x : S} (hx : IsStronglyTranscendental R x) (q : Ideal S) (hq : q ∈ minimalPrimes S) : IsStronglyTranscendental R (Ideal.Quotient.mk q x)"
-   }
-  ],
-  "00Q1": [
-   {
-    "name": "Algebra.not_isStronglyTranscendental_of_weaklyQuasiFiniteAt_of_isDomain_aux",
-    "kind": "lemma",
-    "module": "Mathlib.RingTheory.ZariskisMainTheorem",
-    "line": 347,
-    "statement": "private lemma not_isStronglyTranscendental_of_weaklyQuasiFiniteAt_of_isDomain_aux (K L : Type*) [Field K] [Field L] [Algebra R K] [Algebra R L] [Algebra S L] [Algebra K L] [IsScalarTower R K L] [IsScalarTower R S L] [IsFractionRing R K] [IsFractionRing S L] {R' S' : Type*} [CommRing R'] [CommRing S'] [Algebra R R'] [Algebra R' S'] [Algebra R S'] [Algebra S' L] [Algebra R' L] [IsScalarTower R' S' L] [Algebra R' K] [IsScalarTower R' K L] [IsScalarTower R R' S'] [FaithfulSMul S' L] [IsIntegralClosure R' R K] [IsScalarTower R R' K] (f : S →ₐ[R] S') (hf₁ : Function.Surjective (Algebra.TensorProduct"
    }
   ],
   "00Q2": [
@@ -1321,6 +1328,15 @@
     "module": "Mathlib.RingTheory.Kaehler.JacobiZariski",
     "line": 557,
     "statement": "lemma H1Cotangent.exact_liftBaseChange_map_of_flat [Module.Flat S T] : Function.Exact ((map R R S T).liftBaseChange T) (map R S T T)"
+   }
+  ],
+  "00T2": [
+   {
+    "name": "Algebra.Smooth",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.Smooth.Basic",
+    "line": 541,
+    "statement": "class Smooth [CommRing R] (A : Type u) [CommRing A] [Algebra R A] : Prop where formallySmooth : FormallySmooth R A"
    }
   ],
   "00T7": [
@@ -1380,6 +1396,33 @@
     "statement": "class FormallySmooth : Prop where projective_kaehlerDifferential : Module.Projective A Ω[A⁄R] subsingleton_h1Cotangent : Subsingleton (H1Cotangent R A) attribute [instance] FormallySmooth.projective_kaehlerDifferential FormallySmooth.subsingleton_h1Cotangent @[deprecated (since"
    }
   ],
+  "00TP": [
+   {
+    "name": "Algebra.Smooth.exists_finiteType",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Smooth.NoetherianDescent",
+    "line": 254,
+    "statement": "public theorem exists_finiteType [Smooth A B] : ∃ (A₀ : Type u) (B₀ : Type u) (_ : CommRing A₀) (_ : CommRing B₀) (_ : Algebra R A₀) (_ : Algebra A₀ A) (_ : Algebra A₀ B₀), Function.Injective (algebraMap A₀ A) ∧ FiniteType R A₀ ∧ Smooth A₀ B₀ ∧ Nonempty (B ≃ₐ[A] A ⊗[A₀] B₀)"
+   }
+  ],
+  "00U1": [
+   {
+    "name": "Algebra.Etale",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.Etale.Basic",
+    "line": 213,
+    "statement": "class Etale : Prop where formallyEtale : FormallyEtale R A"
+   }
+  ],
+  "00U2": [
+   {
+    "name": "Algebra.Etale.exists_subalgebra_fg",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Smooth.NoetherianDescent",
+    "line": 280,
+    "statement": "public theorem _root_.Algebra.Etale.exists_subalgebra_fg [Etale A B] : ∃ (A₀ : Subalgebra R A) (B₀ : Type u) (_ : CommRing B₀) (_ : Algebra A₀ B₀), A₀.FG ∧ Etale A₀ B₀ ∧ Nonempty (B ≃ₐ[A] A ⊗[A₀] B₀)"
+   }
+  ],
   "00UE": [
    {
     "name": "IsEtaleAt.exists_isStandardEtale",
@@ -1434,6 +1477,15 @@
     "statement": "class FormallyEtale : Prop where subsingleton_kaehlerDifferential : Subsingleton Ω[A⁄R] subsingleton_h1Cotangent : Subsingleton (H1Cotangent R A) attribute [instance] FormallyEtale.subsingleton_kaehlerDifferential FormallyEtale.subsingleton_h1Cotangent end namespace FormallyEtale section instance (priority"
    }
   ],
+  "00UT": [
+   {
+    "name": "Algebra.Unramified",
+    "kind": "class",
+    "module": "Mathlib.RingTheory.Unramified.Basic",
+    "line": 359,
+    "statement": "class Unramified : Prop where formallyUnramified : FormallyUnramified R A"
+   }
+  ],
   "00UW": [
    {
     "name": null,
@@ -1455,6 +1507,15 @@
     "module": "Mathlib.RingTheory.Unramified.LocalRing",
     "line": 88,
     "statement": "lemma FormallyUnramified.map_maximalIdeal [FormallyUnramified R S] : (maximalIdeal R).map (algebraMap R S) = maximalIdeal S"
+   }
+  ],
+  "00VH": [
+   {
+    "name": "CategoryTheory.Pretopology",
+    "kind": "structure",
+    "module": "Mathlib.CategoryTheory.Sites.Pretopology",
+    "line": 64,
+    "statement": "structure Pretopology extends Precoverage C where has_isos : ∀ ⦃X Y⦄ (f : Y ⟶ X) [IsIso f], Presieve.singleton f ∈ coverings X pullbacks : ∀ ⦃X Y⦄ (f : Y ⟶ X) (S), S ∈ coverings X → pullbackArrows f S ∈ coverings Y transitive : ∀ ⦃X : C⦄ (S : Presieve X) (Ti : ∀ ⦃Y⦄ (f : Y ⟶ X), S f → Presieve Y), S ∈ coverings X → (∀ ⦃Y⦄ (f) (H : S f), Ti f H ∈ coverings Y) → S.bind Ti ∈ coverings X namespace Pretopology instance : CoeFun (Pretopology C) fun _ => ∀ X : C, Set (Presieve X)"
    }
   ],
   "00VM": [
@@ -1582,6 +1643,15 @@
     "statement": "lemma Functor.isContinuous_of_coverPreserving (hF₁ : CompatiblePreserving.{max u₁ v₁ u₂ v₂} K F) (hF₂ : CoverPreserving J K F) : Functor.IsContinuous F J K where op_comp_isSheaf_of_types G X S hS x hx"
    }
   ],
+  "00XK": [
+   {
+    "name": "CategoryTheory.ran_isSheaf_of_isCocontinuous",
+    "kind": "theorem",
+    "module": "Mathlib.CategoryTheory.Sites.CoverLifting",
+    "line": 280,
+    "statement": "theorem ran_isSheaf_of_isCocontinuous (ℱ : Sheaf J A) : Presheaf.IsSheaf K (G.op.ran.obj ℱ.obj)"
+   }
+  ],
   "00YK": [
    {
     "name": "CategoryTheory.ObjectProperty.IsConservativeFamilyOfPoints",
@@ -1627,7 +1697,7 @@
     "kind": "structure",
     "module": "Mathlib.CategoryTheory.Sites.Grothendieck",
     "line": 76,
-    "statement": "structure GrothendieckTopology where /-- A Grothendieck topology on `C` consists of a set of sieves for each object `X`, which satisfy some axioms. -/ sieves : ∀ X : C, Set (Sieve X) /-- The sieves associated to each object must contain the top sieve. Use `GrothendieckTopology.top_mem`. -/ top_mem' : ∀ X, ⊤ ∈ sieves X /-- Stability under pullback. Use `GrothendieckTopology.pullback_stable`. -/ pullback_stable' : ∀ ⦃X Y : C⦄ ⦃S : Sieve X⦄ (f : Y ⟶ X), S ∈ sieves X → S.pullback f ∈ sieves Y /-- Transitivity of sieves in a Grothendieck topology. Use `GrothendieckTopology.transitive`. -/ transitiv"
+    "statement": "structure GrothendieckTopology where sieves : ∀ X : C, Set (Sieve X) top_mem' : ∀ X, ⊤ ∈ sieves X pullback_stable' : ∀ ⦃X Y : C⦄ ⦃S : Sieve X⦄ (f : Y ⟶ X), S ∈ sieves X → S.pullback f ∈ sieves Y transitive' : ∀ ⦃X⦄ ⦃S : Sieve X⦄ (_ : S ∈ sieves X) (R : Sieve X), (∀ ⦃Y⦄ ⦃f : Y ⟶ X⦄, S f → R.pullback f ∈ sieves Y) → R ∈ sieves X"
    }
   ],
   "00Z5": [
@@ -1689,6 +1759,13 @@
   ],
   "00Z9": [
    {
+    "name": "CategoryTheory.Sheaf.finestTopologySingle",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Sites.Canonical",
+    "line": 59,
+    "statement": "def finestTopologySingle (P : Cᵒᵖ ⥤ Type w) : GrothendieckTopology C where sieves X"
+   },
+   {
     "name": "CategoryTheory.Sheaf.finestTopology",
     "kind": "def",
     "module": "Mathlib.CategoryTheory.Sites.Canonical",
@@ -1720,7 +1797,7 @@
     "kind": "class",
     "module": "Mathlib.CategoryTheory.Preadditive.AdditiveFunctor",
     "line": 42,
-    "statement": "class Functor.Additive {C D : Type*} [Category* C] [Category* D] [Preadditive C] [Preadditive D] (F : C ⥤ D) : Prop where /-- the addition of two morphisms is mapped to the sum of their images -/ map_add : ∀ {X Y : C} {f g : X ⟶ Y}, F.map (f + g) = F.map f + F.map g"
+    "statement": "class Functor.Additive {C D : Type*} [Category* C] [Category* D] [Preadditive C] [Preadditive D] (F : C ⥤ D) : Prop where map_add : ∀ {X Y : C} {f g : X ⟶ Y}, F.map (f + g) = F.map f + F.map g"
    },
    {
     "name": "CategoryTheory.Preadditive",
@@ -1739,20 +1816,29 @@
     "statement": "def coimageImageComparison : Abelian.coimage f ⟶ Abelian.image f"
    }
   ],
+  "0109": [
+   {
+    "name": "CategoryTheory.Abelian.ofCoimageImageComparisonIsIso",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Abelian.Basic",
+    "line": 260,
+    "statement": "def ofCoimageImageComparisonIsIso : Abelian C where end CategoryTheory.Abelian namespace CategoryTheory.Abelian variable {C : Type u} [Category.{v} C] [Abelian C]"
+   }
+  ],
   "0144": [
    {
     "name": "CategoryTheory.Pretriangulated.Triangle",
     "kind": "structure",
     "module": "Mathlib.CategoryTheory.Triangulated.Basic",
     "line": 44,
-    "statement": "structure Triangle where mk' :: /-- the first object of a triangle -/ obj₁ : C /-- the second object of a triangle -/ obj₂ : C /-- the third object of a triangle -/ obj₃ : C /-- the first morphism of a triangle -/ mor₁ : obj₁ ⟶ obj₂ /-- the second morphism of a triangle -/ mor₂ : obj₂ ⟶ obj₃ /-- the third morphism of a triangle -/ mor₃ : obj₃ ⟶ obj₁⟦(1 : ℤ)⟧"
+    "statement": "structure Triangle where mk' :: obj₁ : C obj₂ : C obj₃ : C mor₁ : obj₁ ⟶ obj₂ mor₂ : obj₂ ⟶ obj₃ mor₃ : obj₃ ⟶ obj₁⟦(1 : ℤ)⟧"
    },
    {
     "name": "CategoryTheory.Pretriangulated.TriangleMorphism",
     "kind": "structure",
     "module": "Mathlib.CategoryTheory.Triangulated.Basic",
     "line": 104,
-    "statement": "structure TriangleMorphism (T₁ : Triangle C) (T₂ : Triangle C) where /-- the first morphism in a triangle morphism -/ hom₁ : T₁.obj₁ ⟶ T₂.obj₁ /-- the second morphism in a triangle morphism -/ hom₂ : T₁.obj₂ ⟶ T₂.obj₂ /-- the third morphism in a triangle morphism -/ hom₃ : T₁.obj₃ ⟶ T₂.obj₃ /-- the first commutative square of a triangle morphism -/ comm₁ : T₁.mor₁ ≫ hom₂ = hom₁ ≫ T₂.mor₁"
+    "statement": "structure TriangleMorphism (T₁ : Triangle C) (T₂ : Triangle C) where hom₁ : T₁.obj₁ ⟶ T₂.obj₁ hom₂ : T₁.obj₂ ⟶ T₂.obj₂ hom₃ : T₁.obj₃ ⟶ T₂.obj₃ comm₁ : T₁.mor₁ ≫ hom₂ = hom₁ ≫ T₂.mor₁"
    }
   ],
   "0145": [
@@ -1761,7 +1847,7 @@
     "kind": "class",
     "module": "Mathlib.CategoryTheory.Triangulated.Pretriangulated",
     "line": 65,
-    "statement": "class Pretriangulated [∀ n : ℤ, Functor.Additive (shiftFunctor C n)] where /-- a class of triangle which are called `distinguished` -/ distinguishedTriangles : Set (Triangle C) /-- a triangle that is isomorphic to a distinguished triangle is distinguished -/ isomorphic_distinguished : ∀ T₁ ∈ distinguishedTriangles, ∀ (T₂) (_ : T₂ ≅ T₁), T₂ ∈ distinguishedTriangles /-- obvious triangles `X ⟶ X ⟶ 0 ⟶ X⟦1⟧` are distinguished -/ contractible_distinguished : ∀ X : C, contractibleTriangle X ∈ distinguishedTriangles /-- any morphism `X ⟶ Y` is part of a distinguished triangle `X ⟶ Y ⟶ Z ⟶ X⟦1⟧` -/ di"
+    "statement": "class Pretriangulated [∀ n : ℤ, Functor.Additive (shiftFunctor C n)] where distinguishedTriangles : Set (Triangle C) isomorphic_distinguished : ∀ T₁ ∈ distinguishedTriangles, ∀ (T₂) (_ : T₂ ≅ T₁), T₂ ∈ distinguishedTriangles contractible_distinguished : ∀ X : C, contractibleTriangle X ∈ distinguishedTriangles distinguished_cocone_triangle : ∀ {X Y : C} (f : X ⟶ Y), ∃ (Z : C) (g : Y ⟶ Z) (h : Z ⟶ X⟦(1 : ℤ)⟧), Triangle.mk f g h ∈ distinguishedTriangles rotate_distinguished_triangle :"
    }
   ],
   "0146": [
@@ -1936,7 +2022,7 @@
     "kind": "structure",
     "module": "Mathlib.AlgebraicGeometry.RelativeGluing",
     "line": 75,
-    "statement": "structure RelativeGluingData where /-- The schemes `Xᵢ`. -/ functor : 𝒰.I₀ ⥤ Scheme.{u} /-- The natural maps `Xᵢ ⟶ Uᵢ`. -/ natTrans : functor ⟶ 𝒰.functorOfLocallyDirected equifibered : natTrans.Equifibered variable {𝒰} (d : RelativeGluingData 𝒰) namespace RelativeGluingData instance {i j : 𝒰.I₀} (hij : i ⟶ j) : IsOpenImmersion (d.functor.map hij)"
+    "statement": "structure RelativeGluingData where functor : 𝒰.I₀ ⥤ Scheme.{u} natTrans : functor ⟶ 𝒰.functorOfLocallyDirected equifibered : natTrans.Equifibered variable {𝒰} (d : RelativeGluingData 𝒰) namespace RelativeGluingData instance {i j : 𝒰.I₀} (hij : i ⟶ j) : IsOpenImmersion (d.functor.map hij)"
    },
    {
     "name": "AlgebraicGeometry.Scheme.Cover.RelativeGluingData.glued",
@@ -2118,7 +2204,7 @@
     "statement": "lemma exists_preimage_eq [IsCofiltered I] [∀ {i j} (f : i ⟶ j), IsAffineHom (D.map f)] (U : c.pt.Opens) (hU : IsCompact (U : Set c.pt)) : ∃ (i : I) (V : (D.obj i).Opens), IsCompact (V : Set (D.obj i)) ∧ c.π.app i ⁻¹ᵁ V = U"
    },
    {
-    "name": "exists_isAffineOpen_preimage_eq",
+    "name": "AlgebraicGeometry.exists_isAffineOpen_preimage_eq",
     "kind": "lemma",
     "module": "Mathlib.AlgebraicGeometry.AffineTransitionLimit",
     "line": 1059,
@@ -2127,7 +2213,7 @@
   ],
   "01Z5": [
    {
-    "name": "Scheme.exists_isQuasiAffine_of_isLimit",
+    "name": "AlgebraicGeometry.Scheme.exists_isQuasiAffine_of_isLimit",
     "kind": "lemma",
     "module": "Mathlib.AlgebraicGeometry.AffineTransitionLimit",
     "line": 983,
@@ -2136,7 +2222,7 @@
   ],
   "01Z6": [
    {
-    "name": "Scheme.exists_isAffine_of_isLimit",
+    "name": "AlgebraicGeometry.Scheme.exists_isAffine_of_isLimit",
     "kind": "lemma",
     "module": "Mathlib.AlgebraicGeometry.AffineTransitionLimit",
     "line": 1037,
@@ -2224,14 +2310,14 @@
     "kind": "class",
     "module": "Mathlib.CategoryTheory.Sites.Descent.IsPrestack",
     "line": 165,
-    "statement": "class IsPrestack (J : GrothendieckTopology C) : Prop where isSheaf (J) {S : C} (M N : F.obj (.mk (op S))) : Presheaf.IsSheaf (J.over S) (F.presheafHom M N) /-- If `F` is a prestack from `Cᵒᵖ` to `Cat` relatively to a Grothendieck topology `J`, and `M` and `N` are two objects in `F.obj (.mk (op S))`, this is the sheaf of morphisms from `M` to `N`: it sends an object `T : Over S` corresponding to a morphism `p : X ⟶ S` to the type of morphisms $p^* M ⟶ p^* N$. -/ @[simps] def sheafHom (J : GrothendieckTopology C) [F.IsPrestack J] {S : C} (M N : F.obj (.mk (op S))) : Sheaf (J.over S) (Type v') wh"
+    "statement": "class IsPrestack (J : GrothendieckTopology C) : Prop where isSheaf (J) {S : C} (M N : F.obj (.mk (op S))) : Presheaf.IsSheaf (J.over S) (F.presheafHom M N) @[simps] def sheafHom (J : GrothendieckTopology C) [F.IsPrestack J] {S : C} (M N : F.obj (.mk (op S))) : Sheaf (J.over S) (Type v') where obj"
    },
    {
     "name": "CategoryTheory.Pseudofunctor.IsStack",
     "kind": "class",
     "module": "Mathlib.CategoryTheory.Sites.Descent.IsStack",
     "line": 49,
-    "statement": "class IsStack (F : LocallyDiscrete Cᵒᵖ ⥤ᵖ Cat.{v', u'}) (J : GrothendieckTopology C) : Prop extends F.IsPrestack J where essSurj_of_sieve (F) {S : C} (R : Sieve S) (hR : R ∈ J S) : (F.toDescentData (fun (f : R.arrows.category) ↦ f.obj.hom)).EssSurj variable (F : LocallyDiscrete Cᵒᵖ ⥤ᵖ Cat.{v', u'}) {J : GrothendieckTopology C} /-- Version of `isStackFor` for a sieve instead of a presieve. -/ lemma isStackFor' [F.IsStack J] {S : C} (R : Sieve S) (hR : R ∈ J S) : F.IsStackFor R.arrows"
+    "statement": "class IsStack (F : LocallyDiscrete Cᵒᵖ ⥤ᵖ Cat.{v', u'}) (J : GrothendieckTopology C) : Prop extends F.IsPrestack J where essSurj_of_sieve (F) {S : C} (R : Sieve S) (hR : R ∈ J S) : (F.toDescentData (fun (f : R.arrows.category) ↦ f.obj.hom)).EssSurj variable (F : LocallyDiscrete Cᵒᵖ ⥤ᵖ Cat.{v', u'}) {J : GrothendieckTopology C} lemma isStackFor' [F.IsStack J] {S : C} (R : Sieve S) (hR : R ∈ J S) : F.IsStackFor R.arrows"
    }
   ],
   "02C3": [
@@ -2255,6 +2341,13 @@
     "module": "Mathlib.CategoryTheory.Equivalence",
     "line": 574,
     "statement": "instance full_functor (e : C ≌ E) : e.functor.Full"
+   },
+   {
+    "name": "CategoryTheory.Functor.asEquivalence",
+    "kind": "def",
+    "module": "Mathlib.CategoryTheory.Equivalence",
+    "line": 648,
+    "statement": "noncomputable def asEquivalence (F : C ⥤ D) [F.IsEquivalence] : C ≌ D where functor"
    }
   ],
   "02FM": [
@@ -2760,7 +2853,7 @@
   ],
   "04AP": [
    {
-    "name": "HasBinaryCoproducts",
+    "name": "CategoryTheory.Limits.HasBinaryCoproducts",
     "kind": "abbrev",
     "module": "Mathlib.CategoryTheory.Limits.Shapes.BinaryProducts",
     "line": 893,
@@ -2773,7 +2866,7 @@
     "kind": "class",
     "module": "Mathlib.CategoryTheory.Filtered.Basic",
     "line": 590,
-    "statement": "class IsCofiltered : Prop extends IsCofilteredOrEmpty C where /-- a cofiltered category must be non-empty -/ -- This should be an instance but it causes significant slowdown [nonempty : Nonempty C] instance (priority"
+    "statement": "class IsCofiltered : Prop extends IsCofilteredOrEmpty C where [nonempty : Nonempty C] instance (priority"
    }
   ],
   "04DE": [
@@ -2791,7 +2884,7 @@
     "kind": "class",
     "module": "Mathlib.CategoryTheory.Limits.Final",
     "line": 96,
-    "statement": "class Final (F : C ⥤ D) : Prop where out (d : D) : IsConnected (StructuredArrow d F) attribute [instance] Final.out /-- A functor `F : C ⥤ D` is initial if for every `d : D`, the comma category of morphisms `F.obj c ⟶ d` is connected. -/ class Initial (F : C ⥤ D) : Prop where out (d : D) : IsConnected (CostructuredArrow F d) attribute [instance] Initial.out instance final_op_of_initial (F : C ⥤ D) [Initial F] : Final F.op where"
+    "statement": "class Final (F : C ⥤ D) : Prop where out (d : D) : IsConnected (StructuredArrow d F) attribute [instance] Final.out class Initial (F : C ⥤ D) : Prop where out (d : D) : IsConnected (CostructuredArrow F d) attribute [instance] Initial.out instance final_op_of_initial (F : C ⥤ D) [Initial F] : Final F.op where"
    }
   ],
   "04E7": [
@@ -2975,6 +3068,13 @@
   ],
   "058D": [
    {
+    "name": "Module.Flat.tfae_equational_criterion",
+    "kind": "theorem",
+    "module": "Mathlib.RingTheory.Flat.EquationalCriterion",
+    "line": 117,
+    "statement": "theorem tfae_equational_criterion : List.TFAE [ Flat R M, ∀ I : Ideal R, Function.Injective (rTensor M I.subtype), ∀ {l : ℕ} {f : Fin l → R} {x : Fin l → M}, ∑ i, f i ⊗ₜ x i = (0 : R ⊗[R] M) → VanishesTrivially R f x, ∀ {l : ℕ} {f : Fin l → R} {x : Fin l → M}, ∑ i, f i • x i = 0 → IsTrivialRelation f x, ∀ {l : ℕ} {f : Fin l →₀ R} {x : (Fin l →₀ R) →ₗ[R] M}, x f = 0 → ∃ (k : ℕ) (a : (Fin l →₀ R) →ₗ[R] (Fin k →₀ R)) (y : (Fin k →₀ R) →ₗ[R] M), x = y ∘ₗ a ∧ a f = 0]"
+   },
+   {
     "name": "Module.Flat.iff_forall_exists_factorization",
     "kind": "theorem",
     "module": "Mathlib.RingTheory.Flat.EquationalCriterion",
@@ -3034,7 +3134,7 @@
     "kind": "structure",
     "module": "Mathlib.RingTheory.Ideal.Oka",
     "line": 38,
-    "statement": "structure IsOka (P : Ideal R → Prop) : Prop where top : P ⊤ oka {I : Ideal R} {a : R} : P (I ⊔ span {a}) → P (I.colon (span {a})) → P I namespace IsOka variable {P : Ideal R → Prop} (hP : IsOka P) include hP /-- If an ideal is maximal for not satisfying an Oka predicate then it is prime. -/ @[stacks 05KE] theorem isPrime_of_maximal_not {I : Ideal R} (hI : Maximal (¬P ·) I) : I.IsPrime where ne_top' hI'"
+    "statement": "structure IsOka (P : Ideal R → Prop) : Prop where top : P ⊤ oka {I : Ideal R} {a : R} : P (I ⊔ span {a}) → P (I.colon (span {a})) → P I namespace IsOka variable {P : Ideal R → Prop} (hP : IsOka P) include hP @[stacks 05KE] theorem isPrime_of_maximal_not {I : Ideal R} (hI : Maximal (¬P ·) I) : I.IsPrime where ne_top' hI'"
    }
   ],
   "05KE": [
@@ -3061,14 +3161,14 @@
     "kind": "structure",
     "module": "Mathlib.CategoryTheory.Triangulated.Triangulated",
     "line": 71,
-    "statement": "structure Octahedron {X₁ X₂ X₃ Z₁₂ Z₂₃ Z₁₃ : C} {u₁₂ : X₁ ⟶ X₂} {u₂₃ : X₂ ⟶ X₃} {u₁₃ : X₁ ⟶ X₃} (comm : u₁₂ ≫ u₂₃ = u₁₃) {v₁₂ : X₂ ⟶ Z₁₂} {w₁₂ : Z₁₂ ⟶ X₁⟦(1 : ℤ)⟧} (h₁₂ : Triangle.mk u₁₂ v₁₂ w₁₂ ∈ distTriang C) {v₂₃ : X₃ ⟶ Z₂₃} {w₂₃ : Z₂₃ ⟶ X₂⟦(1 : ℤ)⟧} (h₂₃ : Triangle.mk u₂₃ v₂₃ w₂₃ ∈ distTriang C) {v₁₃ : X₃ ⟶ Z₁₃} {w₁₃ : Z₁₃ ⟶ X₁⟦(1 : ℤ)⟧} (h₁₃ : Triangle.mk u₁₃ v₁₃ w₁₃ ∈ distTriang C) where /-- `m₁` is the morphism `a` of (TR 4) as presented in Stacks. -/ m₁ : Z₁₂ ⟶ Z₁₃ /-- `m₃` is the morphism `b` of (TR 4) as presented in Stacks. -/ m₃ : Z₁₃ ⟶ Z₂₃ comm₁ : v₁₂ ≫ m₁ = u₂₃ ≫ v₁₃ comm₂ : m₁ ≫"
+    "statement": "structure Octahedron {X₁ X₂ X₃ Z₁₂ Z₂₃ Z₁₃ : C} {u₁₂ : X₁ ⟶ X₂} {u₂₃ : X₂ ⟶ X₃} {u₁₃ : X₁ ⟶ X₃} (comm : u₁₂ ≫ u₂₃ = u₁₃) {v₁₂ : X₂ ⟶ Z₁₂} {w₁₂ : Z₁₂ ⟶ X₁⟦(1 : ℤ)⟧} (h₁₂ : Triangle.mk u₁₂ v₁₂ w₁₂ ∈ distTriang C) {v₂₃ : X₃ ⟶ Z₂₃} {w₂₃ : Z₂₃ ⟶ X₂⟦(1 : ℤ)⟧} (h₂₃ : Triangle.mk u₂₃ v₂₃ w₂₃ ∈ distTriang C) {v₁₃ : X₃ ⟶ Z₁₃} {w₁₃ : Z₁₃ ⟶ X₁⟦(1 : ℤ)⟧} (h₁₃ : Triangle.mk u₁₃ v₁₃ w₁₃ ∈ distTriang C) where m₁ : Z₁₂ ⟶ Z₁₃ m₃ : Z₁₃ ⟶ Z₂₃ comm₁ : v₁₂ ≫ m₁ = u₂₃ ≫ v₁₃ comm₂ : m₁ ≫ w₁₃ = w₁₂ comm₃ : v₁₃ ≫ m₃ = v₂₃ comm₄ : w₁₃ ≫ u₁₂⟦1⟧' = m₃ ≫ w₂₃"
    },
    {
     "name": "CategoryTheory.IsTriangulated",
     "kind": "class",
     "module": "Mathlib.CategoryTheory.Triangulated.Triangulated",
     "line": 305,
-    "statement": "class IsTriangulated : Prop where /-- the octahedron axiom (TR 4) -/ octahedron_axiom : ∀ {X₁ X₂ X₃ Z₁₂ Z₂₃ Z₁₃ : C} {u₁₂ : X₁ ⟶ X₂} {u₂₃ : X₂ ⟶ X₃} {u₁₃ : X₁ ⟶ X₃} (comm : u₁₂ ≫ u₂₃ = u₁₃) {v₁₂ : X₂ ⟶ Z₁₂} {w₁₂ : Z₁₂ ⟶ X₁⟦(1 : ℤ)⟧} (h₁₂ : Triangle.mk u₁₂ v₁₂ w₁₂ ∈ distTriang C) {v₂₃ : X₃ ⟶ Z₂₃} {w₂₃ : Z₂₃ ⟶ X₂⟦(1 : ℤ)⟧} (h₂₃ : Triangle.mk u₂₃ v₂₃ w₂₃ ∈ distTriang C) {v₁₃ : X₃ ⟶ Z₁₃} {w₁₃ : Z₁₃ ⟶ X₁⟦(1 : ℤ)⟧} (h₁₃ : Triangle.mk u₁₃ v₁₃ w₁₃ ∈ distTriang C), Nonempty (Octahedron comm h₁₂ h₂₃ h₁₃) variable {C} /-- A choice of octahedron given by the octahedron axiom. -/ @[no_expose] def Triangula"
+    "statement": "class IsTriangulated : Prop where octahedron_axiom : ∀ {X₁ X₂ X₃ Z₁₂ Z₂₃ Z₁₃ : C} {u₁₂ : X₁ ⟶ X₂} {u₂₃ : X₂ ⟶ X₃} {u₁₃ : X₁ ⟶ X₃} (comm : u₁₂ ≫ u₂₃ = u₁₃) {v₁₂ : X₂ ⟶ Z₁₂} {w₁₂ : Z₁₂ ⟶ X₁⟦(1 : ℤ)⟧} (h₁₂ : Triangle.mk u₁₂ v₁₂ w₁₂ ∈ distTriang C) {v₂₃ : X₃ ⟶ Z₂₃} {w₂₃ : Z₂₃ ⟶ X₂⟦(1 : ℤ)⟧} (h₂₃ : Triangle.mk u₂₃ v₂₃ w₂₃ ∈ distTriang C) {v₁₃ : X₃ ⟶ Z₁₃} {w₁₃ : Z₁₃ ⟶ X₁⟦(1 : ℤ)⟧} (h₁₃ : Triangle.mk u₁₃ v₁₃ w₁₃ ∈ distTriang C), Nonempty (Octahedron comm h₁₂ h₂₃ h₁₃) variable {C} @[no_expose] def Triangulated.someOctahedron [IsTriangulated C]"
    }
   ],
   "06NC": [
@@ -3111,7 +3211,7 @@
     "kind": "class",
     "module": "Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Basic",
     "line": 248,
-    "statement": "class AB4StarOfSize [HasProducts.{w} C] where ofShape (α : Type w) : HasExactLimitsOfShape (Discrete α) C attribute [instance] AB4StarOfSize.ofShape /-- A category `C` which has products is said to have `AB4Star` (in literature AB4\\*) provided that products are exact. -/ abbrev AB4Star [HasProducts C]"
+    "statement": "class AB4StarOfSize [HasProducts.{w} C] where ofShape (α : Type w) : HasExactLimitsOfShape (Discrete α) C attribute [instance] AB4StarOfSize.ofShape abbrev AB4Star [HasProducts C]"
    },
    {
     "name": "CategoryTheory.AB5",
@@ -3125,7 +3225,7 @@
     "kind": "class",
     "module": "Mathlib.CategoryTheory.Abelian.GrothendieckAxioms.Basic",
     "line": 333,
-    "statement": "class AB5StarOfSize [HasCofilteredLimitsOfSize.{w, w'} C] where ofShape (J : Type w') [Category.{w} J] [IsCofiltered J] : HasExactLimitsOfShape J C attribute [instance] AB5StarOfSize.ofShape /-- A category `C` which has cofiltered limits is said to have `AB5Star` (in literature `AB5*`) provided that cofiltered limits are exact. -/ abbrev AB5Star [HasCofilteredLimits C]"
+    "statement": "class AB5StarOfSize [HasCofilteredLimitsOfSize.{w, w'} C] where ofShape (J : Type w') [Category.{w} J] [IsCofiltered J] : HasExactLimitsOfShape J C attribute [instance] AB5StarOfSize.ofShape abbrev AB5Star [HasCofilteredLimits C]"
    },
    {
     "name": "CategoryTheory.IsGrothendieckAbelian",
@@ -3155,11 +3255,18 @@
   ],
   "07CF": [
    {
-    "name": "Algebra.Generators.ical",
-    "kind": "class",
+    "name": "Algebra.Generators.exists_presentation_of_basis_cotangent",
+    "kind": "lemma",
     "module": "Mathlib.RingTheory.Extension.Cotangent.Basis",
-    "line": 294,
-    "statement": "classical choose f hf using Extension.Cotangent.mk_surjective (P"
+    "line": 280,
+    "statement": "public lemma exists_presentation_of_basis_cotangent [Algebra.FinitePresentation R S] {α : Type*} (P : Generators R S α) [Finite α] {σ : Type*} (b₀ : Module.Basis σ S P.toExtension.Cotangent) : ∃ (P' : Presentation R S (Unit ⊕ α) (Unit ⊕ σ)) (b : Module.Basis (Unit ⊕ σ) S P'.toExtension.Cotangent), P'.val ∘ Sum.inr = P.val ∧ ∀ r, b r = Extension.Cotangent.mk ⟨P'.relation r, P'.relation_mem_ker r⟩"
+   },
+   {
+    "name": "Algebra.Generators.exists_presentation_of_free_cotangent",
+    "kind": "lemma",
+    "module": "Mathlib.RingTheory.Extension.Cotangent.Basis",
+    "line": 332,
+    "statement": "public lemma exists_presentation_of_free_cotangent [Algebra.FinitePresentation R S] {α : Type*} (P : Generators R S α) [Finite α] [Module.Free S P.toExtension.Cotangent] : ∃ (P' : Presentation R S (Unit ⊕ α) (Unit ⊕ Fin (Module.finrank S P.toExtension.Cotangent))) (b : Module.Basis (Unit ⊕ Fin (Module.finrank S P.toExtension.Cotangent)) S P'.toExtension.Cotangent), P'.val ∘ Sum.inr = P.val ∧ ∀ r, b r = Extension.Cotangent.mk ⟨P'.relation r, P'.relation_mem_ker r⟩"
    }
   ],
   "07GE": [
@@ -3223,11 +3330,18 @@
     "statement": "class SpectralSpace (X : Type*) [TopologicalSpace X] : Prop extends T0Space X, CompactSpace X, QuasiSober X, QuasiSeparatedSpace X, PrespectralSpace X theorem Topology.IsOpenEmbedding.spectralSpace [SpectralSpace Y] [CompactSpace X] (hf : IsOpenEmbedding f) : SpectralSpace X where __"
    },
    {
+    "name": "IsSpectralMap",
+    "kind": "structure",
+    "module": "Mathlib.Topology.Spectral.Hom",
+    "line": 43,
+    "statement": "structure IsSpectralMap (f : α → β) : Prop extends Continuous f where isCompact_preimage_of_isOpen ⦃s : Set β⦄ : IsOpen s → IsCompact s → IsCompact (f ⁻¹' s) theorem IsCompact.preimage_of_isOpen (hf : IsSpectralMap f) (h₀ : IsCompact s) (h₁ : IsOpen s) : IsCompact (f ⁻¹' s)"
+   },
+   {
     "name": "PrespectralSpace",
     "kind": "class",
     "module": "Mathlib.Topology.Spectral.Prespectral",
     "line": 29,
-    "statement": "class PrespectralSpace (X : Type*) [TopologicalSpace X] : Prop where isTopologicalBasis : IsTopologicalBasis { U : Set X | IsOpen U ∧ IsCompact U } /-- A space is prespectral if it has a basis consisting of compact opens. -/ lemma PrespectralSpace.of_isTopologicalBasis {B : Set (Set X)} (basis : IsTopologicalBasis B) (isCompact_basis : ∀ U ∈ B, IsCompact U) : PrespectralSpace X where isTopologicalBasis"
+    "statement": "class PrespectralSpace (X : Type*) [TopologicalSpace X] : Prop where isTopologicalBasis : IsTopologicalBasis { U : Set X | IsOpen U ∧ IsCompact U } lemma PrespectralSpace.of_isTopologicalBasis {B : Set (Set X)} (basis : IsTopologicalBasis B) (isCompact_basis : ∀ U ∈ B, IsCompact U) : PrespectralSpace X where isTopologicalBasis"
    }
   ],
   "0900": [
@@ -3358,14 +3472,14 @@
     "kind": "class",
     "module": "Mathlib.Algebra.Field.Defs",
     "line": 180,
-    "statement": "class Field (K : Type u) extends CommRing K, DivisionRing K -- see Note [lower instance priority] instance (priority"
+    "statement": "class Field (K : Type u) extends CommRing K, DivisionRing K instance (priority"
    },
    {
     "name": "Subfield",
     "kind": "structure",
     "module": "Mathlib.Algebra.Field.Subfield.Defs",
     "line": 132,
-    "statement": "structure Subfield (K : Type u) [DivisionRing K] extends Subring K where /-- A subfield is closed under multiplicative inverses. -/ inv_mem' : ∀ x ∈ carrier, x⁻¹ ∈ carrier /-- Reinterpret a `Subfield` as a `Subring`. -/ add_decl_doc Subfield.toSubring namespace Subfield /-- The underlying `AddSubgroup` of a subfield. -/ @[reducible] def toAddSubgroup (s : Subfield K) : AddSubgroup K"
+    "statement": "structure Subfield (K : Type u) [DivisionRing K] extends Subring K where inv_mem' : ∀ x ∈ carrier, x⁻¹ ∈ carrier add_decl_doc Subfield.toSubring namespace Subfield @[reducible] def toAddSubgroup (s : Subfield K) : AddSubgroup K"
    }
   ],
   "09FE": [
@@ -3374,7 +3488,7 @@
     "kind": "class",
     "module": "Mathlib.Algebra.Ring.Defs",
     "line": 439,
-    "statement": "class IsDomain (α : Type u) [Semiring α] : Prop extends IsCancelMulZero α, Nontrivial α namespace IsMulCommutative /-- A `NonUnitalNonAssocSemiring` which `IsMulCommutative` is a `NonUnitalNonAssocCommSemiring`. This is primarily used to deduce the bundled version from the unbundled one for commutative subobjects in a noncommutative ambient type. As such this is only available inside the `IsMulCommutative` scope so as to avoid deleterious effects to type class synthesis for bundled commutativity. See note [commutative subobjects]. -/ scoped instance (priority"
+    "statement": "class IsDomain (α : Type u) [Semiring α] : Prop extends IsCancelMulZero α, Nontrivial α namespace IsMulCommutative scoped instance (priority"
    }
   ],
   "09FJ": [
@@ -3481,11 +3595,11 @@
   ],
   "09G3": [
    {
-    "name": "rank_le_card",
-    "kind": "theorem",
+    "name": "Module.rank",
+    "kind": "irreducible_def",
     "module": "Mathlib.LinearAlgebra.Dimension.Basic",
-    "line": 71,
-    "statement": "theorem rank_le_card : Module.rank R M ≤ #M"
+    "line": 68,
+    "statement": "protected irreducible_def Module.rank : Cardinal"
    }
   ],
   "09G4": [
@@ -3521,7 +3635,7 @@
     "kind": "class",
     "module": "Mathlib.NumberTheory.NumberField.Basic",
     "line": 42,
-    "statement": "class NumberField (K : Type*) [Field K] : Prop where [to_charZero : CharZero K] [to_finiteDimensional : FiniteDimensional ℚ K] open Function Module open scoped nonZeroDivisors namespace NumberField variable (K L : Type*) [Field K] [Field L] -- See note [lower instance priority] attribute [instance] NumberField.to_charZero NumberField.to_finiteDimensional"
+    "statement": "class NumberField (K : Type*) [Field K] : Prop where [to_charZero : CharZero K] [to_finiteDimensional : FiniteDimensional ℚ K] open Function Module open scoped nonZeroDivisors namespace NumberField variable (K L : Type*) [Field K] [Field L] attribute [instance] NumberField.to_charZero NumberField.to_finiteDimensional"
    }
   ],
   "09GC": [
@@ -3537,7 +3651,7 @@
     "kind": "class",
     "module": "Mathlib.RingTheory.Algebraic.Defs",
     "line": 68,
-    "statement": "protected class Algebra.IsAlgebraic : Prop where isAlgebraic : ∀ x : A, IsAlgebraic R x variable (R A) in /-- An algebra is transcendental if some element is transcendental. -/ protected class Algebra.Transcendental : Prop where transcendental : ∃ x : A, Transcendental R x variable (R A) in lemma Algebra.nontrivial_of_isAlgebraic [Algebra.IsAlgebraic R A] : Nontrivial R"
+    "statement": "protected class Algebra.IsAlgebraic : Prop where isAlgebraic : ∀ x : A, IsAlgebraic R x variable (R A) in protected class Algebra.Transcendental : Prop where transcendental : ∃ x : A, Transcendental R x variable (R A) in lemma Algebra.nontrivial_of_isAlgebraic [Algebra.IsAlgebraic R A] : Nontrivial R"
    }
   ],
   "09GF": [
@@ -3624,6 +3738,15 @@
     "module": "Mathlib.FieldTheory.IntermediateField.Adjoin.Basic",
     "line": 468,
     "statement": "theorem adjoin.finrank {x : L} (hx : IsIntegral K x) : Module.finrank K K⟮x⟯ = (minpoly K x).natDegree"
+   }
+  ],
+  "09GQ": [
+   {
+    "name": "IntermediateField.eq_bot_of_isAlgClosed_of_isAlgebraic",
+    "kind": "theorem",
+    "module": "Mathlib.FieldTheory.IsAlgClosed.Basic",
+    "line": 257,
+    "statement": "theorem IntermediateField.eq_bot_of_isAlgClosed_of_isAlgebraic {k K : Type*} [Field k] [Field K] [IsAlgClosed k] [Algebra k K] (L : IntermediateField k K) [Algebra.IsAlgebraic k L] : L = ⊥"
    }
   ],
   "09GR": [
@@ -3949,6 +4072,15 @@
     "statement": "class IsSplittingField (f : K[X]) : Prop where splits' : Splits (f.map (algebraMap K L)) adjoin_rootSet' : Algebra.adjoin K (f.rootSet L : Set L) = ⊤ namespace IsSplittingField variable {K} theorem splits (f : K[X]) [IsSplittingField K L f] : Splits (f.map (algebraMap K L))"
    }
   ],
+  "09HX": [
+   {
+    "name": "isCyclic_of_card_pow_eq_one_le",
+    "kind": "theorem",
+    "module": "Mathlib.GroupTheory.SpecificGroups.Cyclic",
+    "line": 143,
+    "statement": "theorem isCyclic_of_card_pow_eq_one_le : IsCyclic α"
+   }
+  ],
   "09HY": [
    {
     "name": "FiniteField.card",
@@ -4252,7 +4384,7 @@
     "kind": "class",
     "module": "Mathlib.FieldTheory.Normal.Closure",
     "line": 42,
-    "statement": "class IsNormalClosure : Prop where splits (x : K) : ((minpoly F x).map (algebraMap F L)).Splits adjoin_rootSet : ⨆ x : K, adjoin F ((minpoly F x).rootSet L) = ⊤ /- TODO: show `IsNormalClosure F K L ↔ IsNormalClosure F (integralClosure F K) L`; we can't state this yet because `integralClosure F K` needs to have a `Field` instance. -/ /-- The normal closure of `K/F` in `L/F`. -/ @[stacks 0BMF] noncomputable def IntermediateField.normalClosure : IntermediateField F L"
+    "statement": "class IsNormalClosure : Prop where splits (x : K) : ((minpoly F x).map (algebraMap F L)).Splits adjoin_rootSet : ⨆ x : K, adjoin F ((minpoly F x).rootSet L) = ⊤ @[stacks 0BMF] noncomputable def IntermediateField.normalClosure : IntermediateField F L"
    },
    {
     "name": "IntermediateField.normalClosure",
@@ -4490,7 +4622,7 @@
     "kind": "class",
     "module": "Mathlib.CategoryTheory.Monoidal.Braided.Basic",
     "line": 367,
-    "statement": "class SymmetricCategory (C : Type u) [Category.{v} C] [MonoidalCategory.{v} C] extends BraidedCategory.{v} C where -- braiding symmetric: symmetry : ∀ X Y : C, (β_ X Y).hom ≫ (β_ Y X).hom = 𝟙 (X ⊗ Y)"
+    "statement": "class SymmetricCategory (C : Type u) [Category.{v} C] [MonoidalCategory.{v} C] extends BraidedCategory.{v} C where symmetry : ∀ X Y : C, (β_ X Y).hom ≫ (β_ Y X).hom = 𝟙 (X ⊗ Y)"
    }
   ],
   "0FX1": [
