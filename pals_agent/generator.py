@@ -44,6 +44,7 @@ from pals_agent.prompt_safety import (
     untrusted_block,
 )
 from pals_agent.proof_reuse_usage import model_role
+from pals_agent.scheme_guidance import scheme_guidance
 from pals_agent.sketch_repair import normalize_header
 from pals_agent.statement_template import TEMPLATE_INSTRUCTION, assemble
 from pals_agent.t2_lane import (
@@ -967,7 +968,7 @@ Follow any required exact-match proof method below.
 {algebra}{fields_early}
 {late}
 {_problem_section(request)}
-{_formal_statement_guidance(request.formal_statement)}
+{_formal_statement_guidance(request.formal_statement)}{_scheme_block(request)}
 {draft_guidance}
 {_repair_guidance(feedback)}{fields_late}
 """
@@ -1067,7 +1068,7 @@ representing the Draft's intermediate reasoning.
 {_problem_section(request)}
 {_formal_statement_guidance(request.formal_statement)}
 {_target_declaration_guidance(request)}
-{_matrix_literal_guidance(request)}
+{_matrix_literal_guidance(request)}{_scheme_block(request)}
 Retrieved method context (its required/advisory status is declared inside):
 {_draft_guidance(request)}
 Required informal Draft to formalize:
@@ -1117,7 +1118,7 @@ You must prove the exact Lean theorem harness shown below when one is provided.
 {_problem_section(request)}
 {_formal_statement_guidance(request.formal_statement)}
 {_target_declaration_guidance(request)}
-{_matrix_literal_guidance(request)}
+{_matrix_literal_guidance(request)}{_scheme_block(request)}
 Retrieved method context (its required/advisory status is declared inside):
 {_draft_guidance(request)}
 Informal Draft whose required proof method must be preserved:
@@ -1172,7 +1173,7 @@ You must prove the exact Lean theorem harness shown below when one is provided.
 {_problem_section(request)}
 {_formal_statement_guidance(request.formal_statement)}
 {_target_declaration_guidance(request)}
-{_matrix_literal_guidance(request)}
+{_matrix_literal_guidance(request)}{_scheme_block(request)}
 Retrieved method context (its required/advisory status is declared inside):
 {_draft_guidance(request)}
 {draft_section}
@@ -1215,6 +1216,12 @@ for example collecting like terms after distribution has been shown explicitly.
 Do not add vacuous intermediate equalities merely to hide a whole-proof `ring`.
 Repair invalid steps locally while retaining valid intermediate reasoning.
 """
+
+
+def _scheme_block(request: ProofRequest) -> str:
+    """Scheme-theory API guidance (``scheme_guidance``), empty and byte-neutral otherwise."""
+    guidance = scheme_guidance(request.prompt, request.formal_statement)
+    return f"\n{guidance}" if guidance else ""
 
 
 def _matrix_literal_guidance(request: ProofRequest) -> str:
@@ -1336,7 +1343,7 @@ specific materially different `prove` repair. Explain that choice in `rationale`
 Formal statement:
 {_plain_block("formal_statement", request.formal_statement or "(none)", MAX_LEAN_CHARS)}
 {_target_declaration_guidance(request)}
-{_matrix_literal_guidance(request)}
+{_matrix_literal_guidance(request)}{_scheme_block(request)}
 
 Failed attempt number:
 {feedback.attempt}
@@ -1376,7 +1383,7 @@ code, a route choice, an evaluation rubric, or any extra JSON field.
 {_problem_section(request)}
 {_formal_statement_guidance(request.formal_statement)}
 {_target_declaration_guidance(request)}
-{_matrix_literal_guidance(request)}
+{_matrix_literal_guidance(request)}{_scheme_block(request)}
 {_repair_guidance(feedback)}
 """
 
@@ -1392,7 +1399,7 @@ code, a route choice, an evaluation rubric, or any extra JSON field.
 {_problem_section(request)}
 {_formal_statement_guidance(request.formal_statement)}
 {_target_declaration_guidance(request)}
-{_matrix_literal_guidance(request)}
+{_matrix_literal_guidance(request)}{_scheme_block(request)}
 {_repair_guidance(feedback)}
 """
 

@@ -1,0 +1,112 @@
+"""Scheme-theory requests: Mathlib API guidance and a statement-vocabulary check.
+
+Measured failure (docs/algebraic-geometry-e2e-2026-11-14.md): on a scheme-theory question the model
+often proved a weaker algebraic or topological lemma instead (``PrimeSpectrum`` compactness for
+"Spec R is quasi-compact", a ring-homomorphism lemma for "the stalk is a localization") and
+Lean reported ``verified``. Two cheap, deterministic measures, both silent for every other request:
+
+* ``scheme_guidance`` adds the Mathlib names (checked against the pinned Mathlib) the model keeps
+  missing, and the rule that the statement must be about ``AlgebraicGeometry.Scheme``.
+* ``scheme_statement_diagnostics`` fails a candidate whose theorem statements mention no scheme
+  vocabulary at all although the request does, so the repair loop gets a concrete reason.
+
+Both are cue-gated by the request text. The check never accepts anything on its own: a candidate
+that passes it is still compiled, audited and reviewed as before.
+"""
+
+from __future__ import annotations
+
+import re
+from typing import Final
+
+from pals_agent.models import Diagnostic
+
+SCHEME_STATEMENT_CODE: Final = "pals.scheme_statement_weakened"
+
+# Request cues. Strong cues drive the check; weak cues only add guidance.
+_STRONG_CUE: Final = re.compile(
+    r"\b(?:(?:affine|projective|noetherian|integral|reduced|separated|quasi-?compact|"
+    r"algebraic)\s+schemes?|(?:of|between)\s+schemes|Spec\s*\(?\w|structure\s+sheaf|"
+    r"quasi-?coherent|affine\s+morphism|closed\s+immersion|open\s+immersion|"
+    r"proper\s+morphism|scheme\s+morphism)\b"
+    r"|スキーム|構造層|準連接|アフィン射|閉埋め込み|開埋め込み|固有射",
+    re.IGNORECASE,
+)
+_WEAK_CUE: Final = re.compile(
+    r"\b(?:sheaf|sheaves|stalk|quasi-?compact|separated\s+morphism|base\s+change)\b|茎|層",
+    re.IGNORECASE,
+)
+# A statement that talks about schemes uses at least one of these constants or notations.
+_STATEMENT_VOCABULARY: Final = re.compile(
+    r"\b(?:Scheme|Spec|Proj|AlgebraicGeometry|IsAffine|IsAffineHom|IsAffineOpen|QuasiCompact|"
+    r"QuasiSeparated|IsSeparated|IsProper|UniversallyClosed|IsClosedImmersion|IsOpenImmersion|"
+    r"IsIntegral|IsReduced|LocallyOfFiniteType|StructureSheaf|presheaf|Opens|SheafOfModules|"
+    r"IsQuasicoherent|LocallyRingedSpace|stalk)\b|Γ\(|Spec\.",
+)
+
+_GUIDANCE: Final = """\
+Scheme theory (AlgebraicGeometry). The theorem MUST be stated about schemes, not about a ring,
+`PrimeSpectrum` or a topological space standing in for them: do not replace the request by an
+algebraic or topological lemma, and do not prove only a helper lemma. Prove the whole claim.
+Mathlib names, checked against this library version (use them; do not invent others):
+- `import Mathlib`; `open AlgebraicGeometry CategoryTheory`.
+- For `[CommRing R]` write the scheme as `Spec (CommRingCat.of R)`; for `R : CommRingCat` write
+  `Spec R`. Schemes are `Scheme`; morphisms are `X ⟶ Y`.
+- Global sections: `Γ(X, ⊤)`; `Scheme.ΓSpecIso R : Γ(Spec R, ⊤) ≅ R`.
+- Stalks: `Spec.stalkIso`, `(Spec R).presheaf.stalk x`; `StructureSheaf.stalkIso` for the sheaf.
+- Properties are classes: `IsAffine X`, `IsAffineHom f`, `QuasiCompact f`, `IsSeparated f`,
+  `IsProper f`, `IsClosedImmersion f`, `IsIntegral X`, `IsReduced X`
+  (for a ring: `_root_.IsReduced`).
+- Facts to look for first: `affine_isIntegral_iff (R) : IsIntegral (Spec R) ↔ IsDomain R`,
+  `quasiCompact_comp`, `quasiCompact_iff_forall_isAffineOpen`,
+  `isSeparated_of_mono`, `MorphismProperty.IsStableUnderBaseChange @IsProper`,
+  the instance `CompactSpace (Spec R)`.
+- Prefer `inferInstance` for a property that is a registered instance; use `exact?` to find a
+  lemma. Do not guess a name that is not listed here.
+Cohomology of sheaves on schemes (derived pushforward, higher direct images) is not in this
+library: if the request needs it, say so in the Draft rather than formalizing a weaker claim.
+"""
+
+
+def _cue_text(*parts: str | None) -> str:
+    return "\n".join(part for part in parts if part)
+
+
+def is_scheme_request(*parts: str | None) -> bool:
+    """True when the request text names schemes (strong cue)."""
+    return _STRONG_CUE.search(_cue_text(*parts)) is not None
+
+
+def scheme_guidance(*parts: str | None) -> str:
+    """The guidance block for a scheme-theory request, else the empty string."""
+    text = _cue_text(*parts)
+    if _STRONG_CUE.search(text) or (_WEAK_CUE.search(text) and "AlgebraicGeometry" in text):
+        return _GUIDANCE
+    return ""
+
+
+def scheme_statement_diagnostics(request_text: str, statements: list[str]) -> list[Diagnostic]:
+    """Error diagnostics when a scheme request got statements with no scheme vocabulary.
+
+    ``statements`` are the propositions of the candidate's top-level theorem declarations.
+    A scheme request whose candidate has no theorem at all (only comments or definitions) is
+    rejected the same way: such a file compiles and would otherwise count as verified.
+    """
+    if not is_scheme_request(request_text):
+        return []
+    if any(_STATEMENT_VOCABULARY.search(statement) for statement in statements):
+        return []
+    return [
+        Diagnostic(
+            severity="error",
+            code=SCHEME_STATEMENT_CODE,
+            message=(
+                "The request is about schemes, but no theorem statement mentions a scheme, "
+                "`Spec`, a morphism property or another AlgebraicGeometry object: the candidate "
+                "proves a weaker algebraic or topological statement. State and prove the "
+                "requested claim itself about `AlgebraicGeometry.Scheme` (for a ring `R` use "
+                "`Spec (CommRingCat.of R)`). Do not replace it by a lemma about rings, "
+                "`PrimeSpectrum` or topological spaces."
+            ),
+        )
+    ]

@@ -239,8 +239,58 @@ class ProofRunResult:
         return "verified" if self.verification.success else "failed"
 
     @property
+    def library_trust(self) -> dict[str, Any] | None:
+        """How much of the verified answer rests on unreviewed library code, for the API and UI.
+
+        ``None`` unless the proof verified. Otherwise ``trust_level`` is one of ``mathlib``,
+        ``core`` (reviewed StacksCore), ``frontier_proof`` (only the proof uses unreviewed Frontier
+        lemmas) or ``frontier_statement`` (the *statement* reaches an unreviewed Frontier
+        definition: show it as human-unreviewed). ``recorded`` is False when the verifier wrote no
+        trust diagnostic (the default Mathlib profile does not), so the level is the profile's.
+        """
+        return library_trust_of(self.verification)
+
+    @property
     def model_attempt_success(self) -> bool:
         return (
             self.model_attempt_verification is not None
             and self.model_attempt_verification.success
         )
+
+
+LIBRARY_TRUST_DIAGNOSTIC = "lean.library_trust"
+_TRUST_ORDER = ("mathlib", "core", "frontier_proof", "frontier_statement")
+
+
+def library_trust_of(verification: VerificationResult) -> dict[str, Any] | None:
+    """The trust summary of a verification (see ``ProofRunResult.library_trust``)."""
+    if not verification.success:
+        return None
+    recorded = [
+        d.metadata
+        for d in verification.diagnostics
+        if d.code == LIBRARY_TRUST_DIAGNOSTIC and isinstance(d.metadata, dict)
+    ]
+    if not recorded:
+        return {
+            "trust_level": "mathlib",
+            "recorded": False,
+            "human_unreviewed": False,
+            "frontier_modules": [],
+            "frontier_statement_constants": [],
+        }
+    # Several declarations: the weakest claim wins; unknown levels count as the weakest.
+    def rank(meta: dict[str, Any]) -> int:
+        level = meta.get("trust_level")
+        return _TRUST_ORDER.index(level) if level in _TRUST_ORDER else len(_TRUST_ORDER)
+
+    meta = max(recorded, key=rank)
+    level = meta.get("trust_level")
+    level = level if level in _TRUST_ORDER else "frontier_statement"
+    return {
+        "trust_level": level,
+        "recorded": True,
+        "human_unreviewed": level.startswith("frontier"),
+        "frontier_modules": list(meta.get("frontier_modules") or [])[:32],
+        "frontier_statement_constants": list(meta.get("frontier_statement_constants") or [])[:32],
+    }

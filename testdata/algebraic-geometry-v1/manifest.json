@@ -1,0 +1,201 @@
+{
+ "problems": [
+  {
+   "expected_answer": null,
+   "field": "affine-schemes",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag_spec_quasicompact",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v1",
+   "split": "tuning",
+   "statement": "Show that for every commutative ring R, the scheme Spec R is quasi-compact.",
+   "statement_sha256": "9d505e208ac2fdfef30fa99d9561afcddd568055033dcfd7c40eead2fd511bd7",
+   "tags": [
+    "affine-scheme"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "affine-schemes",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag_spec_integral_iff_domain",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v1",
+   "split": "tuning",
+   "statement": "Show that for a commutative ring R, the scheme Spec R is integral if and only if R is an integral domain.",
+   "statement_sha256": "41d886aefd0a0da80a6231f9b9e6a809f30ef0b5359e413583e0c1255da04d94",
+   "tags": [
+    "affine-scheme",
+    "integral"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "structure-sheaf",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag_spec_global_sections",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v1",
+   "split": "tuning",
+   "statement": "Show that for every commutative ring R, the ring of global sections of the structure sheaf of Spec R is isomorphic to R.",
+   "statement_sha256": "50a861034cb83410b2e6536b2632c6d5cf6a3cbe948552a3fda7615fe2d0b490",
+   "tags": [
+    "structure-sheaf"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "structure-sheaf",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag_structure_sheaf_stalk_localization",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v1",
+   "split": "tuning",
+   "statement": "Show that for a commutative ring R and a prime ideal p of R, the stalk of the structure sheaf of Spec R at the point p is isomorphic to the localization of R at p.",
+   "statement_sha256": "66668cc0664d7bebb0b3b4c44dc131e4ed5f29d192dffaed2ee3ec8c427cf97d",
+   "tags": [
+    "structure-sheaf",
+    "stalk"
+   ],
+   "tier": "hard",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "morphism-properties",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag_closed_immersion_separated",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v1",
+   "split": "tuning",
+   "statement": "Show that every closed immersion of schemes is separated.",
+   "statement_sha256": "ee26f91a52ee905d8aeb378668449da9924b144e2509387b9fb39530cb648092",
+   "tags": [
+    "morphism"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "morphism-properties",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag_affine_morphism_quasicompact",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v1",
+   "split": "tuning",
+   "statement": "Show that every affine morphism of schemes is quasi-compact.",
+   "statement_sha256": "07f5e21e6cdf33991be866d761e88da4744eece6b45d8c48c93e5017159aa22d",
+   "tags": [
+    "morphism"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "morphism-properties",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag_quasicompact_comp",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v1",
+   "split": "tuning",
+   "statement": "Show that the composition of two quasi-compact morphisms of schemes is quasi-compact.",
+   "statement_sha256": "8c8b288c86105a8b89d0279e4be3282370b904bfeadee4aa23e134d3dbb4af82",
+   "tags": [
+    "morphism"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "morphism-properties",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag_proper_base_change",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v1",
+   "split": "tuning",
+   "statement": "Show that the base change of a proper morphism of schemes along any morphism of schemes is proper.",
+   "statement_sha256": "a8bd1c8852f1e0c05f0779d88a7bde324eb3e7a795c0058a8182f76b26538a34",
+   "tags": [
+    "morphism",
+    "base-change"
+   ],
+   "tier": "hard",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "affine-schemes",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag_spec_connected_idempotents",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v1",
+   "split": "tuning",
+   "statement": "Show that for a commutative ring R, the topological space Spec R is connected if and only if the only idempotents of R are 0 and 1, assuming R is nontrivial.",
+   "statement_sha256": "28a00b0c802cd278a24ccd7c3d61c5ecf8393b5c49d1d346dd8acfdc271d5505",
+   "tags": [
+    "affine-scheme",
+    "connected"
+   ],
+   "tier": "hard",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "cohomology",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag_affine_vanishing_higher_pushforward",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v1",
+   "split": "tuning",
+   "statement": "Show that if f : X -> Y is an affine morphism of schemes and F is a quasi-coherent sheaf on X, then the higher direct images R^n f_* F vanish for all n > 0.",
+   "statement_sha256": "0a8324c633cc85bd8a8e5fec832d7c45825a2a18f907b1345d8f7dda983ec358",
+   "tags": [
+    "cohomology",
+    "stacks-frontier"
+   ],
+   "tier": "hard",
+   "tier_basis": "declared"
+  }
+ ],
+ "schema_version": "pals.generation-eval-manifest.v1",
+ "version": "algebraic-geometry-v1"
+}

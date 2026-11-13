@@ -25,7 +25,7 @@ from pals_agent.lean_profiles import LibraryProfileNotEnabled, ProfileRoutedVeri
 from pals_agent.lean_source_policy import (
     strip_lean_comments_and_strings as _strip_lean_comments_and_strings,
 )
-from pals_agent.lean_target import extract_single_target_declaration
+from pals_agent.lean_target import extract_single_target_declaration, target_propositions
 from pals_agent.lean_templates import template_proof_for_request, template_proof_for_sketch
 from pals_agent.lemma_repair import (
     LemmaAliasTable,
@@ -56,6 +56,7 @@ from pals_agent.models import (
     RepairRouteSelectionError,
     VerificationHarnessSource,
     VerificationResult,
+    library_trust_of,
 )
 from pals_agent.natural_draft_evidence import NaturalDraftRetrievalResult
 from pals_agent.proof_fastpaths import (
@@ -67,6 +68,7 @@ from pals_agent.proof_fastpaths import (
 from pals_agent.proof_flow_evidence import DraftEvidence
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
 from pals_agent.runtime_latency import latency_stage
+from pals_agent.scheme_guidance import scheme_statement_diagnostics
 from pals_agent.sketch_repair import repair_sketch
 
 _THEOREM_DECLARATION_RE = re.compile(
@@ -1937,6 +1939,7 @@ class ProofPipeline:
                 "termination_reason": termination_reason,
                 "termination_event": termination_event,
                 "diagnostics": [diagnostic.to_api() for diagnostic in diagnostics],
+                "library_trust": library_trust_of(verification),
             }
         if termination_reason == EARLY_STOP_REASON:
             # Counts only: the codes are in the stop diagnostic, never a statement or Lean text.
@@ -2081,6 +2084,11 @@ def validate_generated_lean(
         )
         if formal_diagnostics:
             return formal_diagnostics
+    scheme_diagnostics = scheme_statement_diagnostics(
+        f"{request.prompt}\n{request.formal_statement or ''}", target_propositions(lean_code)
+    )
+    if scheme_diagnostics:
+        return scheme_diagnostics
     return _validate_requested_proof_method(request, lean_code)
 
 

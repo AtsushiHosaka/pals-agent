@@ -39,6 +39,18 @@ def extract_single_target_declaration(source: str) -> LeanTargetDeclaration | No
     return _parse_declaration(executable, declarations[0])
 
 
+def target_propositions(source: str) -> list[str]:
+    """The propositions of every top-level theorem, lemma or example (empty if none parse)."""
+    if not isinstance(source, str) or not source.strip():
+        return []
+    executable = _without_lean_comments_and_literals(source)
+    parsed = (
+        _parse_declaration(executable, match)
+        for match in _top_level_proof_declarations(executable)
+    )
+    return [declaration.proposition for declaration in parsed if declaration is not None]
+
+
 def _top_level_proof_declarations(source: str) -> list[re.Match[str]]:
     declarations: list[re.Match[str]] = []
     depth = 0
