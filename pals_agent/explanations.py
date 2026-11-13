@@ -1105,7 +1105,7 @@ def asks_for_value(theorem_statement: str) -> bool:
 # match costs the learner a rewrite.
 _RESULT_ORDER = re.compile(
     r"(?i)(?:求めよ|求めなさい|求めてください|求めて下さい|計算せよ|計算しなさい|計算してください"
-    r"|を求め(?=[、，,])|を決定せよ|判定せよ|解け(?!る)"
+    r"|を求め(?=[、，,])|を決定せよ|判定せよ|解け(?![るな])"
     r"|\b(?:compute|calculate|evaluate|solve)\b|\bfind (?:the|all|every)\b|\bwhat is\b)"
 )
 _PROOF_ORDER = re.compile(r"(?i)\bprove\b|\bshow that\b|\bwhether\b")

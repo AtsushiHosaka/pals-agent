@@ -93,6 +93,7 @@ def test_writer_is_asked_again_when_the_result_is_missing() -> None:
         "計算機を使わずに、$2^{10}>1000$ を示せ。",
         "数列の極限を求めることなく、収束することを示せ。",
         "実数解をもたないことを示せ。方程式が解けることも確かめよ。",
+        "方程式 $x^2+1=0$ が実数の範囲で解けないことを示せ。",
         "Prove that we can find a prime between n and 2n.",
         "Determine whether f(x)=|x| is differentiable at 0.",
     ],
