@@ -1,0 +1,85 @@
+{
+ "problems": [
+  {
+   "expected_answer": null,
+   "field": "affine-schemes",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag3_connected_idempotents",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v3",
+   "split": "tuning",
+   "statement": "Show that for a nonzero commutative ring R, the scheme Spec R is connected if and only if the only idempotents of R are 0 and 1.",
+   "statement_sha256": "b17f112c05075049ed8baf517806c0091fa384970b01d7590361f09151a46eaf",
+   "tags": [
+    "equivalence",
+    "connected"
+   ],
+   "tier": "hard",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "affine-schemes",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag3_irreducible_nilradical",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v3",
+   "split": "tuning",
+   "statement": "Show that for a commutative ring R, the scheme Spec R is irreducible if and only if the nilradical of R is a prime ideal.",
+   "statement_sha256": "1a69c1adf58025f2a85569d44392380360ab7b376217db737926581647d06d3f",
+   "tags": [
+    "equivalence",
+    "irreducible"
+   ],
+   "tier": "hard",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "affine-schemes",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag3_empty_zero_ring",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v3",
+   "split": "tuning",
+   "statement": "Show that for a commutative ring R, the scheme Spec R is empty if and only if R is the zero ring.",
+   "statement_sha256": "a81a5ff4d7f6e55681fe24fed51e008f1945cc3fb009bb33a1ee8f56fd2c5223",
+   "tags": [
+    "equivalence"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "affine-schemes",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ag3_reduced_iff_reduced_ring",
+   "language": "en",
+   "shared": null,
+   "source": "authored:algebraic-geometry-v3",
+   "split": "tuning",
+   "statement": "Show that for a commutative ring R, the scheme Spec R is reduced if and only if the ring R is reduced.",
+   "statement_sha256": "787be671a2935cf0f3bc53504cac395b4e57978107f59f815d5a18478337a224",
+   "tags": [
+    "equivalence",
+    "reduced"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  }
+ ],
+ "schema_version": "pals.generation-eval-manifest.v1",
+ "version": "algebraic-geometry-v3"
+}
