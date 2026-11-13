@@ -64,6 +64,30 @@ def normal_replay(log: Path, records: Path | None) -> dict[str, dict]:
     return out
 
 
+def make_replay(n: dict, forward_usage):  # type: ignore[no-untyped-def]
+    """The fallback callback that replays one recorded normal-path run.
+
+    A recorded failure (``ok`` False) ends after its recorded time with NO answer, so it can
+    neither win the race nor produce an answer time.
+    """
+    import time as _time  # noqa: PLC0415
+
+    def replay(cancel, deadline, claim):  # type: ignore[no-untyped-def]
+        forward_usage(
+            [{"model": "normal-replay", "input_tokens": 0, "output_tokens": 0, "usd": n["usd"]}]
+        )
+        end = _time.monotonic() + n["answer_s"]
+        while _time.monotonic() < min(end, deadline):
+            if cancel.is_set():
+                return None
+            _time.sleep(0.02)
+        if not n.get("ok", False) or _time.monotonic() >= deadline:
+            return None
+        return "normal answer (replayed)"
+
+    return replay
+
+
 def main() -> None:
     from formalise import load_key  # noqa: PLC0415
 
@@ -163,23 +187,7 @@ def main() -> None:
             n = normal.get(p["id"], {"answer_s": 600.0, "usd": 0.0, "ok": False})
             recorder.reset()
 
-            def replay(cancel, deadline, claim, n=n):  # type: ignore[no-untyped-def]
-                forward_usage(
-                    [
-                        {
-                            "model": "normal-replay",
-                            "input_tokens": 0,
-                            "output_tokens": 0,
-                            "usd": n["usd"],
-                        }
-                    ]
-                )
-                end = time.monotonic() + n["answer_s"]
-                while time.monotonic() < min(end, deadline):
-                    if cancel.is_set():
-                        return None
-                    time.sleep(0.02)
-                return "normal answer (replayed)" if time.monotonic() < deadline else None
+            replay = make_replay(n, forward_usage)
 
             start_spent = spent[0]
             from pals_agent.usage import usage_scope  # noqa: PLC0415
