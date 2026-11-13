@@ -25,6 +25,7 @@ No model decides anything on the success path.  The module is inert unless
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import itertools
 import json
@@ -479,7 +480,8 @@ class LeanRunner:
 
         def lake_out(*cmd: str) -> str:
             return subprocess.run(
-                [lake, "env", *cmd], cwd=workspace, capture_output=True, text=True, check=True
+                [lake, "env", *cmd], cwd=workspace, capture_output=True, text=True, check=True,
+                timeout=120,
             ).stdout.strip()
 
         return LeanRunner(lake_out("which", "lean"), lake_out("printenv", "LEAN_PATH"))
@@ -519,6 +521,70 @@ def _axioms(output: str, name: str) -> set[str] | None:
     if f"'{name}' does not depend on any axioms" in output:
         return set()
     return None
+
+
+_HEAD_IDENTIFIER = re.compile(r"[^\W\d][\w'.]*")
+
+
+def conclusion_head(statement: str) -> str:
+    """What a statement finally asserts: its top-level connective/relation, else its head constant.
+
+    ``∀ n, 0 ≤ a → a ^ n ≤ b ^ n`` -> ``≤``; ``Continuous (fun x => x ^ 2)`` -> ``Continuous``;
+    ``p ↔ q`` -> ``↔``; ``¬ P`` -> ``¬``; ``∃ x, P`` -> ``∃``.  Binders (``∀``), hypotheses
+    (``→``) and everything inside brackets are skipped; ``=>`` / ``↦`` are not relations.
+    """
+    text = " ".join(statement.split()).replace("=>", "  ").replace("↦", " ")
+
+    def top_level(chars: str, source: str) -> int | None:
+        depth = 0
+        for index, character in enumerate(source):
+            depth += character in "([{⟨⦃"
+            depth -= character in ")]}⟩⦄"
+            if depth == 0 and character in chars:
+                return index
+        return None
+
+    while True:
+        while text.startswith("∀"):  # drop the binders: up to the first top-level comma
+            comma = top_level(",", text)
+            if comma is None:
+                break
+            text = text[comma + 1 :].strip()
+        if text.startswith("∃"):  # an existence claim, whatever its body says
+            return "∃"
+        arrow = top_level("→", text)  # the conclusion of a chain of hypotheses
+        if arrow is None:
+            break
+        text = text[arrow + 1 :].strip()
+    for connective in "↔∨∧":
+        if top_level(connective, text) is not None:
+            return connective
+    if text.startswith("¬"):
+        return "¬"
+    relation = top_level("≠≤≥⊆∣∈∉≡<>=", text)
+    if relation is not None:
+        return text[relation]
+    match = _HEAD_IDENTIFIER.search(text)
+    return match.group(0).rsplit(".", 1)[-1] if match else ""
+
+
+def related(proposition: str, recipe: PoolRecipe) -> bool:
+    """The request asserts the same kind of thing as the Recipe's conclusion.
+
+    Lean's acceptance already makes the request true; this is about *credit*.  The bound-argument
+    closers use ``convert`` and can close a goal of a different kind through ``propext`` while the
+    Recipe stays in the term (``(2 : ℝ) + 2 = 4`` "proved" by a differentiability Recipe), so a
+    Recipe that concludes something else is not credited with the instance.
+    """
+    head, asked = conclusion_head(recipe.target_source), conclusion_head(proposition)
+    if not head or not asked:
+        return False
+    if head == asked:
+        return True
+    # pointwise corollaries of a global Recipe only: ContinuousAt / Continuous, ...
+    # (not ``On``, ``Map``, ... : those are different statements)
+    short, long_ = sorted((head, asked), key=len)
+    return short[:1].isalpha() and long_ == short + "At"
 
 
 def back_check(source: LaneSource, attempt: Attempt, output: str) -> str | None:
@@ -583,8 +649,14 @@ def answer(
     *,
     language: str = "ja",
     candidates: int = DEFAULT_CANDIDATES,
+    deadline: float | None = None,
 ) -> LaneResult:
-    """Rank, compile the top candidates in ONE Lean process, accept the first that passes."""
+    """Rank, compile the top candidates in ONE Lean process, accept the first that passes.
+
+    ``deadline`` (``time.monotonic()`` scale) bounds ALL Lean runs together: each run gets at most
+    the remaining time, and the second (bound-argument) stage is skipped once the first one timed
+    out or the time is used up.
+    """
     t0 = time.monotonic()
     try:
         proposition = validate_proposition(closed_proposition(request_formal))
@@ -609,10 +681,30 @@ def answer(
         if not source.attempts:
             result.code = "no_buildable_candidate"
             return result
-        code, output, seconds = runner.run(source.source)
-        result.timings_ms["lean"] = round(result.timings_ms.get("lean", 0.0) + seconds * 1000, 1)
+        run_with = runner
+        if deadline is not None:
+            remaining = deadline - time.monotonic()
+            if remaining < 1.0:
+                result.code = "lean_budget_exhausted"
+                break
+            run_with = dataclasses.replace(
+                runner, timeout_seconds=min(runner.timeout_seconds, remaining)
+            )
+        code, output, seconds = run_with.run(source.source)
+        if code in (124, 137):  # timeout / killed: a miss that says so, no second stage
+            result.timings_ms["lean"] = round(
+                result.timings_ms.get("lean", 0.0) + seconds * 1000, 1
+            )
+            result.code = "lean_timeout" if code == 124 else "lean_killed"
+            stage_name = "bound" if with_bound else "plain"
+            result.tried.append({"verdict": result.code, "stage": stage_name})
+            break
+        lean_ms = result.timings_ms.get("lean", 0.0) + seconds * 1000
+        result.timings_ms["lean"] = round(lean_ms, 1)
         for attempt in source.attempts:
             verdict = back_check(source, attempt, output)
+            if verdict is None and with_bound and not related(attempt.proposition, attempt.recipe):
+                verdict = "unrelated_conclusion"
             result.tried.append(
                 {
                     "recipe": attempt.recipe.recipe_id,
@@ -634,7 +726,9 @@ def answer(
         if result.outcome == "answered":
             break
     result.timings_ms["total"] = round((time.monotonic() - t0) * 1000, 1)
-    if result.outcome == "miss":
+    if result.outcome == "miss" and result.code not in {
+        "lean_timeout", "lean_killed", "lean_budget_exhausted",
+    }:
         verdicts = {t.get("verdict") for t in result.tried if "verdict" in t}
         result.code = "lean_rejected_all" if verdicts <= {"lean_rejected"} else "backcheck_failed"
     return result
