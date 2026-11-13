@@ -41,6 +41,18 @@ def test_public_irreducible_def_and_attribute_lists(tmp_path: Path) -> None:
     assert _names(tags, "0GGG") == ["a3"] and _names(tags, "0HHH") == ["a3"]
 
 
+def test_universe_suffix_and_instance_priority(tmp_path: Path) -> None:
+    source = (
+        "@[stacks 0NNN]\ntheorem w.{u} : True := trivial\n"
+        "@[stacks 0OOO]\ninstance (priority := 100) foo : Bar := baz\n"
+        "@[stacks 0PPP]\ninstance : Bar := baz\n"
+    )
+    tags = _tags(tmp_path, source)
+    assert _names(tags, "0NNN") == ["w"]
+    assert _names(tags, "0OOO") == ["foo"]
+    assert _names(tags, "0PPP") == [None]
+
+
 def test_attribute_does_not_leak_onto_a_later_tactic_line(tmp_path: Path) -> None:
     source = "@[stacks 0III] public instance : Foo := bar\n" + "\n" * 12 + "  classical\n"
     tags = _tags(tmp_path, source)
@@ -67,4 +79,4 @@ def test_shipped_index_has_the_checked_entries() -> None:
     ]
     assert [entry["name"] for entry in tags["09G3"]] == ["Module.rank"]
     names = [entry["name"] for entries in tags.values() for entry in entries]
-    assert not any(name and name.endswith(".ical") for name in names)
+    assert not any(name and (name.endswith(".ical") or name.endswith(".")) for name in names)

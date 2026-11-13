@@ -23,7 +23,7 @@ _MODIFIERS = r"(?:(?:public|private|protected|noncomputable|nonrec|unsafe|partia
 _DECL = re.compile(
     r"^\s*(?:@\[[^\]]*\]\s*)*" + _MODIFIERS +
     r"(theorem|lemma|instance|def|abbrev|class|structure|inductive|irreducible_def|opaque|axiom)"
-    r"\b[ \t]*([^\s:({\[]*)"
+    r"\b[ \t]*(?:\([^)]*\)[ \t]*)?([^\s:({\[]*)"
 )
 _PRIVATE = re.compile(r"^\s*(?:@\[[^\]]*\]\s*)*(?:(?:public|noncomputable|nonrec)\s+)*private\b")
 _SCOPE_PREFIX = r"^\s*(?:@\[[^\]]*\]\s*)*(?:(?:public|noncomputable|meta|private|protected)\s+)*"
@@ -96,7 +96,7 @@ def extract(root: Path) -> dict[str, list[dict[str, object]]]:
             if _PRIVATE.match(line):
                 pending = []  # a private name cannot be used from outside its file
                 continue
-            kind, name = declaration.group(1), declaration.group(2)
+            kind, name = declaration.group(1), declaration.group(2).rstrip(".")  # `w.{u}`
             namespace = ".".join(n for k, n in stack if k == "namespace")
             if not name:
                 qualified = ""  # an anonymous instance has no name of its own

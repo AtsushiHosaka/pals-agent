@@ -277,14 +277,14 @@
   ],
   "002U": [
    {
-    "name": null,
+    "name": "CategoryTheory.Limits.Types.hasColimitsOfSize",
     "kind": "instance",
     "module": "Mathlib.CategoryTheory.Limits.Types.Colimits",
     "line": 124,
     "statement": "instance (priority"
    },
    {
-    "name": null,
+    "name": "CategoryTheory.Limits.Types.hasLimitsOfSize",
     "kind": "instance",
     "module": "Mathlib.CategoryTheory.Limits.Types.Limits",
     "line": 186,
@@ -590,7 +590,7 @@
   ],
   "00D3": [
    {
-    "name": null,
+    "name": "Preorder.smallCategory",
     "kind": "instance",
     "module": "Mathlib.CategoryTheory.Category.Preorder",
     "line": 47,
@@ -1293,14 +1293,14 @@
   ],
   "00Q9": [
    {
-    "name": "Algebra.ZariskisMainProperty.of_finiteType_of_weaklyQuasiFiniteAt.",
+    "name": "Algebra.ZariskisMainProperty.of_finiteType_of_weaklyQuasiFiniteAt",
     "kind": "lemma",
     "module": "Mathlib.RingTheory.ZariskisMainTheorem",
     "line": 636,
     "statement": "lemma ZariskisMainProperty.of_finiteType_of_weaklyQuasiFiniteAt.{u, v} {R : Type u} {S : Type v} [CommRing R] [CommRing S] [Algebra R S] [Algebra.FiniteType R S] (p : Ideal S) [p.IsPrime] [Algebra.WeaklyQuasiFiniteAt R p] : ZariskisMainProperty R p"
    },
    {
-    "name": "Algebra.ZariskisMainProperty.of_finiteType.",
+    "name": "Algebra.ZariskisMainProperty.of_finiteType",
     "kind": "lemma",
     "module": "Mathlib.RingTheory.ZariskisMainTheorem",
     "line": 659,
@@ -1434,7 +1434,7 @@
   ],
   "00UH": [
    {
-    "name": "Algebra.exists_etale_bijective_residueFieldMap_and_map_eq_mul_and_isCoprime.",
+    "name": "Algebra.exists_etale_bijective_residueFieldMap_and_map_eq_mul_and_isCoprime",
     "kind": "lemma",
     "module": "Mathlib.RingTheory.Polynomial.UniversalFactorizationRing",
     "line": 688,
@@ -2068,7 +2068,7 @@
   ],
   "01OY": [
    {
-    "name": null,
+    "name": "AlgebraicGeometry.IsLocallyNoetherian.quasiSeparatedSpace",
     "kind": "instance",
     "module": "Mathlib.AlgebraicGeometry.Noetherian",
     "line": 219,
@@ -2077,7 +2077,7 @@
   ],
   "01OZ": [
    {
-    "name": null,
+    "name": "AlgebraicGeometry.IsNoetherian.noetherianSpace",
     "kind": "instance",
     "module": "Mathlib.AlgebraicGeometry.Noetherian",
     "line": 317,
@@ -2086,7 +2086,7 @@
   ],
   "01P0": [
    {
-    "name": null,
+    "name": "AlgebraicGeometry.quasiCompact_of_noetherianSpace_source",
     "kind": "instance",
     "module": "Mathlib.AlgebraicGeometry.Noetherian",
     "line": 334,
@@ -2147,7 +2147,7 @@
   ],
   "01UA": [
    {
-    "name": null,
+    "name": "AlgebraicGeometry.UniversallyOpen.of_flat",
     "kind": "instance",
     "module": "Mathlib.AlgebraicGeometry.Morphisms.UniversallyOpen",
     "line": 145,
@@ -3511,7 +3511,7 @@
   ],
   "09FN": [
    {
-    "name": null,
+    "name": "Module.Free.of_divisionRing",
     "kind": "instance",
     "module": "Mathlib.LinearAlgebra.Basis.VectorSpace",
     "line": 154,
