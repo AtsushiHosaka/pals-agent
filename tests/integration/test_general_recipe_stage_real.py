@@ -54,7 +54,7 @@ def test_cube_continuity_is_answered_from_the_general_power_recipe(general):
     assert result.recipe["recipe_id"] and result.answer_text
     evidence = result.evidence()
     assert evidence["model_calls"] == 0 and evidence["back_checks"]["general_theorem_used"]
-    assert evidence["seconds"]["lean"] > 0
+    assert evidence["timings_ms"]["lean"] > 0
 
 
 @pytest.mark.parametrize(

@@ -1029,6 +1029,9 @@ class ProofReuseRuntime:
             or _conversation_history(request)
         ):
             return None
+        budget = min(30.0, deadline - time.monotonic() - 30.0)
+        if budget < 10.0:  # not enough time for Mathlib's import plus the compile: no search either
+            return None
         statement, language, _ = _request_input(request)
         parsed = parse_request(statement)
         if parsed is None or not parsed.search_query:
@@ -1039,10 +1042,7 @@ class ProofReuseRuntime:
             )
         except ValueError:
             return None
-        result = self.general_lane.run(
-            parsed.proposition, recipes, language,
-            budget_s=min(30.0, deadline - time.monotonic() - 30.0),
-        )
+        result = self.general_lane.run(parsed.proposition, recipes, language, budget_s=budget)
         if result.outcome != "answered" or not result.answer_text:
             return None
         answer = {"text": result.answer_text, "evidence_kind": EVIDENCE_KIND, "sources": []}

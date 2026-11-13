@@ -49,7 +49,8 @@ class StageResult:
     recipe: dict[str, Any] | None = None
     proposition: str | None = None
     instance_source_sha256: str | None = None
-    seconds: dict[str, float] = field(default_factory=dict)
+    timings_ms: dict[str, float] = field(default_factory=dict)
+    formal_source: str = "request_grammar"
     tried: list[dict[str, Any]] = field(default_factory=list)
 
     def evidence(self) -> dict[str, Any]:
@@ -60,14 +61,15 @@ class StageResult:
             "outcome": self.outcome,
             "code": self.code,
             "model_calls": 0,
-            "seconds": self.seconds,
+            "timings_ms": self.timings_ms,
             "tried": self.tried,
         }
         if self.outcome == "answered":
             out.update(
                 {
                     "recipe": self.recipe,
-                    "formal_source": "request_grammar",
+                    "formal_source": self.formal_source,
+                    "conclusion_head": lane.conclusion_head(self.proposition or ""),
                     "formal_statement": self.proposition,
                     "formal_statement_sha256": hashlib.sha256(
                         (self.proposition or "").encode()
@@ -89,19 +91,21 @@ class GeneralRecipeStage:
     candidates: int = lane.DEFAULT_CANDIDATES
 
     def run(
-        self, proposition: str, recipes: list[dict[str, Any]], language: str, *, budget_s: float
+        self, proposition: str, recipes: list[dict[str, Any]], language: str, *,
+        budget_s: float, formal_source: str = "request_grammar",
     ) -> StageResult:
         """Try ``proposition`` against the searched Recipes; any problem is a miss."""
         if budget_s < MIN_LEAN_SECONDS:
             return StageResult("miss", "budget_too_small")
         started = time.monotonic()
         pool: list[lane.PoolRecipe] = []
-        by_id: dict[str, dict[str, Any]] = {}
+        by_id: dict[str, dict[str, Any]] = {}  # keyed by (id, revision): never by id alone
         for candidate in recipes:
             try:
+                key = f"{candidate['recipe_id']}@{candidate['recipe_revision']}"
                 pool.append(
                     lane.PoolRecipe(
-                        candidate["recipe_id"],
+                        key,
                         candidate["lean_code"],
                         candidate["target_source"],
                         candidate["answer"],
@@ -111,7 +115,7 @@ class GeneralRecipeStage:
                 )
             except (KeyError, TypeError):
                 continue
-            by_id[candidate["recipe_id"]] = candidate
+            by_id[key] = candidate
         if not pool:
             return StageResult("miss", "no_recipe")
         runner = dataclasses.replace(
@@ -119,7 +123,8 @@ class GeneralRecipeStage:
         )
         try:
             result = lane.answer(
-                proposition, pool, runner, language=language, candidates=self.candidates
+                proposition, pool, runner, language=language, candidates=self.candidates,
+                deadline=started + budget_s,
             )
         except Exception as error:  # a stage must never fail the request
             return StageResult("miss", f"lane_error:{type(error).__name__}")
@@ -127,7 +132,7 @@ class GeneralRecipeStage:
         seconds["wall"] = round((time.monotonic() - started) * 1000, 1)
         if result.outcome != "answered" or not result.answer_text or result.recipe_id not in by_id:
             code = result.code or ("no_stored_answer" if result.outcome == "answered" else "miss")
-            return StageResult("miss", code, seconds=seconds, tried=result.tried)
+            return StageResult("miss", code, timings_ms=seconds, tried=result.tried)
         chosen = by_id[result.recipe_id]
         digests = {
             key: chosen.get(key)
@@ -142,6 +147,7 @@ class GeneralRecipeStage:
             result.proposition,
             result.instance_source_sha256,
             seconds,
+            formal_source,
             result.tried,
         )
 

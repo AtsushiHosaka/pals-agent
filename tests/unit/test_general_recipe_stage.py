@@ -35,7 +35,7 @@ def runtime(general_lane):
 def answered():
     return stage.StageResult(
         "answered", None, "ANSWER", {"recipe_id": RECIPE["recipe_id"], "recipe_revision": 1},
-        "Continuous (fun x : ℝ => x ^ 3)", "a" * 64, {"lean": 4800.0}, [],
+        "Continuous (fun x : ℝ => x ^ 3)", "a" * 64, {"lean": 4800.0}, "request_grammar", [],
     )
 
 
@@ -144,3 +144,79 @@ def test_pointwise_corollary_of_a_global_recipe_is_related():
     continuous = lane.PoolRecipe("p", "", "∀ n : ℕ, Continuous (fun x : ℝ => x ^ n)")
     assert lane.related("ContinuousAt (fun x : ℝ => x ^ 2) 1", continuous)
     assert not lane.related("StrictMono (fun x : ℝ => x ^ 3)", continuous)
+
+
+@pytest.mark.parametrize(
+    ("statement", "head"),
+    [
+        ("Continuous fun x : ℝ => x ^ 2", "Continuous"),  # `=>` is not a relation
+        ("∀ x : ℝ, x = 0 ↔ x ^ 2 = 0", "↔"),
+        ("0 ≤ a ∧ a ≤ b", "∧"),
+        ("¬ (∀ i : ℕ, i = i)", "¬"),
+        ("∃ x : ℝ, 0 ≤ x", "∃"),
+        ("x ∉ S", "∉"),
+    ],
+)
+def test_conclusion_head_top_level_connectives(statement, head):
+    assert lane.conclusion_head(statement) == head
+
+
+def test_related_is_not_fooled_by_connectives_or_prefix_names():
+    forall = lane.PoolRecipe("r", "", "∀ x : ℝ, 0 ≤ x ^ 2")
+    assert not lane.related("∃ x : ℝ, 0 ≤ x", forall)
+    iff = lane.PoolRecipe("r", "", "∀ x : ℝ, x ^ 2 = 0 ↔ x = 0")
+    assert not lane.related("(2 : ℝ) + 2 = 4", iff)
+    open_set = lane.PoolRecipe("r", "", "∀ s : Set ℝ, IsOpen s")
+    assert not lane.related("IsOpenMap f", open_set)
+    continuous = lane.PoolRecipe("r", "", "∀ n : ℕ, Continuous (fun x : ℝ => x ^ n)")
+    assert not lane.related("ContinuousOn (fun x : ℝ => x ^ 2) s", continuous)
+
+
+def test_same_recipe_id_with_two_revisions_binds_the_revision_that_answered(monkeypatch):
+    seen = {}
+
+    def fake_answer(proposition, pool, runner, **kwargs):
+        seen["ids"] = [r.recipe_id for r in pool]
+        seen["deadline"] = kwargs["deadline"]
+        return lane.LaneResult(
+            "answered", None, "r@2", "catalog", proposition, "s" * 64, "REV2", 0, {}, []
+        )
+
+    monkeypatch.setattr(lane, "answer", fake_answer)
+    base = {"lean_code": "x", "target_source": "t", "output_language": "ja"}
+    recipes = [
+        dict(base, recipe_id="r", recipe_revision=1, answer="REV1", entry_sha256="1" * 64),
+        dict(base, recipe_id="r", recipe_revision=2, answer="REV2", entry_sha256="2" * 64),
+    ]
+    general = stage.GeneralRecipeStage(lane.LeanRunner("/nonexistent/lean", ""))
+    result = general.run("P", recipes, "ja", budget_s=30.0)
+    assert seen["ids"] == ["r@1", "r@2"] and seen["deadline"] > 0
+    assert result.recipe["recipe_revision"] == 2 and result.recipe["entry_sha256"] == "2" * 64
+    assert "timings_ms" in result.evidence() and "seconds" not in result.evidence()
+
+
+def test_a_timeout_skips_the_second_stage_and_the_total_stays_inside_the_budget(monkeypatch):
+    runs = []
+
+    def fake_run(self, source):
+        runs.append(self.timeout_seconds)
+        return 124, "timeout", self.timeout_seconds
+
+    monkeypatch.setattr(lane.LeanRunner, "run", fake_run)
+    source = "import Mathlib\n\ntheorem g (n : ℕ) : Continuous (fun x : ℝ => x ^ n) := by sorry\n"
+    pool = [lane.PoolRecipe("r@1", source, "∀ n : ℕ, Continuous (fun x : ℝ => x ^ n)", "A")]
+    runner = lane.LeanRunner("/nonexistent/lean", "")
+    result = lane.answer(
+        "Continuous (fun x : ℝ => x ^ 3)", pool, runner, deadline=time.monotonic() + 20.0
+    )
+    assert result.outcome == "miss" and result.code == "lean_timeout"
+    assert len(runs) == 1 and runs[0] <= 20.0
+
+
+def test_runtime_returns_before_searching_when_the_budget_is_small(on):
+    scripted = Scripted(answered())
+    search, calls = lookup([RECIPE])
+    result = runtime(scripted).general_recipe_input(
+        REQUEST, recipe_search=search, deadline=time.monotonic() + 35
+    )
+    assert result is None and calls == [] and scripted.calls == []
