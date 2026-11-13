@@ -26,7 +26,7 @@ import logging
 import os
 import threading
 import time
-from collections.abc import Callable, Iterator, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from concurrent.futures import Future, wait
 from contextlib import contextmanager
 from contextvars import ContextVar, copy_context
@@ -47,6 +47,7 @@ NAME_SAFETY_ENV = "PALS_T2_NAME_SAFETY_ENABLED"
 HETERO_RACE_ENV = "PALS_T2_HETERO_RACE_ENABLED"
 SOURCE_HYGIENE_ENV = "PALS_T2_SOURCE_HYGIENE_ENABLED"
 CHEAP_FIRST_ENV = "PALS_T2_CHEAP_FIRST_ENABLED"
+REPAIR_HINTS_ENV = "PALS_T2_REPAIR_HINTS_ENABLED"
 # Reasoning effort of each race candidate when HETERO_RACE_ENV is on: a fast one and a strong one.
 HETERO_EFFORTS = ("low", "medium")
 # How long a failed compile waits for the held alternate candidate to finish generating. A model
@@ -81,6 +82,54 @@ def cheap_first_enabled() -> bool:
     (a patch, a full repair) runs at the role's own, stronger effort. One candidate, no race: a
     plain compile failure escalates instead of paying for a second candidate up front."""
     return _flag(CHEAP_FIRST_ENV)
+
+
+def repair_hints_enabled() -> bool:
+    """A patch-repair prompt gets one fixed instruction per error class of the failed compile."""
+    return _flag(REPAIR_HINTS_ENV)
+
+
+# Instruction per error class (the closed vocabulary of ``failure_brief.ERROR_CLASSES``). The
+# texts are constants: nothing of the compiler's output reaches them.
+REPAIR_HINTS: dict[str, str] = {
+    "unknown_identifier": (
+        "A name in the source does not exist. Do not swap it for another guessed name: prove "
+        "that fact inline with a `have` closed by an automation tactic (`nlinarith`, "
+        "`positivity`, `norm_num`, `simp`, `omega`), or use a lemma you are certain exists."
+    ),
+    "unsolved_goals": (
+        "A tactic did not close its goal. Do not repeat it and do not leave a search tactic "
+        "(`exact?`, `apply?`, `simp?`) in the proof: add the missing step explicitly "
+        "(`unfold` or `simp only`, `rw`, `induction`, `constructor`, `intro`, `calc`) or close "
+        "it with a different tactic."
+    ),
+    "type_mismatch": (
+        "A term has a different type or form than expected. Make the expected form explicit "
+        "with `show` or `change`, convert with `by simpa using ...`, `funext` or a cast lemma, "
+        "or restructure with `have`."
+    ),
+    "rewrite_failed": (
+        "A rewrite pattern was not found. Use `simp only`, a `calc` chain, or a `have` with the "
+        "explicit equation instead of `rw`."
+    ),
+    "parse_error": (
+        "Fix only the syntax at the reported line. Lean 4 keywords (`λ`, `fun`, `at`, `from`, "
+        "`end`) cannot be variable names, and `(` or `[` may need a different spacing."
+    ),
+}
+_HINT_ALIASES = {
+    "unknown_namespace": "unknown_identifier",
+    "tactic_failed": "unsolved_goals",
+    "application_mismatch": "type_mismatch",
+    "instance_missing": "type_mismatch",
+}
+
+
+def repair_hint_block(error_classes: Iterable[str]) -> str:
+    """The hints for these error classes (each once, in a fixed order), or ''."""
+    wanted = {_HINT_ALIASES.get(name, name) for name in error_classes}
+    lines = [REPAIR_HINTS[name] for name in REPAIR_HINTS if name in wanted]
+    return "Repair hints for the error classes above:\n" + "\n".join(lines) if lines else ""
 
 
 def source_hygiene_enabled() -> bool:
@@ -133,6 +182,7 @@ def validate_flags() -> None:
         hetero_race_enabled,
         source_hygiene_enabled,
         cheap_first_enabled,
+        repair_hints_enabled,
         lean_slots,
         lean_process_slots,
     ):
