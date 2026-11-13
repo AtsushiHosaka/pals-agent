@@ -1379,6 +1379,18 @@
   {
    "id": "tests.unit.test_fast_answer::test_a_cancelled_run_stops_and_publishes_nothing",
    "reason": "real pinned Lean needed: needs PALS_RESIDENT_LEAN, PALS_RESIDENT_LEAN_PATH and PALS_RESIDENT_LEAN_PROJECT"
+  },
+  {
+   "id": "tests.integration.test_general_recipe_stage_real::test_cube_continuity_is_answered_from_the_general_power_recipe",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe request-path stage, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_stage_real::test_non_instances_fall_through[Continuous (fun x : \\u211d => x ^ 2 + 1)]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe request-path stage, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_stage_real::test_non_instances_fall_through[(2 : \\u211d) + 2 = 4]",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe request-path stage, model-free); not provided on this runner."
   }
  ],
  "allowed_unexecuted_modules": [
@@ -1417,6 +1429,10 @@
   {
    "id": "tests.integration.test_statement_injection_real",
    "reason": "Needs the real pinned Lean workspace and macOS sandbox-exec; not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_stage_real",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace; not provided on this runner."
   }
  ]
 }
