@@ -1,0 +1,186 @@
+{
+ "first_runs": [
+  {
+   "arm": "base",
+   "problem_id": "req_defn_x2",
+   "repeat": 1,
+   "answer_ok": true,
+   "review_approved": false,
+   "first_attempt_ok": false,
+   "repairs_used": 3,
+   "wall_s": 146.993,
+   "answer_s": 163.28051141600008,
+   "cost_usd": 0.06876225
+  },
+  {
+   "arm": "base",
+   "problem_id": "req_defn_linear",
+   "repeat": 1,
+   "answer_ok": true,
+   "review_approved": true,
+   "first_attempt_ok": false,
+   "repairs_used": 3,
+   "wall_s": 162.523,
+   "answer_s": 177.47469345900026,
+   "cost_usd": 0.0790162
+  },
+  {
+   "arm": "base",
+   "problem_id": "req_epsn_ja",
+   "repeat": 1,
+   "answer_ok": true,
+   "review_approved": true,
+   "first_attempt_ok": false,
+   "repairs_used": 1,
+   "wall_s": 64.354,
+   "answer_s": 79.45058787499875,
+   "cost_usd": 0.02811975
+  },
+  {
+   "arm": "base",
+   "problem_id": "req_epsn_en",
+   "repeat": 1,
+   "answer_ok": true,
+   "review_approved": true,
+   "first_attempt_ok": true,
+   "repairs_used": 0,
+   "wall_s": 58.578,
+   "answer_s": 71.08063700000639,
+   "cost_usd": 0.02835805
+  },
+  {
+   "arm": "base",
+   "problem_id": "req_defn_linear",
+   "repeat": 2,
+   "answer_ok": true,
+   "review_approved": false,
+   "first_attempt_ok": false,
+   "repairs_used": 3,
+   "wall_s": 210.316,
+   "answer_s": 229.2886481670066,
+   "cost_usd": 0.10795850000000001
+  },
+  {
+   "arm": "base",
+   "problem_id": "req_defn_x2",
+   "repeat": 2,
+   "answer_ok": true,
+   "review_approved": false,
+   "first_attempt_ok": false,
+   "repairs_used": 3,
+   "wall_s": 130.61,
+   "answer_s": 146.21268062500167,
+   "cost_usd": 0.06294789999999999
+  },
+  {
+   "arm": "base",
+   "problem_id": "req_epsn_en",
+   "repeat": 2,
+   "answer_ok": true,
+   "review_approved": true,
+   "first_attempt_ok": false,
+   "repairs_used": 1,
+   "wall_s": 60.158,
+   "answer_s": 75.7809758749936,
+   "cost_usd": 0.024969650000000003
+  },
+  {
+   "arm": "base",
+   "problem_id": "req_epsn_ja",
+   "repeat": 2,
+   "answer_ok": true,
+   "review_approved": true,
+   "first_attempt_ok": true,
+   "repairs_used": 0,
+   "wall_s": 59.341,
+   "answer_s": 86.67935983300413,
+   "cost_usd": 0.02659895
+  },
+  {
+   "arm": "base",
+   "problem_id": "req_epsn_ja",
+   "repeat": 3,
+   "answer_ok": true,
+   "review_approved": true,
+   "first_attempt_ok": true,
+   "repairs_used": 0,
+   "wall_s": 55.828,
+   "answer_s": 83.15371233300539,
+   "cost_usd": 0.027105000000000004
+  },
+  {
+   "arm": "base",
+   "problem_id": "req_defn_x2",
+   "repeat": 3,
+   "answer_ok": true,
+   "review_approved": true,
+   "first_attempt_ok": false,
+   "repairs_used": 1,
+   "wall_s": 93.975,
+   "answer_s": 135.56003812499694,
+   "cost_usd": 0.0440316
+  },
+  {
+   "arm": "base",
+   "problem_id": "req_defn_linear",
+   "repeat": 3,
+   "answer_ok": true,
+   "review_approved": true,
+   "first_attempt_ok": false,
+   "repairs_used": 3,
+   "wall_s": 165.162,
+   "answer_s": 181.11811562500225,
+   "cost_usd": 0.08724655
+  },
+  {
+   "arm": "base",
+   "problem_id": "req_epsn_en",
+   "repeat": 3,
+   "answer_ok": true,
+   "review_approved": true,
+   "first_attempt_ok": true,
+   "repairs_used": 0,
+   "wall_s": 60.058,
+   "answer_s": 79.7162577919953,
+   "cost_usd": 0.02801765
+  }
+ ],
+ "second_runs_for_rejected": [
+  {
+   "arm": "base",
+   "problem_id": "req_defn_x2",
+   "repeat": 1,
+   "answer_ok": true,
+   "review_approved": true,
+   "first_attempt_ok": false,
+   "repairs_used": 2,
+   "wall_s": 120.037,
+   "answer_s": 139.2445424999969,
+   "cost_usd": 0.0528577
+  },
+  {
+   "arm": "base",
+   "problem_id": "req_defn_x2",
+   "repeat": 2,
+   "answer_ok": true,
+   "review_approved": true,
+   "first_attempt_ok": false,
+   "repairs_used": 1,
+   "wall_s": 87.823,
+   "answer_s": 106.37575345799996,
+   "cost_usd": 0.03688545000000001
+  },
+  {
+   "arm": "base",
+   "problem_id": "req_defn_linear",
+   "repeat": 1,
+   "answer_ok": true,
+   "review_approved": true,
+   "first_attempt_ok": false,
+   "repairs_used": 2,
+   "wall_s": 146.127,
+   "answer_s": 160.24396612500277,
+   "cost_usd": 0.0744624
+  }
+ ]
+}
