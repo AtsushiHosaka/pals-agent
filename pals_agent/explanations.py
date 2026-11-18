@@ -871,6 +871,7 @@ class LeanProofExplainer:
                     language=language,
                     require_linear_ending=True,
                     strict_prose=True,
+                    require_result_in_conclusion=asks_for_explicit_result(theorem_statement),
                 ),
                 # A rejected candidate may have failed on its figure, so a correction omits it.
                 None if review_feedback else _optional_figure(value.get("figure"), lean_code),
@@ -1086,6 +1087,31 @@ def _optional_figure(
     return (call, bindings) if labels_occur_in(call, lean_code) else None
 
 
+# A deliberately narrow cue for the conclusion rule (new generation): the request itself orders a
+# result ("求めよ", "compute ..."). Proof requests that merely contain a cue word ("いくつかの",
+# "計算機を使わずに", "find ... を示せ", "determine whether") must not match, because a false
+# match costs the learner a rewrite.
+_RESULT_ORDER = re.compile(
+    r"(?i)(?:求めよ|求めなさい|求めてください|求めて下さい|計算せよ|計算しなさい|計算してください"
+    r"|を求め(?=[、，,])|を決定せよ|判定せよ|解け(?![るな])"
+    r"|\b(?:compute|calculate|evaluate|solve)\b|\bfind (?:the|all|every)\b|\bwhat is\b)"
+)
+_PROOF_ORDER = re.compile(r"(?i)\bprove\b|\bshow that\b|\bwhether\b")
+
+
+def asks_for_explicit_result(theorem_statement: str) -> bool:
+    """The request orders a result and is not a proof request."""
+    return (
+        _RESULT_ORDER.search(theorem_statement) is not None
+        and _PROOF_ORDER.search(theorem_statement) is None
+    )
+
+
+# Any math span: the conclusion must state its result as a formula rather than only say that the
+# proof is complete.
+_ANY_FORMULA = re.compile(r"\$[^$]+\$")
+
+
 def _parse_explanation(
     payload: dict[str, Any],
     lean_code: str,
@@ -1093,6 +1119,7 @@ def _parse_explanation(
     language: str = "ja",
     require_linear_ending: bool = False,
     strict_prose: bool = False,
+    require_result_in_conclusion: bool = False,
 ) -> tuple[str, tuple[ExplanationSection, ...], str]:
     _require_output_language(language)
     overview = _required_bounded_language_text(
@@ -1155,6 +1182,14 @@ def _parse_explanation(
         _require_prose_language([overview, *(s.summary for s in sections), conclusion], language)
     if require_linear_ending:
         _reject_repeated_final_equation(sections[-1].summary, conclusion)
+    if require_result_in_conclusion and not _ANY_FORMULA.search(conclusion):
+        # A conclusion such as "the claim has been confirmed" is not an answer. New generations
+        # only: saved explanations are parsed without this rule and stay readable.
+        raise ValueError(
+            "The request asks for a result, so the conclusion must state the explicit result "
+            "(the value, expression or decision) inside a $...$ formula, not only that the "
+            "proof is complete."
+        )
     return overview, tuple(sections), conclusion
 
 
