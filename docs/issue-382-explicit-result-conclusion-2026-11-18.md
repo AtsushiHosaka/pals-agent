@@ -16,7 +16,7 @@ Agent#127の`6c495b1`、`05886f5`、`b0c7b1f`から、明示的な求値命令�
 
 ## 検証と限界
 
-新規テストはscripted transportで生成器と構造検査だけを通す。有限和、導関数、行列式などを入力に使う。テストのLean文字列は行参照の検査入力であり、このテストで実compilerに受理されたと主張しない。実provider、実Lean、独立QA、本番の回答率は測っていない。
+新規テストはscripted transportで生成器と構造検査だけを通す。正の実数$x$に対する$x+1/x$の最小値と達成条件、導関数、行列式などを入力に使う。共通fixtureでは平方の非負性から下界を導き、等号条件を確かめる。構造テスト自体はcompilerやQAを実行せず、本番の回答率を測らない。
 
 | 検証 | 実結果 | 証拠の範囲 |
 | --- | --- | --- |
@@ -31,3 +31,16 @@ Agent#127の`6c495b1`、`05886f5`、`b0c7b1f`から、明示的な求値命令�
 広域58modulesの初回実行は1946件成功、47件失敗、9件error、4件skipだった。46件の失敗と9件のerrorはsandboxのloopback拒否、1件の失敗はstandalone worktreeに親compose fixtureがないことによる。skipはLinux Landlockの3件と、optional httpx不足の1件である。この結果は広域成功ではない。loopbackの影響を受けた5modulesだけを通常権限で再実行し、109件成功・1件skipを確認した。残ったskipはoptional httpx不足である。親fixture欠損とMacで実行できない境界は解消済みと扱わず、exact-source CIで別に確認する。
 
 新規モデル呼出、設定変更、本番操作は0。v6/v8の旧測定、unit件数、CI結果を本番精度の証明や製品成功率へ流用しない。意味審査で不合格になった依頼の再形式化はAPI#108の別の経路であり、この変更では有効化しない。全工程と本番での検証、実際の最終答えの一致、全言語の網羅は未確認のままである。
+
+
+## 題材の訂正と実compilerの別確認
+
+初版136b42aでは数学題材の条件を見落とし、単純計算だけで終わる有限和を使っていた。親担当の確認後、tests-only commit04a156eで最小値と等号条件を求める題へ替えた。旧テストと測定の履歴は保持する。製品source2ファイルのbytesは136b42aから変えていない。訂正後も旧sourceでは10件失敗・10件成功、新sourceでは20件成功で、関連5modulesは221件成功・skipなしだった。
+
+別の確認として、同じ既存Mathlib環境とLean4.32.0-rc1でtests/fixtures/reciprocal_minimum.leanを直接コンパイルした。初回のimport Mathlibは50秒でtimeoutになった。importをReal.Basicと使用するtacticに絞り、証明内容を変えずに実行し直すと9.597秒でexit0、構文上の冗長なtactic連結に関するwarning1件だった。fixtureのSHA256は8f533a306da1cc43ae634b9d7da6516cdf3e996994008a0faf41a8fa6824ea54。実環境のlake-manifest.jsonは候補146ecf2のbytesと一致し、SHA256は290f048c4a499d34a3b21f8db30ade48a2b8d05b0fe79709f1868fa6748944faだった。このローカルcompilerの受理は構造テストやQAの成功とは別の証拠で、本番verifierやsandboxとの同等性は示さない。
+
+## CIの履歴
+
+初回のexact-head CI44250860879はcandidate7767件成功・31件失敗・259件skipで、coreの再起動予算テスト1件によりblockedとなった。新20回帰はartifactでも全件成功だった。失敗はbirth-*件数の下限3に対し2件となったもので、anchorでは同じテストが成功した。worker_processes.pyはanchorと候補でbyte同一で、当該fresh subprocessは変更した説明moduleをimportしない。localの固定20反復は全件成功だったが、GitHub Linuxと同条件ではない。順序raceの原因は未確定のまま保持する。
+
+手動job rerunは行わず、レビュー専用baseに作ったdraft PR149の自然なCI44251800913を同sourceの再試行1回として確認した。136b42aで7768件成功・30件失敗・259件skipとなり、既存基準とanchor比較を満たしてqualifiedだった。既存失敗やskipが解消したとは扱わない。題材訂正後の新headには改めてexact-source CIが必要で、この旧結果を継承しない。review-baseは146ecf2を指すだけで、main全体の統合や本番反映を意味しない。
