@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -20,24 +21,25 @@ from pals_agent.explanations import (
 )
 
 # Only a line-binding input for structural tests; this suite does not compile it.
-LEAN = "theorem finite_sum : (Finset.range 11).sum id = 55 := by decide"
-REQUEST = "0から10までの整数の和を求めよ。"
+LEAN = (Path(__file__).parents[1] / "fixtures/reciprocal_minimum.lean").read_text().rstrip("\n")
+REQUEST = "正の実数 $x$ について、$x+1/x$ の最小値と、それを達成する $x$ を求めよ。"
 GENERIC = "以上で、主張が確かめられました。"
-RESULT = "したがって和は $55$ です。"
+RESULT = "最小値は $2$ で、$x=1$ のときに限り達成されます。"
 
 
 def payload(conclusion: str, *, v2: bool = False) -> dict[str, Any]:
-    reference: dict[str, Any] = {"start_line": 1, "end_line": 1}
+    reference: dict[str, Any] = {"start_line": 1, "end_line": len(LEAN.splitlines())}
     if not v2:
         reference["excerpt"] = LEAN
     return {
-        "overview": "求める和は $55$ です。" if v2 else "両端から項を組にします。",
+        "overview": RESULT if v2 else "平方の非負性から下界と等号条件を調べます。",
         "sections": [
             {
-                "id": "pair-terms",
-                "title": "項の組",
+                "id": "lower-bound",
+                "title": "下界と等号条件",
                 "summary": (
-                    "両端から組にした五組の和はそれぞれ $10$ で、中央には $5$ が残ります。"
+                    "$x>0$ より $(x-1)^2/x=x+1/x-2\\ge 0$ です。等号が成り立つのは、"
+                    "分子の平方が $0$ になるときに限られます。"
                 ),
                 "references": [reference],
             }
@@ -85,7 +87,7 @@ def test_missing_result_never_returns_when_existing_budget_is_exhausted(v2: bool
             ).explain(
                 theorem_statement=REQUEST,
                 lean_code=LEAN,
-                draft_text="組にして和を求めます。",
+                draft_text="平方の非負性から下界を導き、等号条件を調べます。",
             )
         else:
             LeanProofExplainer(
@@ -103,10 +105,11 @@ def test_v2_missing_conclusion_is_corrected_even_with_an_explicit_overview() -> 
     result = ExplanationWriterV2(client=client, model="scripted", provider="test").explain(
         theorem_statement=REQUEST,
         lean_code=LEAN,
-        draft_text="組にして和を求めます。",
+        draft_text="平方の非負性から下界を導き、等号条件を調べます。",
     )
     assert result.conclusion == RESULT
-    assert "$55$" in result.overview
+    assert "$2$" in result.overview
+    assert "$x=1$" in result.overview
     assert len(client.prompts) == 2
     assert "explicit result" in client.prompts[1]
 
@@ -123,7 +126,7 @@ def test_v2_requires_the_result_in_conclusion_not_only_in_overview() -> None:
 
 def test_v2_keeps_its_explicit_overview_requirement() -> None:
     value = payload(RESULT, v2=True)
-    value["overview"] = "両端から項を組にします。"
+    value["overview"] = "平方の非負性から下界を調べます。"
     with pytest.raises(ValueError, match="overview"):
         validate_v2_payload(value, theorem_statement=REQUEST, lean_code=LEAN, language="ja")
 
@@ -131,7 +134,7 @@ def test_v2_keeps_its_explicit_overview_requirement() -> None:
 @pytest.mark.parametrize(
     "statement",
     [
-        "0から10までの整数の和を求めよ。",
+        "正の実数 $x$ について、$x+1/x$ の最小値と、それを達成する $x$ を求めよ。",
         "行列の行列式を計算せよ。",
         "Compute the determinant of the matrix.",
         "Find the derivative of $e^x$.",
@@ -216,12 +219,12 @@ def test_v2_writer_and_review_both_require_the_final_result_in_conclusion() -> N
     explanation = ExplanationWriterV2(client=client, model="scripted", provider="test").explain(
         theorem_statement=REQUEST,
         lean_code=LEAN,
-        draft_text="組にして和を求めます。",
+        draft_text="平方の非負性から下界を導き、等号条件を調べます。",
     )
     writer_prompt = explanation_prompt_v2(
         theorem_statement=REQUEST,
         lean_code=LEAN,
-        draft_text="組にして和を求めます。",
+        draft_text="平方の非負性から下界を導き、等号条件を調べます。",
         language="ja",
     )
     reviewer_prompt = review_prompt_v2(
