@@ -71,9 +71,20 @@ def test_cube_continuity_is_answered_from_the_general_power_recipe(general):
         "(2 : ℝ) + 2 = 4",  # provable without any Recipe: must not be credited to one
     ],
 )
-def test_non_instances_fall_through(general, proposition):
+def test_non_instances_fall_through(general, proposition, record_property):
     result = general.run(proposition, candidates(), "ja", budget_s=60.0)
+    verdicts = {item["verdict"] for item in result.tried if "verdict" in item}
+    lean_ms = result.timings_ms.get("lean", 0)
+    record_property("outcome", result.outcome)
+    record_property("rejection_code", result.code or "none")
+    record_property("lean_ms", lean_ms)
+    record_property("verdicts", ",".join(sorted(verdicts)))
     assert result.outcome == "miss", result.tried
+    assert result.code in {"lean_rejected_all", "backcheck_failed"}, result.code
+    assert lean_ms > 0
+    assert verdicts and verdicts <= {
+        "lean_rejected", "does_not_use_general_theorem", "unrelated_conclusion"
+    }, verdicts
 
 
 def test_the_api_wrapper_proves_a_hypothesis_instance_the_lane_accepts(general):

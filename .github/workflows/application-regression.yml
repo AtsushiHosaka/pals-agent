@@ -226,6 +226,37 @@ jobs:
               assert actual == package['rev'], package['name']
           assert sandbox.available(), 'real macOS containment is required'
           PYCODE
+      - name: Establish dependency-only Mathlib readiness once before the five cases
+        timeout-minutes: 2
+        env:
+          PATH: ${{ env.AGENT_TEST_BASE_PATH }}
+        run: |
+          uv run --no-sync python - <<'PYCODE'
+          import hashlib, json, os, time
+          from pathlib import Path
+          from pals_agent.general_recipe_lane import LeanRunner
+          started = time.monotonic()
+          result = {'schema_version': 'pals.agent-mathlib-readiness.v1',
+                    'timeout_s': 120.0, 'ready': False, 'compiler_returncode': None}
+          try:
+              runner = LeanRunner.from_workspace(
+                  Path(os.environ['PALS_GENERAL_RECIPE_STAGE_TEST_WORKSPACE']),
+                  lake=os.environ['PALS_GENERAL_RECIPE_STAGE_TEST_LAKE'])
+              assert runner.timeout_seconds == 120.0
+              code, output, seconds = runner.run('import Mathlib\n#check Nat\n')
+              result.update(compiler_returncode=code, lean_seconds=seconds,
+                            output_sha256=hashlib.sha256(output.encode()).hexdigest())
+              result['ready'] = (code == 0 and ': error' not in output
+                                 and 'error:' not in output and 'Nat : Type' in output)
+          except Exception as error:
+              result['error_class'] = type(error).__name__
+          result['total_seconds'] = time.monotonic() - started
+          result['ready'] = result['ready'] and result['total_seconds'] <= 120.0
+          path = Path(os.environ['RUNNER_TEMP'])/'mathlib-readiness.json'
+          path.write_text(json.dumps(result, sort_keys=True)+'\n')
+          print(json.dumps(result, sort_keys=True))
+          raise SystemExit(0 if result['ready'] else 1)
+          PYCODE
       - name: Run only the disjoint real-Lean module without changing test deadlines
         timeout-minutes: 10
         env:
@@ -241,6 +272,7 @@ jobs:
           name: agent-lean-reports
           path: |
             ${{ runner.temp }}/general-recipe.xml
+            ${{ runner.temp }}/mathlib-readiness.json
             ${{ runner.temp }}/mac-source.json
           if-no-files-found: error
 
