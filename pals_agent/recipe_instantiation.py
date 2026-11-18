@@ -514,6 +514,7 @@ def render_answer(
 MAX_ARITY: Final = 6
 MAX_PROPOSITION: Final = 2_000
 ELABORATION_VOCABULARY: Final = ("first", "exact", "_", "(name := literal)", "(by norm_num)",
+                                 "(intros; apply G <;> first | closers)",
                                  "(by decide)")
 _FORBIDDEN_IN_PROPOSITION = re.compile(
     r"(?<![\w'.])(by|show|change|unfold|simp|simpa|sorry|admit|axiom|decide|native_decide"
@@ -543,6 +544,11 @@ def check_proposition(requested: object) -> str:
     return text
 
 
+_SIDE_GOAL_CLOSERS: Final = (
+    "assumption | fun_prop | positivity | (norm_num; done) | linarith | (simp; done)"
+)
+
+
 def _alternatives(
     general: str, arity: int, hints: list[tuple[str, str]], *, mathlib: bool
 ) -> list[str]:
@@ -553,6 +559,13 @@ def _alternatives(
         alternatives.append(f"exact {general} {named} _")
     for count in range(arity, -1, -1):
         alternatives.append("exact " + " ".join([general] + ["_"] * count))
+    if mathlib:
+        # Hypotheses of the general theorem that the request itself does not state: `apply` leaves
+        # them as side goals, closed only by this fixed list.  The declared type is the request's
+        # proposition, so the closers can discharge premises but never change the statement.
+        # It sits BEFORE the `(by ..)` alternatives: a `by` inside a term logs "unsolved goals"
+        # instead of throwing, so `first` cannot fall back past such an alternative.
+        alternatives.append(f"(intros; apply {general} <;> first | {_SIDE_GOAL_CLOSERS})")
     # `norm_num` only parses where Mathlib is imported; a parse error would void every alternative.
     for tactic in (("norm_num", "decide") if mathlib else ("decide",)):
         for side in (1, 2):
