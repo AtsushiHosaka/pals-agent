@@ -14,8 +14,15 @@ from pals_agent import general_recipe_lane as lane
 from pals_agent import general_recipe_stage as stage
 
 ROOT = Path(__file__).resolve().parents[2]
-WORKSPACE = Path(os.environ.get("PALS_LEAN_WORKSPACE", ROOT / "lean-workspace"))
-LAKE = shutil.which("lake") or str(Path.home() / ".elan/bin/lake")
+WORKSPACE = Path(
+    os.environ.get("PALS_GENERAL_RECIPE_STAGE_TEST_WORKSPACE")
+    or os.environ.get("PALS_LEAN_WORKSPACE", ROOT / "lean-workspace")
+)
+LAKE = (
+    os.environ.get("PALS_GENERAL_RECIPE_STAGE_TEST_LAKE")
+    or shutil.which("lake")
+    or str(Path.home() / ".elan/bin/lake")
+)
 pytestmark = pytest.mark.skipif(
     not (WORKSPACE / ".lake/packages/mathlib").exists() or not Path(LAKE).exists(),
     reason="a Lake workspace with built Mathlib (pinned v4.32.0-rc1) is required",

@@ -3,6 +3,7 @@ name: Agent application regression
 on:
   pull_request:
   push:
+    branches: [main]
   merge_group:
     types: [checks_requested]
 
@@ -24,12 +25,13 @@ concurrency:
 #     the candidate, or that is new and failing, blocks.
 #   * Skips and never-executed modules must be listed with a reason; the 42 declared
 #     runtime-core modules must run with no failure and no skip.
-#   * It does NOT run real Lean/Mathlib, a real database, a real model or the deployed
-#     images; the listed baseline failures remain unqualified, not "passing".
+#   * The general-Recipe integration cases use pinned real Lean/Mathlib and the
+#     existing macOS sandbox-exec containment. No real database/model or deployed
+#     image is exercised; listed baseline failures remain unqualified, not "passing".
 jobs:
   agent-regression:
     name: agent-regression
-    runs-on: ubuntu-24.04
+    runs-on: macos-15
     timeout-minutes: 40
     defaults:
       run:
@@ -39,6 +41,9 @@ jobs:
       UV_NO_PROGRESS: "1"
       UV_PYTHON_DOWNLOADS: never
       AWS_EC2_METADATA_DISABLED: "true"
+      PALS_GENERAL_RECIPE_STAGE_TEST_WORKSPACE: ${{ runner.temp }}/agent-lean-workspace
+      PALS_GENERAL_RECIPE_STAGE_TEST_LAKE: ${{ runner.temp }}/agent-lean-home/.elan/bin/lake
+      ELAN_HOME: ${{ runner.temp }}/agent-lean-home/.elan
       RETAINED_VERIFIER_ANCHOR: 189b44378e6e63e5ab7c92d9c5b7d6507acd80f0
     steps:
       - name: Check out the immutable public parent fixture contract
@@ -73,12 +78,62 @@ jobs:
           enable-cache: false
       - name: Install the locked declared development environment
         run: uv sync --locked --extra dev --python 3.12.13
+      - name: Freeze the candidate Lean workspace outside both source checkouts
+        run: |
+          echo "AGENT_TEST_BASE_PATH=$PATH" >> "$GITHUB_ENV"
+          mkdir "$PALS_GENERAL_RECIPE_STAGE_TEST_WORKSPACE"
+          cp lean-workspace/lean-toolchain lean-workspace/lake-manifest.json \
+            lean-workspace/lakefile.lean "$PALS_GENERAL_RECIPE_STAGE_TEST_WORKSPACE/"
+          test "$(cat "$PALS_GENERAL_RECIPE_STAGE_TEST_WORKSPACE/lean-toolchain")" = leanprover/lean4:v4.32.0-rc1
+      - name: Reuse only the exact OS, architecture, toolchain and manifest cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ${{ runner.temp }}/agent-lean-workspace/.lake
+            ${{ runner.temp }}/agent-lean-home/.elan/toolchains
+          key: agent-lean-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('parent-fixture/pals-agent/lean-workspace/lean-toolchain') }}-${{ hashFiles('parent-fixture/pals-agent/lean-workspace/lake-manifest.json') }}
+      - name: Install the pinned Lean toolchain with the official setup action
+        timeout-minutes: 10
+        uses: leanprover/lean-action@ba3fdfe5c4476c925da13bf11a005ddb47e47aee # v1
+        env:
+          HOME: ${{ runner.temp }}/agent-lean-home
+        with:
+          lake-package-directory: ${{ runner.temp }}/agent-lean-workspace
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: false
+          use-github-cache: false
+      - name: Obtain and verify the exact Mathlib cache without changing its lock
+        timeout-minutes: 10
+        run: |
+          cd "$PALS_GENERAL_RECIPE_STAGE_TEST_WORKSPACE"
+          lake exe cache get
+          lake env lean --version | grep -F '4.32.0-rc1'
+          cd "$GITHUB_WORKSPACE/parent-fixture/pals-agent"
+          uv run --no-sync python - <<'PYCODE'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          from pals_agent import sandbox
+          original = Path('lean-workspace')
+          prepared = Path(os.environ['PALS_GENERAL_RECIPE_STAGE_TEST_WORKSPACE'])
+          for name in ('lean-toolchain', 'lake-manifest.json', 'lakefile.lean'):
+              assert hashlib.sha256((original/name).read_bytes()).digest() == hashlib.sha256((prepared/name).read_bytes()).digest(), name
+          manifest = json.loads((prepared/'lake-manifest.json').read_bytes())
+          for package in manifest['packages']:
+              actual = subprocess.check_output(['git', '-C', str(prepared/'.lake/packages'/package['name']), 'rev-parse', 'HEAD'], text=True).strip()
+              assert actual == package['rev'], package['name']
+          assert sandbox.available(), 'real macOS containment is required'
+          PYCODE
       - name: Lint the qualification gate
         run: |
           uv run --no-sync ruff check \
             scripts/agent_regression_gate.py \
             tests/unit/test_agent_regression_gate.py
       - name: Run the full suite on the candidate source
+        env:
+          PATH: ${{ env.AGENT_TEST_BASE_PATH }}
         run: |
           # Exit 0 (all passed) and 1 (some tests failed) are the only outcomes that may
           # proceed; interrupted (2), internal error (3), usage (4) or no tests (5) block.
@@ -87,7 +142,18 @@ jobs:
             --junitxml="$RUNNER_TEMP/candidate.xml" || status=$?
           test "$status" -le 1
           test -s "$RUNNER_TEMP/candidate.xml"
+          # These five cases are qualification evidence, never an allowed skip.
+          uv run --no-sync python - <<'PYCODE'
+          import os, xml.etree.ElementTree as ET
+          from pathlib import Path
+          report = ET.parse(Path(os.environ['RUNNER_TEMP'])/'candidate.xml')
+          cases = [case for case in report.iter('testcase') if case.get('classname', '').endswith('test_general_recipe_stage_real')]
+          assert len(cases) == 5, f'expected five real general-Recipe cases, got {len(cases)}'
+          assert all(not any(case.find(tag) is not None for tag in ('skipped', 'failure', 'error')) for case in cases), 'real Lean cases must pass without skips'
+          PYCODE
       - name: Re-run the failing test files on the retained verifier anchor
+        env:
+          PATH: ${{ env.AGENT_TEST_BASE_PATH }}
         run: |
           candidate_head="$(git rev-parse HEAD)"
           python "$RUNNER_TEMP/agent_regression_gate.py" failing-files \
