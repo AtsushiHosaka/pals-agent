@@ -250,6 +250,46 @@ class PalsApiClient:
             max_response_bytes=RECIPE_SEARCH_RESPONSE_BYTES,
         )
 
+    def propose_recipe_instance(
+        self, *, request_id: str, claim_id: str, expected_revision: int,
+        request_context_sha256: str, recipe_id: str, recipe_revision: int,
+        entry_sha256: str, requested_proposition: str, bindings: list[dict[str, str]],
+        timeout_seconds: float, budget_ms: int,
+    ) -> dict[str, Any]:
+        """A claim-bound compiler hint, never a verification or settlement receipt."""
+        from pals_agent.api_recipe_proposal import validate_response
+        from pals_agent.recipe_instantiation import check_proposition
+
+        request_id = _canonical_claim_id(request_id)
+        claim_id = _canonical_claim_id(claim_id)
+        if (type(expected_revision) is not int
+                or not 1 <= expected_revision <= 9_007_199_254_740_991
+                or type(recipe_revision) is not int
+                or not 1 <= recipe_revision <= 9_007_199_254_740_991
+                or not isinstance(recipe_id, str)
+                or re.fullmatch(r"[a-z0-9][a-z0-9._-]{0,127}", recipe_id) is None
+                or any(not isinstance(v, str) or re.fullmatch(r"[a-f0-9]{64}", v) is None
+                       for v in (request_context_sha256, entry_sha256))
+                or bindings != [] or not 2 <= timeout_seconds <= 90
+                or type(budget_ms) is not int or not 1 <= budget_ms <= 90_000
+                or budget_ms > int(timeout_seconds * 1000)):
+            raise ValueError("invalid Recipe proposal request")
+        check_proposition(requested_proposition)
+        payload = {"claim_id": claim_id, "expected_revision": expected_revision,
+                   "request_context_sha256": request_context_sha256,
+                   "recipe_id": recipe_id, "recipe_revision": recipe_revision,
+                   "entry_sha256": entry_sha256, "requested_proposition": requested_proposition,
+                   "bindings": bindings, "budget_ms": budget_ms}
+        result = self._request(
+            "POST", f"/v1/internal/proof-requests/{request_id}/recipe-instance-proposals",
+            payload, headers={"X-PALS-Worker-Secret": self.worker_secret},
+            timeout_seconds=timeout_seconds, extend_timeout=True, max_response_bytes=32768,
+        )
+        try:
+            return validate_response(result, request_id, payload)
+        except (ValueError, TypeError, KeyError) as error:
+            raise PalsApiError("invalid Recipe proposal response") from error
+
     def settle_proof_request(
         self, *, request_id: str, payload: dict[str, Any]
     ) -> dict[str, Any]:

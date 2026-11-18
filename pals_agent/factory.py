@@ -59,10 +59,17 @@ def recipe_instantiation_enabled() -> bool:
     return os.environ.get("PALS_RECIPE_INSTANTIATION", "").strip().lower() in {"on", "true", "1"}
 
 
-def general_recipe_lane_stage():
+def general_recipe_lane_stage(api_client=None):
     """None unless PALS_GENERAL_RECIPE_LANE is on and a Lean workspace is configured."""
     if os.environ.get("PALS_GENERAL_RECIPE_LANE", "").strip().lower() not in {"on", "true", "1"}:
         return None
+    if api_client is not None:
+        if not recipe_instantiation_enabled():
+            return None
+        from pals_agent.api_recipe_proposal import RemoteGeneralRecipeStage
+
+        propose = getattr(api_client, "propose_recipe_instance", None)
+        return RemoteGeneralRecipeStage(propose) if callable(propose) else None
     from pals_agent.general_recipe_stage import from_environment
 
     return from_environment()
@@ -176,7 +183,7 @@ def build_proof_request_processor(
                 client=client, catalog=ApiProofReuseCatalog(settings),
                 instantiation_enabled=recipe_instantiation_enabled(),
                 grammar_instantiation=recipe_grammar_enabled(),
-                general_lane=general_recipe_lane_stage(),
+                general_lane=general_recipe_lane_stage(api_client),
             ),
         ),
     )

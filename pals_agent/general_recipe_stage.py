@@ -94,6 +94,7 @@ class GeneralRecipeStage:
     def run(
         self, proposition: str, recipes: list[dict[str, Any]], language: str, *,
         budget_s: float, formal_source: str = "request_grammar", bound: bool = True,
+        proposal_context: dict[str, Any] | None = None,
     ) -> StageResult:
         """Try ``proposition`` against the searched Recipes; any problem is a miss."""
         if budget_s < MIN_LEAN_SECONDS:
