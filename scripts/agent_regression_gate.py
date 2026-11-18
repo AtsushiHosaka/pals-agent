@@ -159,6 +159,63 @@ def failing_files(report: Path, tests_root: Path) -> list[str]:
     return sorted(files)
 
 
+SUPPLEMENT_MODULE = "tests.integration.test_general_recipe_stage_real"
+SUPPLEMENT_CASES = frozenset(
+    (
+        "test_a_by_alternative_cannot_hide_the_side_goal_closers",
+        "test_cube_continuity_is_answered_from_the_general_power_recipe",
+        "test_non_instances_fall_through[(2 : \\u211d) + 2 = 4]",
+        "test_non_instances_fall_through[Continuous (fun x : \\u211d => x ^ 2 + 1)]",
+        "test_the_api_wrapper_proves_a_hypothesis_instance_the_lane_accepts",
+    )
+)
+
+
+def qualified_supplement(
+    candidate: dict[str, dict[str, str]],
+    report: Path,
+    candidate_metadata: Path,
+    supplement_metadata: Path,
+    source_revision: str,
+    workflow_run_id: str,
+) -> dict[str, dict[str, str]]:
+    """Union original report outcomes only, from disjoint partitions of one source/run."""
+    if not re.fullmatch(r"[a-f0-9]{40}", source_revision or "") or not re.fullmatch(
+        r"[0-9]+", workflow_run_id or ""
+    ):
+        raise ValueError("supplement_source_or_run_required")
+    for path, partition in (
+        (candidate_metadata, "linux"),
+        (supplement_metadata, "general_recipe_real"),
+    ):
+        metadata = json.loads(path.read_text())
+        if metadata != {
+            "source_revision": source_revision,
+            "workflow_run_id": workflow_run_id,
+            "partition": partition,
+        }:
+            raise ValueError("supplement_source_or_run_mismatch")
+    cases = list(ET.parse(report).getroot().iter("testcase"))
+    identifiers = [f"{case.get('classname', '')}::{case.get('name', '')}" for case in cases]
+    if (
+        len(cases) != 5
+        or len(set(identifiers)) != 5
+        or {case.get("name") for case in cases} != SUPPLEMENT_CASES
+    ):
+        raise ValueError("supplement_requires_five_unique_cases")
+    if any(
+        case.get("classname") != SUPPLEMENT_MODULE
+        or not case.get("name")
+        or any(case.find(tag) is not None for tag in (*BAD, "skipped"))
+        for case in cases
+    ):
+        raise ValueError("supplement_scope_or_outcome_invalid")
+    if set(candidate) & set(identifiers):
+        raise ValueError("supplement_overlaps_primary")
+    # read_report preserves each original testcase's actual outcome; none are synthesized.
+    return {**candidate, **read_report(report)}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -170,12 +227,27 @@ def main(argv: list[str] | None = None) -> int:
     check.add_argument("--anchor", type=Path, required=True)
     check.add_argument("--manifest", type=Path, required=True)
     check.add_argument("--tests", type=Path, default=Path("tests"))
+    check.add_argument("--supplement", type=Path)
+    check.add_argument("--candidate-metadata", type=Path)
+    check.add_argument("--supplement-metadata", type=Path)
+    check.add_argument("--source-revision")
+    check.add_argument("--workflow-run-id")
     args = parser.parse_args(argv)
     if args.command == "failing-files":
         print("\n".join(failing_files(args.report, args.tests)))
         return 0
     try:
         candidate = read_report(args.candidate)
+        if args.supplement is not None:
+            if args.candidate_metadata is None or args.supplement_metadata is None:
+                raise ValueError("supplement_metadata_required")
+            candidate = qualified_supplement(
+                candidate, args.supplement, args.candidate_metadata, args.supplement_metadata,
+                args.source_revision, args.workflow_run_id,
+            )
+        elif any((args.candidate_metadata, args.supplement_metadata,
+                  args.source_revision, args.workflow_run_id)):
+            raise ValueError("supplement_required")
         anchor = read_report(args.anchor)
         manifest = json.loads(args.manifest.read_text())
     except (OSError, ET.ParseError, ValueError, KeyError) as error:

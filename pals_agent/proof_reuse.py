@@ -1067,8 +1067,15 @@ class ProofReuseRuntime:
             return None
         found = self.general_lane.run(
             parsed.proposition, eligible, language, budget_s=budget, bound=False,
+            proposal_context={"request_id": request_id, "claim_id": claim_id,
+                              "expected_revision": revision,
+                              "request_context_sha256": hashlib.sha256(rfc8785.dumps({
+                                  "statement": request["statement"],
+                                  "context_turns": request["context_turns"],
+                                  "output_language": request["output_language"],
+                              })).hexdigest()},
         )
-        if found.outcome != "answered" or found.chosen is None:
+        if found.outcome not in {"answered", "candidate"} or found.chosen is None:
             return None
         chosen = found.chosen
         proposal = {
@@ -1077,7 +1084,7 @@ class ProofReuseRuntime:
                 "instance_recipe_revision": chosen["recipe_revision"],
                 "bindings": [],
                 "requested_proposition": parsed.proposition,
-                "rationale": "General-Recipe lane: Lean unified the request with the Recipe.",
+                "rationale": "General-Recipe candidate requires independent correspondence review.",
             },
             "chosen": chosen, "proposal_id": str(uuid4()), "shown": [],
         }

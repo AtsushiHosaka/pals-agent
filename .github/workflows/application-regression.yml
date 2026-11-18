@@ -25,13 +25,14 @@ concurrency:
 #     the candidate, or that is new and failing, blocks.
 #   * Skips and never-executed modules must be listed with a reason; the 42 declared
 #     runtime-core modules must run with no failure and no skip.
-#   * The general-Recipe integration cases use pinned real Lean/Mathlib and the
-#     existing macOS sandbox-exec containment. No real database/model or deployed
-#     image is exercised; listed baseline failures remain unqualified, not "passing".
+#   * Linux runs every case except the disjoint five-case real Lean module.
+#     A standard Mac runs that module with the pinned workspace and sandbox-exec.
+#     The final gate checks both original reports from this exact source/run.
+#     No real database/model or deployed image is exercised.
 jobs:
-  agent-regression:
-    name: agent-regression
-    runs-on: macos-15
+  linux-regression:
+    name: agent-regression-linux
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     defaults:
       run:
@@ -66,6 +67,90 @@ jobs:
           test "$(git cat-file commit "$RETAINED_VERIFIER_ANCHOR" | git hash-object -t commit --stdin)" = "$RETAINED_VERIFIER_ANCHOR"
           git merge-base --is-ancestor "$RETAINED_VERIFIER_ANCHOR" HEAD
           cp scripts/agent_regression_gate.py tests/qualification/agent_regression_manifest.json "$RUNNER_TEMP/"
+          printf '{"source_revision":"%s","workflow_run_id":"%s","partition":"linux"}\n' \
+            "$(git rev-parse HEAD)" "$GITHUB_RUN_ID" > "$RUNNER_TEMP/linux-source.json"
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12.13"
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: "0.11.28"
+          enable-cache: false
+      - name: Install the locked declared development environment
+        run: uv sync --locked --extra dev --python 3.12.13
+      - name: Lint the qualification gate
+        run: |
+          uv run --no-sync ruff check \
+            scripts/agent_regression_gate.py \
+            tests/unit/test_agent_regression_gate.py
+      - name: Run the full suite on the candidate source
+        run: |
+          # Exit 0 (all passed) and 1 (some tests failed) are the only outcomes that may
+          # proceed; interrupted (2), internal error (3), usage (4) or no tests (5) block.
+          status=0
+          uv run --no-sync python -m pytest -p no:cacheprovider tests \
+            --ignore=tests/integration/test_general_recipe_stage_real.py \
+            --junitxml="$RUNNER_TEMP/candidate.xml" || status=$?
+          test "$status" -le 1
+          test -s "$RUNNER_TEMP/candidate.xml"
+      - name: Re-run the failing test files on the retained verifier anchor
+        run: |
+          candidate_head="$(git rev-parse HEAD)"
+          python "$RUNNER_TEMP/agent_regression_gate.py" failing-files \
+            --report "$RUNNER_TEMP/candidate.xml" > "$RUNNER_TEMP/failing-files.txt"
+          existing=()
+          while read -r path; do
+            if git cat-file -e "$RETAINED_VERIFIER_ANCHOR:$path" 2>/dev/null; then existing+=("$path"); fi
+          done < "$RUNNER_TEMP/failing-files.txt"
+          git checkout --quiet --detach "$RETAINED_VERIFIER_ANCHOR"
+          uv sync --locked --extra dev --python 3.12.13
+          if [ "${#existing[@]}" -gt 0 ]; then
+            status=0
+            uv run --no-sync python -m pytest -p no:cacheprovider "${existing[@]}" \
+              --junitxml="$RUNNER_TEMP/anchor.xml" || status=$?
+            test "$status" -le 1
+            test -s "$RUNNER_TEMP/anchor.xml"
+          else
+            printf '<testsuites/>' > "$RUNNER_TEMP/anchor.xml"
+          fi
+          git checkout --quiet --detach "$candidate_head"
+      - name: Keep the reports for audit
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: agent-linux-reports
+          path: |
+            ${{ runner.temp }}/candidate.xml
+            ${{ runner.temp }}/anchor.xml
+            ${{ runner.temp }}/failing-files.txt
+            ${{ runner.temp }}/linux-source.json
+          if-no-files-found: error
+
+  general-recipe-real:
+    name: general-recipe-real
+    runs-on: macos-15-intel
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: parent-fixture/pals-agent
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      UV_NO_PROGRESS: "1"
+      UV_PYTHON_DOWNLOADS: never
+      AWS_EC2_METADATA_DISABLED: "true"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: parent-fixture/pals-agent
+      - name: Verify the exact real-Lean source partition
+        env:
+          EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+          printf '{"source_revision":"%s","workflow_run_id":"%s","partition":"general_recipe_real"}\n' \
+            "$(git rev-parse HEAD)" "$GITHUB_RUN_ID" > "$RUNNER_TEMP/mac-source.json"
       - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version: "0.11.28"
@@ -141,67 +226,100 @@ jobs:
               assert actual == package['rev'], package['name']
           assert sandbox.available(), 'real macOS containment is required'
           PYCODE
-      - name: Lint the qualification gate
-        run: |
-          uv run --no-sync ruff check \
-            scripts/agent_regression_gate.py \
-            tests/unit/test_agent_regression_gate.py
-      - name: Run the full suite on the candidate source
+      - name: Establish dependency-only Mathlib readiness once before the five cases
+        timeout-minutes: 2
         env:
           PATH: ${{ env.AGENT_TEST_BASE_PATH }}
         run: |
-          # Exit 0 (all passed) and 1 (some tests failed) are the only outcomes that may
-          # proceed; interrupted (2), internal error (3), usage (4) or no tests (5) block.
-          status=0
-          uv run --no-sync python -m pytest -p no:cacheprovider tests \
-            --junitxml="$RUNNER_TEMP/candidate.xml" || status=$?
-          test "$status" -le 1
-          test -s "$RUNNER_TEMP/candidate.xml"
-          # These five cases are qualification evidence, never an allowed skip.
           uv run --no-sync python - <<'PYCODE'
-          import os, xml.etree.ElementTree as ET
+          import hashlib, json, os, time
           from pathlib import Path
-          report = ET.parse(Path(os.environ['RUNNER_TEMP'])/'candidate.xml')
-          cases = [case for case in report.iter('testcase') if case.get('classname', '').endswith('test_general_recipe_stage_real')]
-          assert len(cases) == 5, f'expected five real general-Recipe cases, got {len(cases)}'
-          assert all(not any(case.find(tag) is not None for tag in ('skipped', 'failure', 'error')) for case in cases), 'real Lean cases must pass without skips'
+          from pals_agent.general_recipe_lane import LeanRunner
+          started = time.monotonic()
+          result = {'schema_version': 'pals.agent-mathlib-readiness.v1',
+                    'timeout_s': 120.0, 'ready': False, 'compiler_returncode': None}
+          try:
+              runner = LeanRunner.from_workspace(
+                  Path(os.environ['PALS_GENERAL_RECIPE_STAGE_TEST_WORKSPACE']),
+                  lake=os.environ['PALS_GENERAL_RECIPE_STAGE_TEST_LAKE'])
+              assert runner.timeout_seconds == 120.0
+              code, output, seconds = runner.run('import Mathlib\n#check Nat\n')
+              result.update(compiler_returncode=code, lean_seconds=seconds,
+                            output_sha256=hashlib.sha256(output.encode()).hexdigest())
+              result['ready'] = (code == 0 and ': error' not in output
+                                 and 'error:' not in output and 'Nat : Type' in output)
+          except Exception as error:
+              result['error_class'] = type(error).__name__
+          result['total_seconds'] = time.monotonic() - started
+          result['ready'] = result['ready'] and result['total_seconds'] <= 120.0
+          path = Path(os.environ['RUNNER_TEMP'])/'mathlib-readiness.json'
+          path.write_text(json.dumps(result, sort_keys=True)+'\n')
+          print(json.dumps(result, sort_keys=True))
+          raise SystemExit(0 if result['ready'] else 1)
           PYCODE
-      - name: Re-run the failing test files on the retained verifier anchor
+      - name: Run only the disjoint real-Lean module without changing test deadlines
+        timeout-minutes: 10
         env:
           PATH: ${{ env.AGENT_TEST_BASE_PATH }}
         run: |
-          candidate_head="$(git rev-parse HEAD)"
-          uv run --no-sync python "$RUNNER_TEMP/agent_regression_gate.py" failing-files \
-            --report "$RUNNER_TEMP/candidate.xml" > "$RUNNER_TEMP/failing-files.txt"
-          existing=()
-          while read -r path; do
-            if git cat-file -e "$RETAINED_VERIFIER_ANCHOR:$path" 2>/dev/null; then existing+=("$path"); fi
-          done < "$RUNNER_TEMP/failing-files.txt"
-          git checkout --quiet --detach "$RETAINED_VERIFIER_ANCHOR"
-          uv sync --locked --extra dev --python 3.12.13
-          if [ "${#existing[@]}" -gt 0 ]; then
-            status=0
-            uv run --no-sync python -m pytest -p no:cacheprovider "${existing[@]}" \
-              --junitxml="$RUNNER_TEMP/anchor.xml" || status=$?
-            test "$status" -le 1
-            test -s "$RUNNER_TEMP/anchor.xml"
-          else
-            printf '<testsuites/>' > "$RUNNER_TEMP/anchor.xml"
-          fi
-          git checkout --quiet --detach "$candidate_head"
-      - name: Keep the reports for audit
+          uv run --no-sync python -m pytest -p no:cacheprovider \
+            tests/integration/test_general_recipe_stage_real.py \
+            --junitxml="$RUNNER_TEMP/general-recipe.xml"
+      - name: Keep the original real-Lean report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: agent-regression-reports
+          name: agent-lean-reports
           path: |
-            ${{ runner.temp }}/candidate.xml
-            ${{ runner.temp }}/anchor.xml
-            ${{ runner.temp }}/failing-files.txt
-          if-no-files-found: warn
-      - name: Require no new failure, unexplained skip or unexecuted module
+            ${{ runner.temp }}/general-recipe.xml
+            ${{ runner.temp }}/mathlib-readiness.json
+            ${{ runner.temp }}/mac-source.json
+          if-no-files-found: error
+
+  agent-regression:
+    name: agent-regression
+    needs: [linux-regression, general-recipe-real]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: parent-fixture/pals-agent
+    steps:
+      - name: Require both real partitions to finish successfully
+        env:
+          LINUX_RESULT: ${{ needs.linux-regression.result }}
+          LEAN_RESULT: ${{ needs.general-recipe-real.result }}
+        working-directory: .
+        run: test "$LINUX_RESULT" = success && test "$LEAN_RESULT" = success
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: parent-fixture/pals-agent
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12.13"
+      - name: Download only this workflow run's Linux reports
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: agent-linux-reports
+          path: ${{ runner.temp }}/linux
+      - name: Download only this workflow run's real-Lean report
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: agent-lean-reports
+          path: ${{ runner.temp }}/lean
+      - name: Qualify the original disjoint reports, never a supplied PASS
+        env:
+          EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          uv run --no-sync python "$RUNNER_TEMP/agent_regression_gate.py" check \
-            --candidate "$RUNNER_TEMP/candidate.xml" \
-            --anchor "$RUNNER_TEMP/anchor.xml" \
-            --manifest "$RUNNER_TEMP/agent_regression_manifest.json"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+          python scripts/agent_regression_gate.py check \
+            --candidate "$RUNNER_TEMP/linux/candidate.xml" \
+            --anchor "$RUNNER_TEMP/linux/anchor.xml" \
+            --manifest tests/qualification/agent_regression_manifest.json \
+            --supplement "$RUNNER_TEMP/lean/general-recipe.xml" \
+            --candidate-metadata "$RUNNER_TEMP/linux/linux-source.json" \
+            --supplement-metadata "$RUNNER_TEMP/lean/mac-source.json" \
+            --source-revision "$EXPECTED_SOURCE" --workflow-run-id "$GITHUB_RUN_ID"
