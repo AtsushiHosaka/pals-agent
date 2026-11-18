@@ -44,6 +44,7 @@ from pals_agent.explanations import (
     _require_output_language,
     _validate_deadline_options,
     _validation_failure_reason,
+    asks_for_explicit_result,
 )
 from pals_agent.math_task import ANSWER_PRESENTATION
 
@@ -208,7 +209,8 @@ def validate_v2_payload(
     """Run the v1 validators on the completed payload, then the v2 deterministic gates."""
     completed = derive_references(lean_code, payload)
     overview, sections, conclusion = _parse_explanation(
-        completed, lean_code, language=language, require_linear_ending=True, strict_prose=True
+        completed, lean_code, language=language, require_linear_ending=True, strict_prose=True,
+        require_result_in_conclusion=asks_for_explicit_result(theorem_statement),
     )
     for label, text in (
         ("overview", overview),
@@ -338,8 +340,11 @@ Structure (answer first, then approach, then the proof):
   then one or two sentences on the key idea.
 - `sections`: the proof in order. Each section says what is done and why, expanding automation
   into ordinary mathematics.
-- `conclusion`: one sentence wrapping up without restating the derivation. Add a short "common
-  pitfall / why this approach" remark only if it is genuinely useful.
+- `conclusion`: one sentence wrapping up without restating the derivation. For an explicit
+  request to compute a value, expression or solution, the conclusion must state the explicit result
+  established by the verified target. Keep the answer-first overview; the conclusion repeats only
+  the short result, not the derivation. Add a short "common pitfall / why this approach" remark
+  only if it is genuinely useful.
 Write the visible text in {script} ({language}). Wrap every mathematical expression in `$...$`
 (KaTeX). Prose must not quote Lean code, tactic names, or Lean identifiers. Overview and
 conclusion are at most 600 characters, each section summary at most 800, with 1-20 sections.
@@ -594,12 +599,23 @@ def review_prompt_v2(
     numbered = "\n".join(
         f"{number:>4} | {line}" for number, line in enumerate(lean_code.splitlines(), start=1)
     )
+    answer_requirement = (
+        "2. missing_answer: the request explicitly asks for a computed value, "
+        "expression or solution.\n"
+        "   Both the overview and conclusion must state the explicit result established by the\n"
+        "   verified code. Reject if either omits that result."
+        if asks_for_explicit_result(theorem_statement)
+        else (
+            "2. missing_answer: the question asks to find/compute/decide something "
+            "and the overview "
+            "does not\n   state the explicit result established by the verified code."
+        )
+    )
     return f"""You review a learner-facing explanation of a Lean-verified result. Judge it against
 this rubric and list SPECIFIC defects; do not return a bare verdict.
 1. unfaithful_to_statement: the text claims something other than the verified statement, drops
    or adds an assumption, or contradicts the Lean code.
-2. missing_answer: the question asks to find/compute/decide something and the overview does not
-   state the explicit result established by the verified code.
+{answer_requirement}
 3. unjustified_leap: a step that is not literally in the Lean code is asserted without the
    property used or the reason its hypotheses hold, or is presented as machine-checked.
 4. level_mismatch: the text relies on a theorem or notion the learner{
