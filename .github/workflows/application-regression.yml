@@ -41,9 +41,6 @@ jobs:
       UV_NO_PROGRESS: "1"
       UV_PYTHON_DOWNLOADS: never
       AWS_EC2_METADATA_DISABLED: "true"
-      PALS_GENERAL_RECIPE_STAGE_TEST_WORKSPACE: ${{ runner.temp }}/agent-lean-workspace
-      PALS_GENERAL_RECIPE_STAGE_TEST_LAKE: ${{ runner.temp }}/agent-lean-home/.elan/bin/lake
-      ELAN_HOME: ${{ runner.temp }}/agent-lean-home/.elan
       RETAINED_VERIFIER_ANCHOR: 189b44378e6e63e5ab7c92d9c5b7d6507acd80f0
     steps:
       - name: Check out the immutable public parent fixture contract
@@ -81,6 +78,12 @@ jobs:
       - name: Freeze the candidate Lean workspace outside both source checkouts
         run: |
           echo "AGENT_TEST_BASE_PATH=$PATH" >> "$GITHUB_ENV"
+          export PALS_GENERAL_RECIPE_STAGE_TEST_WORKSPACE="$RUNNER_TEMP/agent-lean-workspace"
+          export PALS_GENERAL_RECIPE_STAGE_TEST_LAKE="$RUNNER_TEMP/agent-lean-home/.elan/bin/lake"
+          export ELAN_HOME="$RUNNER_TEMP/agent-lean-home/.elan"
+          printf '%s\n' "PALS_GENERAL_RECIPE_STAGE_TEST_WORKSPACE=$PALS_GENERAL_RECIPE_STAGE_TEST_WORKSPACE" \
+            "PALS_GENERAL_RECIPE_STAGE_TEST_LAKE=$PALS_GENERAL_RECIPE_STAGE_TEST_LAKE" \
+            "ELAN_HOME=$ELAN_HOME" >> "$GITHUB_ENV"
           mkdir "$PALS_GENERAL_RECIPE_STAGE_TEST_WORKSPACE"
           cp lean-workspace/lean-toolchain lean-workspace/lake-manifest.json \
             lean-workspace/lakefile.lean "$PALS_GENERAL_RECIPE_STAGE_TEST_WORKSPACE/"
