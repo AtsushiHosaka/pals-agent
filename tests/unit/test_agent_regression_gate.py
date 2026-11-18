@@ -224,3 +224,110 @@ def test_a_teardown_failure_cannot_hide_a_changed_call_failure(tmp_path: Path) -
     assert problems == [
         f"failure_changed_from_anchor:{candidate_id}:AssertionError->AssertionError+RuntimeError"
     ]
+
+
+def supplement_fixture(tmp_path: Path):
+    import xml.etree.ElementTree as ET
+
+    report = tmp_path / "supplement.xml"
+    tree = ET.Element("testsuites")
+    suite = ET.SubElement(tree, "testsuite")
+    for name in sorted(gate.SUPPLEMENT_CASES):
+        ET.SubElement(suite, "testcase", classname=gate.SUPPLEMENT_MODULE, name=name)
+    ET.ElementTree(tree).write(report)
+    metadata = []
+    for name, partition in (("primary", "linux"), ("supplement", "general_recipe_real")):
+        path = tmp_path / (name + ".json")
+        path.write_text(
+            json.dumps(
+                {"source_revision": "a" * 40, "workflow_run_id": "123", "partition": partition}
+            )
+        )
+        metadata.append(path)
+    return report, metadata, ET.ElementTree(tree), suite
+
+
+def test_supplement_preserves_primary_failure_and_adds_only_actual_passes(tmp_path: Path) -> None:
+    report, metadata, _, _ = supplement_fixture(tmp_path)
+    primary, anchor = baseline()
+    combined = gate.qualified_supplement(primary, report, *metadata, "a" * 40, "123")
+    assert all(combined[key] == value for key, value in primary.items())
+    assert len(combined) == len(primary) + 5
+    assert combined["tests.unit.test_other::test_known"] == case("failure", "AssertionError")
+    assert primary == baseline()[0]  # no original outcome edited in place
+    assert gate.evaluate(combined, anchor, MANIFEST, MODULES | {gate.SUPPLEMENT_MODULE})[0] == []
+
+
+def test_supplement_rejects_missing_duplicate_wrong_module_and_each_bad_outcome(tmp_path: Path):
+    import xml.etree.ElementTree as ET
+
+    for defect in (
+        "missing",
+        "duplicate",
+        "scope",
+        "skipped",
+        "failure",
+        "error",
+        "overlap",
+        "wrong_name",
+    ):
+        report, metadata, tree, suite = supplement_fixture(tmp_path)
+        primary, _ = baseline()
+        if defect == "missing":
+            suite.remove(suite[-1])
+        elif defect == "duplicate":
+            suite[-1].set("name", suite[0].get("name"))
+        elif defect == "scope":
+            suite[-1].set("classname", "tests.unit.test_other")
+        elif defect == "overlap":
+            primary[f"{gate.SUPPLEMENT_MODULE}::{suite[0].get('name')}"] = case("skipped")
+        elif defect == "wrong_name":
+            suite[-1].set("name", "test_not_the_registered_case")
+        else:
+            ET.SubElement(suite[-1], defect)
+        tree.write(report)
+        try:
+            gate.qualified_supplement(primary, report, *metadata, "a" * 40, "123")
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"accepted invalid supplement: {defect}")
+
+
+def test_supplement_rejects_wrong_source_run_partition_and_missing_files(tmp_path: Path):
+    report, metadata, _, _ = supplement_fixture(tmp_path)
+    for key, value in (
+        ("source_revision", "b" * 40),
+        ("workflow_run_id", "456"),
+        ("partition", "other"),
+    ):
+        original = metadata[1].read_text()
+        bad = json.loads(original)
+        bad[key] = value
+        metadata[1].write_text(json.dumps(bad))
+        try:
+            gate.qualified_supplement({}, report, *metadata, "a" * 40, "123")
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"accepted wrong {key}")
+        metadata[1].write_text(original)
+    report.unlink()
+    try:
+        gate.qualified_supplement({}, report, *metadata, "a" * 40, "123")
+    except OSError:
+        pass
+    else:
+        raise AssertionError("accepted a missing report")
+
+
+def test_cli_refuses_a_supplement_without_source_metadata(tmp_path: Path) -> None:
+    report, _, _, _ = supplement_fixture(tmp_path)
+    primary = tmp_path / "candidate.xml"
+    primary.write_text("<testsuites/>")
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps(MANIFEST))
+    assert gate.main([
+        "check", "--candidate", str(primary), "--anchor", str(primary),
+        "--manifest", str(manifest), "--supplement", str(report),
+    ]) == 2
