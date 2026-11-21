@@ -20,6 +20,7 @@ from pals_agent.figure_calls import (
 )
 from pals_agent.lean_target import (
     LeanTargetDeclaration,
+    _without_lean_comments_and_literals,
     extract_single_target_declaration,
     matches_x_squared_continuity,
     targets_another_property_of_a_function,
@@ -92,6 +93,15 @@ coefficients) are introduced for a claim about natural-number divisibility, firs
 integer quotient, then justify that it is nonnegative before calling it a natural quotient.
 Do not apply closure of natural-number divisibility under multiplication by a negative integer.
 """
+# Added to explanation prompts only, and only when the source has such a header (pals#232).
+_CLAIM_HEADER_INSTRUCTION = (
+    """For every multi-line local have declaration, include its complete claim
+header in one section's references, together with the lines supporting that section. Do not cite
+only the final tactic while omitting the claim it establishes. The required header ranges are
+listed below the source line table. Use the smallest faithful ranges that include those headers;
+do not fabricate prose for an unrelated line or claim that one automated line records unseen
+intermediate states."""
+)
 
 
 # Required elements of an epsilon-delta proof that x² is continuous. This table is the single
@@ -493,6 +503,15 @@ class LeanGroundedOutputReviewer:
         deadline: float | None = None,
         timeout_seconds: float | None = None,
     ) -> ProofOutputReview:
+        try:
+            _require_local_claim_headers(list(explanation.sections), lean_code)
+        except ValueError as exc:
+            raise ProofOutputReviewError(
+                "source correspondence review rejected the output",
+                category="rejected",
+                rationale=str(exc),
+                session_id=str(self.session_id_factory()),
+            ) from None
         prompt = _output_review_prompt(
             theorem_statement=theorem_statement,
             lean_code=lean_code,
@@ -872,6 +891,7 @@ class LeanProofExplainer:
                     require_linear_ending=True,
                     strict_prose=True,
                     require_result_in_conclusion=asks_for_explicit_result(theorem_statement),
+                    require_claim_headers=True,
                 ),
                 # A rejected candidate may have failed on its figure, so a correction omits it.
                 None if review_feedback else _optional_figure(value.get("figure"), lean_code),
@@ -1029,6 +1049,8 @@ def _validation_failure_reason(exc: Exception) -> str:
         return "json"
     if isinstance(exc, KeyError):
         return "missing_field"
+    if "local claim header" in message:
+        return "reference_header"
     if "excerpt does not exactly match" in message:
         return "reference_excerpt"
     if "Lean reference" in message or "Lean line ranges" in message:
@@ -1132,6 +1154,7 @@ def _parse_explanation(
     require_linear_ending: bool = False,
     strict_prose: bool = False,
     require_result_in_conclusion: bool = False,
+    require_claim_headers: bool = False,
 ) -> tuple[str, tuple[ExplanationSection, ...], str]:
     _require_output_language(language)
     overview = _required_bounded_language_text(
@@ -1194,6 +1217,9 @@ def _parse_explanation(
         _require_prose_language([overview, *(s.summary for s in sections), conclusion], language)
     if require_linear_ending:
         _reject_repeated_final_equation(sections[-1].summary, conclusion)
+    if require_claim_headers:
+        # New generations only: saved explanations are parsed without this rule and stay readable.
+        _require_local_claim_headers(sections, lean_code)
     if require_result_in_conclusion and not _ANY_FORMULA.search(conclusion):
         # A conclusion such as "the claim has been confirmed" is not an answer. New generations
         # only: saved explanations are parsed without this rule and stay readable.
@@ -1589,6 +1615,7 @@ def _explanation_prompt(
     language: str,
     require_epsilon_delta: bool = False,
 ) -> str:
+    header_block = _claim_header_prompt(lean_code)
     x_squared_instruction = ""
     if require_epsilon_delta:
         opening_instruction = (
@@ -1728,7 +1755,74 @@ Canonical Lean line table (JSON; each `text` value preserves leading spaces):
 {_line_reference_table(lean_code)}
 
 For a reference from `start_line` through `end_line`, set `excerpt` to the exact `text`
-values for those lines joined with a single newline. Do not trim or normalize spaces."""
+values for those lines joined with a single newline. Do not trim or normalize \
+spaces.{header_block}"""
+
+
+def _claim_header_prompt(lean_code: str) -> str:
+    headers = _local_claim_headers(lean_code)
+    if not headers:
+        return ""
+    return (
+        f"\n\n{_CLAIM_HEADER_INSTRUCTION}\n"
+        "Required multi-line local claim header ranges (each range must be covered in one "
+        f"section):\n{json.dumps(headers)}"
+    )
+
+
+def _local_claim_headers(source: str) -> list[tuple[int, int]]:
+    """Find multi-line assignment-backed have headers, ignoring comments and literals.
+
+    Line numbers follow `str.splitlines()`, the contract of the references. This is bounded
+    source coverage, not a complete Lean parser or a dependency analysis, and it never
+    extends or fabricates a model-supplied reference.
+    """
+    masked = _without_lean_comments_and_literals("\n".join(source.splitlines()))
+    headers = []
+    for declaration in re.finditer(r"(?m)^(?P<indent>[ \t]*)(?:[·+]\s*)?have\b", masked):
+        start = masked.count("\n", 0, declaration.start()) + 1
+        depth = 0
+        end = None
+        for index in range(declaration.end(), len(masked) - 1):
+            character = masked[index]
+            if depth == 0 and masked.startswith(":=", index):
+                end = masked.count("\n", 0, index) + 1
+                break
+            if character in "([{":
+                depth += 1
+            elif character in ")]}":
+                depth = max(0, depth - 1)
+            elif character == "\n" and depth == 0:
+                following = masked[index + 1 :].split("\n", 1)[0]
+                # A later have must not supply the delimiter for an earlier tactic-style have
+                # without an explicit assignment.
+                indentation = len(following) - len(following.lstrip(" \t"))
+                if following.strip() and (
+                    re.match(r"[ \t]*(?:[·+]\s*)?have\b", following)
+                    or re.match(r"[ \t]*[·+]", following)
+                    or (
+                        indentation <= len(declaration.group("indent"))
+                        and not following.lstrip().startswith(":=")
+                    )
+                ):
+                    break
+        if end is not None and end > start:
+            headers.append((start, end))
+    return headers
+
+
+def _require_local_claim_headers(sections: list[ExplanationSection], source: str) -> None:
+    for start, end in _local_claim_headers(source):
+        if not any(
+            all(
+                any(ref.start_line <= line <= ref.end_line for ref in section.references)
+                for line in range(start, end + 1)
+            )
+            for section in sections
+        ):
+            raise ValueError(
+                f"Complete local claim header {start}-{end} is missing from references"
+            )
 
 
 def _clarification_prompt(

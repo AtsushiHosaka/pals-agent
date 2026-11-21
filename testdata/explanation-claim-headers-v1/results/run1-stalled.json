@@ -1,0 +1,52 @@
+[
+ {
+  "rep": 0,
+  "id": "energy-unique-minimum",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "review_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 25.8,
+  "est_usd": 0.00259,
+  "final": {
+   "headers": 2,
+   "headers_missing": 0,
+   "body_lines": 29,
+   "body_lines_uncovered": 11
+  },
+  "last_candidate": {
+   "headers": 2,
+   "headers_missing": 0,
+   "body_lines": 29,
+   "body_lines_uncovered": 11
+  }
+ },
+ {
+  "rep": 0,
+  "id": "energy-unique-minimum",
+  "arm": "new",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "review_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 19.9,
+  "est_usd": 0.00275,
+  "final": {
+   "headers": 2,
+   "headers_missing": 0,
+   "body_lines": 29,
+   "body_lines_uncovered": 13
+  },
+  "last_candidate": {
+   "headers": 2,
+   "headers_missing": 0,
+   "body_lines": 29,
+   "body_lines_uncovered": 13
+  }
+ }
+]
