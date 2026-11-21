@@ -332,7 +332,8 @@ class ProofReuseRuntime:
             if grammar is not None:
                 return grammar
             general = self.general_recipe_input(
-                request, recipe_search=recipe_search, deadline=deadline,
+                request, recipe_search=recipe_search, claim_id=claim_id, deadline=deadline,
+                started=started,
             )
             if general is not None:
                 return general
@@ -1007,47 +1008,95 @@ class ProofReuseRuntime:
         return ProofReuseResult("answered", None, answer, None, result.evidence())
 
     def general_recipe_input(
-        self, request: dict[str, Any], *, recipe_search: RecipeSearch | None, deadline: float,
+        self, request: dict[str, Any], *, recipe_search: RecipeSearch | None,
+        claim_id: str | None, deadline: float, started: float,
     ) -> ProofReuseResult | None:
-        """A request that is a specialisation of a stored GENERAL Recipe, decided by real Lean.
+        """A request that is a specialisation of a stored GENERAL Recipe, found by real Lean.
 
-        The proposition comes from the vocabulary table (no model), the candidates from the same
-        Recipe search; the lane compiles ``theorem inst : P := by exact G ..`` and accepts only
-        when Lean accepts, the declared statement is P, only standard axioms are used and the
-        general theorem is in the proof term. Default off; every miss returns None so the request
-        continues on the established route.
+        The agent-local lane (zero model calls) only PROPOSES: it compiles ``theorem inst : P :=
+        by first | exact G .. | (intros; apply G <;> closers)`` with the plain alternatives and
+        names the Recipe whose instance Lean accepted.  Acceptance is the unchanged instantiation
+        route: the same fixed wrapper is derived from the sealed bytes, an independent review
+        confirms that its statement is the request, and the API re-derives and compiles it with
+        its own verifier.  Default off (needs PALS_RECIPE_INSTANTIATION and
+        PALS_GENERAL_RECIPE_LANE); every miss returns None and the request continues unchanged.
         """
         if self.general_lane is None:  # default path: nothing imported, nothing evaluated
             return None
-        from pals_agent.general_recipe_stage import EVIDENCE_KIND, stage_enabled
+        from pals_agent.general_recipe_stage import stage_enabled
 
         if (
-            not stage_enabled() or recipe_search is None
+            not stage_enabled() or not self.instantiation_enabled
+            or recipe_search is None or claim_id is None
             or request.get("context_turns") or request.get("chat_history")
             or request.get("attachment_ids") or request.get("chat_images")
             or request.get("material_context") or current_chat_images()
             or _conversation_history(request)
         ):
             return None
-        budget = min(30.0, deadline - time.monotonic() - 30.0)
-        if budget < 10.0:  # not enough time for Mathlib's import plus the compile: no search either
+        # Lean's import + compile, then the 30 s the independent review needs.
+        if deadline - time.monotonic() < 40.0:
             return None
         statement, language, _ = _request_input(request)
         parsed = parse_request(statement)
         if parsed is None or not parsed.search_query:
             return None
+        request_id, revision = request.get("id"), request.get("revision")
         try:
+            if (
+                not isinstance(request_id, str) or str(UUID(request_id)) != request_id
+                or str(UUID(claim_id)) != claim_id
+                or type(revision) is not int or revision < 1
+            ):
+                return None
             recipes = validate_recipe_candidates(
                 recipe_search(parsed.search_query, language), language=language,
             )
         except ValueError:
             return None
-        budget = min(30.0, deadline - time.monotonic() - 30.0)  # after the search: keep the 30 s
-        result = self.general_lane.run(parsed.proposition, recipes, language, budget_s=budget)
-        if result.outcome != "answered" or not result.answer_text:
+        eligible = self._instance_candidates(recipes)
+        budget = min(30.0, deadline - time.monotonic() - INSTANCE_REVIEW_MIN_SECONDS)
+        if not eligible or budget < 10.0:
             return None
-        answer = {"text": result.answer_text, "evidence_kind": EVIDENCE_KIND, "sources": []}
-        return ProofReuseResult("answered", None, answer, None, result.evidence())
+        if (
+            self.grammar_instantiation
+            and deterministic_instance_proposal(statement, eligible) is not None
+        ):
+            # The grammar stage already put this request to the independent review (and it did
+            # not answer): a rejection is final, the review is never asked a second time.
+            return None
+        found = self.general_lane.run(
+            parsed.proposition, eligible, language, budget_s=budget, bound=False,
+        )
+        if found.outcome != "answered" or found.chosen is None:
+            return None
+        chosen = found.chosen
+        proposal = {
+            "proposed": {
+                "instance_recipe_id": chosen["recipe_id"],
+                "instance_recipe_revision": chosen["recipe_revision"],
+                "bindings": [],
+                "requested_proposition": parsed.proposition,
+                "rationale": "General-Recipe lane: Lean unified the request with the Recipe.",
+            },
+            "chosen": chosen, "proposal_id": str(uuid4()), "shown": [],
+        }
+        meter = active_token_meter()
+        qa_role = "token_answer_qa" if meter is not None else str(ModelRole.PROOF_REVIEW)
+        evidence: dict[str, Any] = {
+            "schema_version": "pals.proof-reuse-assessment.v1",
+            "phase": "general_recipe_instantiation",
+            "grammar": {"function": parsed.function_id, "property": parsed.property_id,
+                        "slots": dict(parsed.slots)},
+            "general_recipe_lane": found.evidence(),
+        }
+        context = {"original_statement": statement, "clarifications": [],
+                   "output_language": language}
+        return self._recipe_instantiation(
+            request, context, {"statement": statement}, proposal, evidence,
+            request_id=request_id, claim_id=claim_id, revision=revision,
+            deadline=deadline, started=started, qa_role=qa_role, meter=meter,
+        )
 
     def grammar_recipe_input(
         self, request: dict[str, Any], *, recipe_search: RecipeSearch | None,

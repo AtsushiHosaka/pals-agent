@@ -47,6 +47,7 @@ class StageResult:
     code: str | None = None
     answer_text: str | None = None
     recipe: dict[str, Any] | None = None
+    chosen: dict[str, Any] | None = None  # the full searched candidate (not part of the evidence)
     proposition: str | None = None
     instance_source_sha256: str | None = None
     timings_ms: dict[str, float] = field(default_factory=dict)
@@ -92,7 +93,7 @@ class GeneralRecipeStage:
 
     def run(
         self, proposition: str, recipes: list[dict[str, Any]], language: str, *,
-        budget_s: float, formal_source: str = "request_grammar",
+        budget_s: float, formal_source: str = "request_grammar", bound: bool = True,
     ) -> StageResult:
         """Try ``proposition`` against the searched Recipes; any problem is a miss."""
         if budget_s < MIN_LEAN_SECONDS:
@@ -124,7 +125,7 @@ class GeneralRecipeStage:
         try:
             result = lane.answer(
                 proposition, pool, runner, language=language, candidates=self.candidates,
-                deadline=started + budget_s,
+                deadline=started + budget_s, bound=bound,
             )
         except Exception as error:  # a stage must never fail the request
             return StageResult("miss", f"lane_error:{type(error).__name__}")
@@ -144,6 +145,7 @@ class GeneralRecipeStage:
             None,
             result.answer_text,
             digests,
+            chosen,
             result.proposition,
             result.instance_source_sha256,
             seconds,

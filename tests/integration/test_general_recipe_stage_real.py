@@ -67,3 +67,42 @@ def test_cube_continuity_is_answered_from_the_general_power_recipe(general):
 def test_non_instances_fall_through(general, proposition):
     result = general.run(proposition, candidates(), "ja", budget_s=60.0)
     assert result.outcome == "miss", result.tried
+
+
+def test_the_api_wrapper_proves_a_hypothesis_instance_the_lane_accepts(general):
+    """The fixed wrapper the API re-derives (recipe_instantiation.elaborate) closes the premises of
+    a general theorem with its fixed side-goal closers, so a lane-accepted instance re-derives."""
+    from pals_agent.recipe_instantiation import elaborate
+
+    source = (ROOT / "tests/fixtures/general_recipes/pow_monotone.lean").read_text()
+    proposition = "∀ n : ℕ, (3 : ℝ) ^ n ≤ 5 ^ n"
+    instance = elaborate(source, proposition)
+    code, output, _ = general.runner.run(instance.source)
+    assert code == 0 and ": error" not in output, output[-600:]
+    plain = general.run(
+        proposition,
+        [
+            {
+                "recipe_id": "pow", "recipe_revision": 1, "entry_sha256": "1" * 64,
+                "lean_code": source, "lean_sha256": "2" * 64, "answer_sha256": "3" * 64,
+                "target_source": "∀ (a b : ℝ), 0 ≤ a → a ≤ b → ∀ n : ℕ, a ^ n ≤ b ^ n",
+                "answer": "A", "output_language": "ja",
+            }
+        ],
+        "ja", budget_s=60.0, bound=False,
+    )
+    assert plain.outcome == "answered", (plain.code, plain.tried)
+
+
+def test_a_by_alternative_cannot_hide_the_side_goal_closers(general):
+    """`exact G _ (by norm_num)` logs "unsolved goals" instead of throwing, so it must come after
+    the `apply` alternative: the API wrapper has to compile what the lane's plain stage accepts."""
+    from pals_agent.recipe_instantiation import elaborate
+
+    source = (
+        "import Mathlib\n\ntheorem sqrt_pos_of (x : ℝ) (hx : 0 < x) : 0 < Real.sqrt x :=\n"
+        "  Real.sqrt_pos.mpr hx\n"
+    )
+    proposition = "0 < Real.sqrt (Real.exp 1 + 1)"
+    code, output, _ = general.runner.run(elaborate(source, proposition).source)
+    assert code == 0 and ": error" not in output, output[-500:]
