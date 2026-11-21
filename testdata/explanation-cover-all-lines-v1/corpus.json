@@ -1,0 +1,70 @@
+{
+ "schema_version": "pals.explanation-cover-all-lines-corpus.v1",
+ "provenance": "First six: original public synthetic cases (as in explanation-claim-headers-v1). Last four: Lean sources produced by real local generation and accepted by the production verifier, with their local test questions (no user questions; no held_out case).",
+ "cases": [
+  {
+   "id": "energy-unique-minimum",
+   "source": "energy.lean",
+   "language": "ja",
+   "statement": "実数a,b,cを任意に固定する。実数tに対してE(t)=(t-a)^2+(t-b)^2+(t-c)^2と定義する。E(t)の実数全体での最小値と、それを達成するtをすべて求め、最小性と一意性を証明してください。ここでEはこの式で定義した量であり、確率分布や指数関数を仮定しません。"
+  },
+  {
+   "id": "coprime-common-multiples",
+   "source": "coprime.lean",
+   "language": "en",
+   "statement": "Let a and b be coprime natural numbers, where natural numbers include zero. Characterize all natural numbers n that are divisible by both a and b by giving an equivalent condition involving their product. Prove both directions without adding positivity assumptions or changing the number domain."
+  },
+  {
+   "id": "pairwise-products",
+   "source": "amgm3.lean",
+   "language": "en",
+   "statement": "Prove that for all real numbers a, b, c, a*b + b*c + c*a ≤ a^2 + b^2 + c^2."
+  },
+  {
+   "id": "composition-injective",
+   "source": "comp_injective.lean",
+   "language": "ja",
+   "statement": "関数 f : α → β と g : β → γ がどちらも単射ならば、合成関数 g ∘ f も単射であることを証明してください。"
+  },
+  {
+   "id": "sum-of-odd-numbers",
+   "source": "odd_sum.lean",
+   "language": "en",
+   "statement": "Prove by induction that the sum of the first n odd numbers 1 + 3 + ... + (2n - 1) equals n^2."
+  },
+  {
+   "id": "odd-square-mod-eight",
+   "source": "odd_square.lean",
+   "language": "ja",
+   "statement": "整数 n が奇数ならば、n^2 を 8 で割った余りが 1 であることを証明してください。"
+  },
+  {
+   "id": "group-square-one-a",
+   "source": "group_square_one_a.lean",
+   "language": "en",
+   "statement": "群 G の任意の元 g が g*g=1 を満たすならば、G は可換であることを証明してください。",
+   "origin": "local real generation, verified by the production verifier"
+  },
+  {
+   "id": "group-square-one-b",
+   "source": "group_square_one_b.lean",
+   "language": "en",
+   "statement": "群 G の任意の元 g が g*g=1 を満たすならば、G は可換であることを証明してください。",
+   "origin": "local real generation, verified by the production verifier"
+  },
+  {
+   "id": "finite-domain-units",
+   "source": "finite_domain_units.lean",
+   "language": "en",
+   "statement": "有限整域は体であることを証明してください。",
+   "origin": "local real generation, verified by the production verifier"
+  },
+  {
+   "id": "reciprocal-limit",
+   "source": "reciprocal_limit.lean",
+   "language": "en",
+   "statement": "Prove that the real sequence a_n = 1 / (n + 1) converges to 0 as n tends to infinity, using the epsilon-N definition. For every epsilon > 0, give an explicit choice of a natural number N and prove that for every n >= N, |a_n - 0| < epsilon. Explain the final conclusion in English. End the final conclusion with the exact sentence \"This completes the proof of convergence.\" and use that sentence nowhere else.",
+   "origin": "local real generation, verified by the production verifier"
+  }
+ ]
+}

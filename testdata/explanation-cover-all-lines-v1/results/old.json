@@ -1,0 +1,741 @@
+[
+ {
+  "rep": 2,
+  "id": "group-square-one-a",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 12.1,
+  "est_usd": 0.00302,
+  "final": {
+   "refs": 3,
+   "cited_lines": 18,
+   "body_lines": 33,
+   "body_lines_uncovered": 15,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 3,
+   "refs": 3,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 1,
+  "id": "group-square-one-a",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 2,
+  "qa_rejections": 1,
+  "seconds": 21.4,
+  "est_usd": 0.00542,
+  "final": {
+   "refs": 3,
+   "cited_lines": 18,
+   "body_lines": 33,
+   "body_lines_uncovered": 15,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 3,
+   "refs": 3,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 1,
+  "id": "coprime-common-multiples",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 12.0,
+  "est_usd": 0.00245,
+  "final": {
+   "refs": 2,
+   "cited_lines": 12,
+   "body_lines": 13,
+   "body_lines_uncovered": 1,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 2,
+   "refs": 2,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 1,
+  "id": "energy-unique-minimum",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 12.4,
+  "est_usd": 0.00292,
+  "final": {
+   "refs": 3,
+   "cited_lines": 18,
+   "body_lines": 19,
+   "body_lines_uncovered": 1,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 3,
+   "refs": 3,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 2,
+  "id": "composition-injective",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 9.5,
+  "est_usd": 0.00223,
+  "final": {
+   "refs": 4,
+   "cited_lines": 9,
+   "body_lines": 6,
+   "body_lines_uncovered": 0,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 4,
+   "refs": 4,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 0,
+  "id": "coprime-common-multiples",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 14.5,
+  "est_usd": 0.00261,
+  "final": {
+   "refs": 2,
+   "cited_lines": 12,
+   "body_lines": 13,
+   "body_lines_uncovered": 1,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 2,
+   "refs": 2,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 0,
+  "id": "odd-square-mod-eight",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 12.9,
+  "est_usd": 0.00246,
+  "final": {
+   "refs": 4,
+   "cited_lines": 12,
+   "body_lines": 12,
+   "body_lines_uncovered": 0,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 4,
+   "refs": 4,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 2,
+  "id": "reciprocal-limit",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 15.5,
+  "est_usd": 0.0031,
+  "final": {
+   "refs": 3,
+   "cited_lines": 25,
+   "body_lines": 28,
+   "body_lines_uncovered": 3,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 3,
+   "refs": 3,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 0,
+  "id": "group-square-one-b",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 10.1,
+  "est_usd": 0.00264,
+  "final": {
+   "refs": 3,
+   "cited_lines": 18,
+   "body_lines": 18,
+   "body_lines_uncovered": 1,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 3,
+   "refs": 3,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 2,
+  "id": "energy-unique-minimum",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 12.5,
+  "est_usd": 0.00306,
+  "final": {
+   "refs": 4,
+   "cited_lines": 26,
+   "body_lines": 19,
+   "body_lines_uncovered": 0,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 4,
+   "refs": 4,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 0,
+  "id": "reciprocal-limit",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 2,
+  "qa_rejections": 1,
+  "seconds": 29.5,
+  "est_usd": 0.00595,
+  "final": {
+   "refs": 3,
+   "cited_lines": 24,
+   "body_lines": 28,
+   "body_lines_uncovered": 4,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 3,
+   "refs": 3,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 2,
+  "id": "finite-domain-units",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 2,
+  "qa_rejections": 1,
+  "seconds": 26.9,
+  "est_usd": 0.00552,
+  "final": {
+   "refs": 5,
+   "cited_lines": 23,
+   "body_lines": 24,
+   "body_lines_uncovered": 2,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 5,
+   "refs": 5,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 1,
+  "id": "group-square-one-b",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 9.7,
+  "est_usd": 0.0026,
+  "final": {
+   "refs": 3,
+   "cited_lines": 18,
+   "body_lines": 18,
+   "body_lines_uncovered": 1,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 3,
+   "refs": 3,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 1,
+  "id": "composition-injective",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 9.7,
+  "est_usd": 0.00211,
+  "final": {
+   "refs": 2,
+   "cited_lines": 9,
+   "body_lines": 6,
+   "body_lines_uncovered": 0,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 2,
+   "refs": 2,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 0,
+  "id": "energy-unique-minimum",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 15.0,
+  "est_usd": 0.00329,
+  "final": {
+   "refs": 6,
+   "cited_lines": 22,
+   "body_lines": 19,
+   "body_lines_uncovered": 3,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 6,
+   "refs": 6,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 1,
+  "id": "reciprocal-limit",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 22.9,
+  "est_usd": 0.00315,
+  "final": {
+   "refs": 3,
+   "cited_lines": 24,
+   "body_lines": 28,
+   "body_lines_uncovered": 4,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 3,
+   "refs": 3,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 2,
+  "id": "pairwise-products",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 8.8,
+  "est_usd": 0.00213,
+  "final": {
+   "refs": 4,
+   "cited_lines": 7,
+   "body_lines": 7,
+   "body_lines_uncovered": 0,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 4,
+   "refs": 4,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 0,
+  "id": "group-square-one-a",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 12.9,
+  "est_usd": 0.00293,
+  "final": {
+   "refs": 3,
+   "cited_lines": 18,
+   "body_lines": 33,
+   "body_lines_uncovered": 15,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 3,
+   "refs": 3,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 1,
+  "id": "pairwise-products",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 9.6,
+  "est_usd": 0.00211,
+  "final": {
+   "refs": 4,
+   "cited_lines": 7,
+   "body_lines": 7,
+   "body_lines_uncovered": 0,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 4,
+   "refs": 4,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 2,
+  "id": "coprime-common-multiples",
+  "arm": "old",
+  "outcome": "review_transport",
+  "error": "",
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 132.4,
+  "est_usd": 0.00138,
+  "final": null,
+  "judge": null
+ },
+ {
+  "rep": 1,
+  "id": "sum-of-odd-numbers",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 9.3,
+  "est_usd": 0.00226,
+  "final": {
+   "refs": 2,
+   "cited_lines": 9,
+   "body_lines": 9,
+   "body_lines_uncovered": 0,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 2,
+   "refs": 2,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 1,
+  "id": "odd-square-mod-eight",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 2,
+  "qa_rejections": 1,
+  "seconds": 28.3,
+  "est_usd": 0.00504,
+  "final": {
+   "refs": 3,
+   "cited_lines": 12,
+   "body_lines": 12,
+   "body_lines_uncovered": 0,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 3,
+   "refs": 3,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 0,
+  "id": "composition-injective",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 9.1,
+  "est_usd": 0.00212,
+  "final": {
+   "refs": 2,
+   "cited_lines": 9,
+   "body_lines": 6,
+   "body_lines_uncovered": 0,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 2,
+   "refs": 2,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 0,
+  "id": "finite-domain-units",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 12.2,
+  "est_usd": 0.00279,
+  "final": {
+   "refs": 5,
+   "cited_lines": 25,
+   "body_lines": 24,
+   "body_lines_uncovered": 1,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 5,
+   "refs": 5,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 0,
+  "id": "pairwise-products",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 9.9,
+  "est_usd": 0.00208,
+  "final": {
+   "refs": 4,
+   "cited_lines": 7,
+   "body_lines": 7,
+   "body_lines_uncovered": 0,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 4,
+   "refs": 4,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 2,
+  "id": "sum-of-odd-numbers",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 9.7,
+  "est_usd": 0.00238,
+  "final": {
+   "refs": 2,
+   "cited_lines": 11,
+   "body_lines": 9,
+   "body_lines_uncovered": 0,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 2,
+   "refs": 2,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 2,
+  "id": "odd-square-mod-eight",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 11.7,
+  "est_usd": 0.00251,
+  "final": {
+   "refs": 4,
+   "cited_lines": 12,
+   "body_lines": 12,
+   "body_lines_uncovered": 0,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 4,
+   "refs": 4,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 2,
+  "id": "group-square-one-b",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 10.6,
+  "est_usd": 0.00255,
+  "final": {
+   "refs": 2,
+   "cited_lines": 18,
+   "body_lines": 18,
+   "body_lines_uncovered": 1,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 2,
+   "refs": 2,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 1,
+  "id": "finite-domain-units",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 13.5,
+  "est_usd": 0.00287,
+  "final": {
+   "refs": 3,
+   "cited_lines": 27,
+   "body_lines": 24,
+   "body_lines_uncovered": 1,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 3,
+   "refs": 3,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ },
+ {
+  "rep": 0,
+  "id": "sum-of-odd-numbers",
+  "arm": "old",
+  "outcome": "approved",
+  "error": null,
+  "attempt_failures": [],
+  "writer_calls": 1,
+  "qa_rejections": 0,
+  "seconds": 9.1,
+  "est_usd": 0.00221,
+  "final": {
+   "refs": 2,
+   "cited_lines": 9,
+   "body_lines": 9,
+   "body_lines_uncovered": 0,
+   "headers_missing": 0
+  },
+  "judge": {
+   "judged": 2,
+   "refs": 2,
+   "misfit": 0,
+   "misfit_refs": []
+  }
+ }
+]
