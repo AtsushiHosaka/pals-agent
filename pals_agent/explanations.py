@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import re
 import time
 import unicodedata
@@ -93,6 +94,21 @@ coefficients) are introduced for a claim about natural-number divisibility, firs
 integer quotient, then justify that it is nonnegative before calling it a natural quotient.
 Do not apply closure of natural-number divisibility under multiplication by a negative integer.
 """
+# Default off (pals#232): when PALS_EXPLANATION_COVER_ALL_LINES_ENABLED=true the explanation prompt
+# also asks that no block of the proof body is left out of every section's references. Prompt only:
+# nothing is validated or rejected differently, and with the flag off the prompt is unchanged.
+EXPLANATION_COVER_ALL_LINES_ENV = "PALS_EXPLANATION_COVER_ALL_LINES_ENABLED"
+_COVER_ALL_LINES_INSTRUCTION = (
+    "Coverage of the proof body: the references of all sections together should reach every\n"
+    "non-blank line of the proof after the theorem statement (imports and the statement itself\n"
+    "need no reference). Do not leave an entire step, calc chain, or tactic block between two\n"
+    "cited ranges uncited. When a section explains a step, cite that step from its first line to\n"
+    "its last line, including the calc steps and nested tactic lines that belong to it; the\n"
+    "narrowest range instruction applies within a step, not to skipping steps. If a block has no\n"
+    "mathematical content to explain, such as a routine simplification, cite it together with the\n"
+    "adjacent step it supports instead of dropping it. Never invent an explanation for a line\n"
+    "only to cite it, and never attach a reference to prose that does not discuss those lines."
+)
 # Added to explanation prompts only, and only when the source has such a header (pals#232).
 _CLAIM_HEADER_INSTRUCTION = (
     """For every multi-line local have declaration, include its complete claim
@@ -1615,7 +1631,7 @@ def _explanation_prompt(
     language: str,
     require_epsilon_delta: bool = False,
 ) -> str:
-    header_block = _claim_header_prompt(lean_code)
+    header_block = _claim_header_prompt(lean_code) + _cover_all_lines_prompt()
     x_squared_instruction = ""
     if require_epsilon_delta:
         opening_instruction = (
@@ -1757,6 +1773,12 @@ Canonical Lean line table (JSON; each `text` value preserves leading spaces):
 For a reference from `start_line` through `end_line`, set `excerpt` to the exact `text`
 values for those lines joined with a single newline. Do not trim or normalize \
 spaces.{header_block}"""
+
+
+def _cover_all_lines_prompt() -> str:
+    if os.environ.get(EXPLANATION_COVER_ALL_LINES_ENV, "false") != "true":
+        return ""
+    return f"\n\n{_COVER_ALL_LINES_INSTRUCTION}"
 
 
 def _claim_header_prompt(lean_code: str) -> str:
