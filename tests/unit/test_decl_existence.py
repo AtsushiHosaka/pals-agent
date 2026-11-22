@@ -2,7 +2,6 @@
 
 import gzip
 import json
-import sqlite3
 from pathlib import Path
 
 import pytest
@@ -149,17 +148,12 @@ def test_misspelled_flag_is_rejected(monkeypatch) -> None:
         declaration_index_from_env()
 
 
-def test_sqlite_index_is_read(monkeypatch, tmp_path) -> None:
+def test_non_jsonl_index_is_not_read(monkeypatch, tmp_path) -> None:
     path = tmp_path / "index.sqlite"
-    connection = sqlite3.connect(path)
-    connection.execute("CREATE TABLE decl (id INTEGER PRIMARY KEY, name TEXT)")
-    connection.executemany("INSERT INTO decl(name) VALUES (?)", [(n,) for n in NAMES])
-    connection.commit()
-    connection.close()
+    path.write_bytes(b"SQLite format 3\x00")
     monkeypatch.setenv(DECL_EXISTENCE_ENV, "true")
     monkeypatch.setenv(DECL_INDEX_PATH_ENV, str(path))
-    index = declaration_index_from_env()
-    assert index is not None and index.lookup("sq_nonneg").exact
+    assert declaration_index_from_env() is None
 
 
 def test_checked_in_archive_export_loads(monkeypatch) -> None:

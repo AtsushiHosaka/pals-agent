@@ -2,7 +2,7 @@
 
 A repair that swaps one invented lemma name for another wastes a round. When the failed compile
 names an unknown identifier, this module looks the name up in an index of declaration names built
-from the pinned Mathlib source (``tools/mathlib_index``: ``index.sqlite`` or ``decls.jsonl.gz``)
+from the pinned Mathlib source (``tools/mathlib_index``: ``decls.jsonl.gz``; the worker has no database capability, so SQLite is not read)
 and returns a short prompt block that says one of three things for each name:
 
 * it exists exactly, so the failure is a missing import or namespace;
@@ -24,7 +24,6 @@ import gzip
 import json
 import os
 import re
-import sqlite3
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
@@ -122,12 +121,6 @@ def _rank(name: str) -> tuple[int, str]:
 
 
 def _read_names(path: Path) -> list[str]:
-    if path.suffix == ".sqlite":
-        connection = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
-        try:
-            return [row[0] for row in connection.execute("SELECT name FROM decl")]
-        finally:
-            connection.close()
     opener = gzip.open if path.suffix == ".gz" else open
     names: list[str] = []
     with opener(path, "rt", encoding="utf-8") as handle:
@@ -146,7 +139,7 @@ def _load(path: str, mtime_ns: int) -> DeclarationIndex | None:
     del mtime_ns  # part of the cache key: a rebuilt index is read again
     try:
         index = DeclarationIndex(_read_names(Path(path)))
-    except (OSError, ValueError, sqlite3.Error):
+    except (OSError, ValueError):
         return None
     return index if len(index) else None
 
