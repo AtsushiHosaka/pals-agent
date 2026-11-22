@@ -1399,6 +1399,14 @@
   {
    "id": "tests.integration.test_general_recipe_stage_real::test_non_instances_fall_through[(2 : \\u211d) + 2 = 4]",
    "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe request-path stage, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_stage_real::test_the_api_wrapper_proves_a_hypothesis_instance_the_lane_accepts",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe request-path stage, model-free); not provided on this runner."
+  },
+  {
+   "id": "tests.integration.test_general_recipe_stage_real::test_a_by_alternative_cannot_hide_the_side_goal_closers",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (general-Recipe request-path stage, model-free); not provided on this runner."
   }
  ],
  "allowed_unexecuted_modules": [
