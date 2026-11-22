@@ -124,6 +124,25 @@ def test_ambiguity_requires_clarification() -> None:
     assert data['ambiguities'][0] in problem.clarification['text']
 
 
+@pytest.mark.parametrize('language', ['en', 'ja', 'zh-Hans', 'zh-Hant'])
+def test_ambiguity_clarification_header_follows_the_response_language(language) -> None:
+    """CORE-017: the fixed lead-in of the question is in the request's language."""
+    data = payload()
+    data['language'] = language
+    data['ambiguities'] = ['AB = AC or AB = BC?']
+    problem = GeometryProblem.parse(data)
+    text = problem.clarification['text']
+    header, _, body = text.partition('\n')
+    assert body == 'AB = AC or AB = BC?'
+    expected = {
+        'en': 'Please clarify the mathematical interpretation before proving:',
+        'ja': '証明の前に、数学的な解釈を確認させてください。',
+        'zh-Hans': '证明之前，请先确认数学上的理解。',
+        'zh-Hant': '證明之前，請先確認數學上的理解。',
+    }[language]
+    assert header == expected
+
+
 def test_ocr_requires_exact_runtime_confirmation_and_preserves_sources() -> None:
     data = ocr_payload()
     unconfirmed = GeometryProblem.parse(data)

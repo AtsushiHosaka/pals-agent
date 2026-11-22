@@ -95,6 +95,15 @@ def _claim(value: Any, *, proposition: str, expected: tuple[str, tuple[str, ...]
     )
 
 
+# CORE-017: PALS-authored learner-facing text follows the request's response language.
+_AMBIGUITY_LEAD_IN = {
+    "en": "Please clarify the mathematical interpretation before proving:",
+    "ja": "証明の前に、数学的な解釈を確認させてください。",
+    "zh-Hans": "证明之前，请先确认数学上的理解。",
+    "zh-Hant": "證明之前，請先確認數學上的理解。",
+}
+
+
 @dataclass(frozen=True, slots=True)
 class GeometryProblem:
     """Immutable snapshot; accessors return copies, not the accepted input object."""
@@ -248,8 +257,7 @@ class GeometryProblem:
                 clarification = proposition_question(proposition, language)
         if ambiguities:
             clarification = {
-                "text": "Please clarify the mathematical interpretation before proving:\n"
-                + "\n".join(ambiguities),
+                "text": _AMBIGUITY_LEAD_IN[language] + "\n" + "\n".join(ambiguities),
                 "options": [],
             }
         return cls(
