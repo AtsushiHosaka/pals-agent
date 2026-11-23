@@ -7,7 +7,8 @@ import pytest
 from pals_agent import general_recipe_lane as lane
 from pals_agent import general_recipe_stage as stage
 from pals_agent.proof_reuse import ProofReuseRuntime
-from tests.unit.test_proof_reuse_lean_flow import BOUND_REQUEST, RECIPE, lookup
+from tests.unit.test_proof_reuse_lean_flow import BOUND_REQUEST, CLAIM_ID, lookup
+from tests.unit.test_recipe_instantiation_reuse import POWER
 
 REQUEST = dict(BOUND_REQUEST, statement="Prove that f(x)=x^3 is continuous on the real numbers.")
 
@@ -23,19 +24,23 @@ class Scripted:
     def __init__(self, result):
         self.result, self.calls = result, []
 
-    def run(self, proposition, recipes, language, *, budget_s):
-        self.calls.append((proposition, [r["recipe_id"] for r in recipes], language, budget_s))
+    def run(self, proposition, recipes, language, *, budget_s, bound=True, **kwargs):
+        ids = [r["recipe_id"] for r in recipes]
+        self.calls.append((proposition, ids, language, budget_s, bound))
         return self.result
 
 
-def runtime(general_lane):
-    return ProofReuseRuntime(client=None, catalog=None, general_lane=general_lane)  # type: ignore[arg-type]
+def runtime(general_lane, instantiation=True, grammar=False):
+    return ProofReuseRuntime(
+        client=None, catalog=None, general_lane=general_lane,  # type: ignore[arg-type]
+        instantiation_enabled=instantiation, grammar_instantiation=grammar,
+    )
 
 
 def answered():
     return stage.StageResult(
-        "answered", None, "ANSWER", {"recipe_id": RECIPE["recipe_id"], "recipe_revision": 1},
-        "Continuous (fun x : ℝ => x ^ 3)", "a" * 64, {"lean": 4800.0}, "request_grammar", [],
+        "answered", None, "ANSWER", {"recipe_id": POWER["recipe_id"], "recipe_revision": 1},
+        POWER, "Continuous (fun x : ℝ => x ^ 3)", "a" * 64, {"lean": 4800.0}, "request_grammar", [],
     )
 
 
@@ -44,10 +49,25 @@ def on(monkeypatch):
     monkeypatch.setenv("PALS_GENERAL_RECIPE_LANE", "on")
 
 
-def call(general_lane, request=REQUEST, recipes=(RECIPE,)):
+@pytest.fixture
+def handoff(monkeypatch):
+    """Capture what the lane hands to the (unchanged) instantiation route."""
+    seen = []
+
+    def fake(self, request, context, preflight, proposal, evidence, **kwargs):
+        seen.append((proposal, evidence, kwargs))
+        return "HANDED_OFF"
+
+    monkeypatch.setattr(ProofReuseRuntime, "_recipe_instantiation", fake)
+    return seen
+
+
+def call(general_lane, request=REQUEST, recipes=(POWER,), instantiation=True, seconds=120,
+         grammar=False):
     search, calls = lookup(list(recipes))
-    result = runtime(general_lane).general_recipe_input(
-        request, recipe_search=search, deadline=time.monotonic() + 120
+    now = time.monotonic()
+    result = runtime(general_lane, instantiation, grammar).general_recipe_input(
+        request, recipe_search=search, claim_id=CLAIM_ID, deadline=now + seconds, started=now,
     )
     return result, calls
 
@@ -58,53 +78,74 @@ def test_default_runtime_has_no_stage_and_does_nothing():
     assert result is None and calls == []  # not even a Recipe search
 
 
-def test_flag_off_never_touches_the_stage(monkeypatch):
+def test_flag_off_or_instantiation_off_never_touches_the_stage(monkeypatch):
     monkeypatch.delenv("PALS_GENERAL_RECIPE_LANE", raising=False)
     result, calls = call(Boom())
+    assert result is None and calls == []
+    monkeypatch.setenv("PALS_GENERAL_RECIPE_LANE", "on")
+    result, calls = call(Boom(), instantiation=False)
     assert result is None and calls == []
     assert stage.from_environment({}) is None
     assert stage.from_environment({"PALS_GENERAL_RECIPE_LANE": "on"}) is None  # no workspace
 
 
-def test_answered_result_carries_binding_and_lean_evidence(on):
+def test_a_lean_accepted_instance_is_proposed_to_the_unchanged_instantiation_route(on, handoff):
     scripted = Scripted(answered())
     result, calls = call(scripted)
-    assert result.outcome == "answered" and result.answer["text"] == "ANSWER"
-    assert result.answer["evidence_kind"] == stage.EVIDENCE_KIND
-    evidence = result.private_evidence
-    assert evidence["model_calls"] == 0 and evidence["lean_route"] == "general_recipe_lane"
-    assert evidence["formal_statement"] == "Continuous (fun x : ℝ => x ^ 3)"
-    assert evidence["back_checks"] == {
-        "declared_statement_equals_request": True,
-        "standard_axioms_only": True,
-        "general_theorem_used": True,
-    }
+    assert result == "HANDED_OFF" and len(calls) == 1
+    proposal, evidence, kwargs = handoff[0]
+    # the lane only proposes: no bindings are asserted, the independent review and the API decide
+    assert proposal["proposed"]["requested_proposition"] == "Continuous (fun x : ℝ => x ^ 3)"
+    assert proposal["proposed"]["bindings"] == []
+    assert proposal["chosen"] is POWER or proposal["chosen"]["recipe_id"] == POWER["recipe_id"]
+    assert evidence["phase"] == "general_recipe_instantiation"
+    assert evidence["general_recipe_lane"]["model_calls"] == 0
     assert scripted.calls[0][0] == "Continuous (fun x : ℝ => x ^ 3)"
-    assert len(calls) == 1
+    assert scripted.calls[0][4] is False  # plain stage only: what the API re-derives
+    assert kwargs["claim_id"] == CLAIM_ID
 
 
-def test_a_miss_returns_none_so_the_request_continues(on):
+def test_a_request_the_grammar_stage_already_reviewed_is_not_reviewed_again(on, handoff):
+    """The grammar stage proposes first; its rejection is final (no second independent review)."""
+    scripted = Scripted(answered())
+    result, _ = call(scripted, grammar=True)
+    assert result is None and scripted.calls == [] and handoff == []
+
+
+def test_a_miss_returns_none_so_the_request_continues(on, handoff):
     result, _ = call(Scripted(stage.StageResult("miss", "lean_rejected_all")))
-    assert result is None
+    assert result is None and handoff == []
 
 
-def test_request_the_grammar_does_not_cover_is_not_sent_to_lean(on):
+def test_request_the_grammar_does_not_cover_is_not_sent_to_lean(on, handoff):
     scripted = Scripted(answered())
     result, calls = call(scripted, dict(REQUEST, statement="Explain why the sky is blue."))
     assert result is None and scripted.calls == [] and calls == []
 
 
 @pytest.mark.parametrize("extra", [{"chat_history": [{"role": "user"}]}, {"attachment_ids": ["x"]}])
-def test_conversation_and_attachments_are_out_of_scope(on, extra):
+def test_conversation_and_attachments_are_out_of_scope(on, handoff, extra):
     scripted = Scripted(answered())
     result, _ = call(scripted, dict(REQUEST, **extra))
     assert result is None and scripted.calls == []
 
 
+def test_without_time_for_lean_and_the_review_it_returns_before_searching(on, handoff):
+    scripted = Scripted(answered())
+    result, calls = call(scripted, seconds=35)
+    assert result is None and calls == [] and scripted.calls == []
+
+
+def test_lean_budget_keeps_thirty_seconds_for_the_review(on, handoff):
+    scripted = Scripted(answered())
+    call(scripted, seconds=60)
+    assert 10.0 <= scripted.calls[0][3] <= 30.0
+
+
 def test_stage_without_budget_or_recipes_is_a_miss():
     runner = lane.LeanRunner("/nonexistent/lean", "")
     general = stage.GeneralRecipeStage(runner)
-    assert general.run("True", [RECIPE], "ja", budget_s=1.0).code == "budget_too_small"
+    assert general.run("True", [POWER], "ja", budget_s=1.0).code == "budget_too_small"
     assert general.run("True", [], "ja", budget_s=30.0).code == "no_recipe"
 
 
@@ -114,7 +155,7 @@ def test_a_crashing_lane_is_a_miss_not_an_error(monkeypatch):
 
     monkeypatch.setattr(lane, "answer", explode)
     general = stage.GeneralRecipeStage(lane.LeanRunner("/nonexistent/lean", ""))
-    result = general.run("Continuous f", [RECIPE], "ja", budget_s=30.0)
+    result = general.run("Continuous f", [POWER], "ja", budget_s=30.0)
     assert result.outcome == "miss" and result.code == "lane_error:OSError"
 
 
@@ -213,15 +254,6 @@ def test_a_timeout_skips_the_second_stage_and_the_total_stays_inside_the_budget(
     assert len(runs) == 1 and runs[0] <= 20.0
 
 
-def test_runtime_returns_before_searching_when_the_budget_is_small(on):
-    scripted = Scripted(answered())
-    search, calls = lookup([RECIPE])
-    result = runtime(scripted).general_recipe_input(
-        REQUEST, recipe_search=search, deadline=time.monotonic() + 35
-    )
-    assert result is None and calls == [] and scripted.calls == []
-
-
 @pytest.mark.parametrize(
     ("statement", "head"),
     [
@@ -235,24 +267,3 @@ def test_conclusion_head_existence_and_nested_binders(statement, head):
     assert lane.conclusion_head(statement) == head
 
 
-def test_lane_budget_is_computed_after_the_search_and_keeps_thirty_seconds(on):
-    scripted = Scripted(answered())
-    import pals_agent.proof_reuse as reuse
-
-    now = [1000.0]
-    search_calls = []
-
-    def search(query, language):
-        now[0] += 4.0  # the search itself takes 4 s
-        search_calls.append(query)
-        return [RECIPE]
-
-    original = reuse.time.monotonic
-    reuse.time.monotonic = lambda: now[0]
-    try:
-        runtime(scripted).general_recipe_input(
-            REQUEST, recipe_search=search, deadline=1060.0
-        )
-    finally:
-        reuse.time.monotonic = original
-    assert search_calls and scripted.calls[0][3] == pytest.approx(60.0 - 4.0 - 30.0)
