@@ -1544,3 +1544,35 @@ def test_after_lean_reconciliation_the_delivery_reuses_the_job_it_just_read(monk
     assert len(reviewer.calls) == 1
     assert api.evidence[0]["decision"] == "rejected"
     assert api.retries == ["22222222-2222-4222-8222-222222222222"]
+
+
+def test_worker_keeps_polling_when_a_read_pairs_a_compiling_job_with_a_passed_candidate() -> None:
+    # Production, seq32 acceptance: the read straddled the API's reconciliation commit. The
+    # worker took "compiling, nothing pending" as settled, asked for a new generation claim on a
+    # job already in semantic review, and the review waited an hour for that lease.
+    reads = [
+        {"state": "compiling", "verification_candidate_state": "compiling", "diagnostics": []},
+        {"state": "compiling", "verification_candidate_state": "semantic_review",
+         "diagnostics": []},
+        {"state": "semantic_review", "verification_candidate_state": "semantic_review",
+         "diagnostics": []},
+    ]
+    sleeps: list[float] = []
+    worker = SqsProofWorker(
+        settings=cast(AgentSettings, SimpleNamespace()),
+        api_client=cast(Any, SimpleNamespace(get_proof_job=lambda proof_job_id: reads.pop(0))),
+        pipeline=StructuringFailurePipeline(),
+        explainer=ExplainerThatMustNotRun(),
+        sleep=sleeps.append,
+    )
+
+    settled = worker._wait_for_candidate_reconciliation(
+        proof_job_id="job-straddled-read",
+        extend_visibility=lambda seconds: None,
+        refresh_visibility=False,
+    )
+
+    assert settled is not None
+    assert settled["state"] == "semantic_review"
+    assert reads == []
+    assert len(sleeps) == 2
