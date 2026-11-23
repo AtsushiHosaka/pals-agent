@@ -156,6 +156,11 @@ class _T2Carry:
 
 
 _T2_CARRY: ContextVar[_T2Carry | None] = ContextVar("pals_worker_t2_carry", default=None)
+# The queue receive count of the delivery being processed; None when unknown. Set by
+# process_proof_job so the recursion that follows Lean reconciliation sees it too.
+_DELIVERY_RECEIVE_COUNT: ContextVar[int | None] = ContextVar(
+    "pals_worker_delivery_receive_count", default=None
+)
 
 
 class _EarlyExplainer:
@@ -189,6 +194,13 @@ _CANDIDATE_RECONCILIATION_POLL_SCHEDULE: Final = ((30.0, 0.25), (90.0, 0.5))
 # A refusal or an outage leaves nothing behind, so the next delivery simply asks again; acting at
 # the third receive leaves two more before the redrive policy moves the message to the DLQ.
 _NO_PROGRESS_TERMINALIZE_RECEIVE_COUNT: Final = 3
+# A generation claim the API answers with HTTP 5xx leaves the receipt undeleted, and the claim's
+# one-hour visibility (set earlier in the delivery) would hide it for that hour (pals#451). On a
+# 5xx, return the receipt after a short delay instead, for the first few deliveries only; a later
+# delivery, or one whose receive count is unknown, keeps the long visibility as before. 4xx and
+# every other failure are unchanged.
+_CLAIM_5XX_RETRY_VISIBILITY_SECONDS: Final = 30
+_CLAIM_5XX_RETRY_MAX_RECEIVE_COUNT: Final = 5
 _NO_PROGRESS_TERMINALIZABLE_STATES: Final = frozenset(
     {
         "queued",
@@ -744,6 +756,9 @@ class SqsProofWorker:
         )
         if proof_job.get("state") in _NON_VERIFIED_TERMINAL_STATES:
             return True
+        receive_token = (
+            _DELIVERY_RECEIVE_COUNT.set(delivery_attempt) if delivery_attempt is not None else None
+        )
         try:
             return self._process_proof_job_delivery(
                 proof_job_id, proof_job=proof_job, claim_id=claim_id,
@@ -758,6 +773,9 @@ class SqsProofWorker:
             return self._terminalize_no_progress(
                 proof_job_id, stalled=stalled, delivery_attempt=delivery_attempt,
             )
+        finally:
+            if receive_token is not None:
+                _DELIVERY_RECEIVE_COUNT.reset(receive_token)
 
     def _process_proof_job_delivery(
         self,
@@ -2321,6 +2339,26 @@ class SqsProofWorker:
             acquired=True,
         )
 
+    def _return_receipt_soon_after_claim_5xx(
+        self, exc: PalsApiError, extend_visibility: VisibilityExtender
+    ) -> None:
+        """Make a receipt whose claim got HTTP 5xx visible again soon, not after the claim lease.
+
+        Only a 5xx, only for the first few deliveries; the receipt is never deleted here, so
+        past the limit (or without a receive count) the previous behaviour applies.
+        """
+        receive_count = _DELIVERY_RECEIVE_COUNT.get()
+        if (
+            exc.status_code is None
+            or not 500 <= exc.status_code <= 599
+            or receive_count is None
+            or receive_count > _CLAIM_5XX_RETRY_MAX_RECEIVE_COUNT
+        ):
+            return
+        note_latency("claim_5xx_short_visibility", 1)
+        with suppress(Exception):
+            extend_visibility(_CLAIM_5XX_RETRY_VISIBILITY_SECONDS)
+
     def _acquire_proof_generation(
         self,
         *,
@@ -2341,6 +2379,9 @@ class SqsProofWorker:
                 resource_kind="proof_job",
                 resource_id=proof_job_id,
             )
+        except PalsApiError as exc:
+            self._return_receipt_soon_after_claim_5xx(exc, extend_visibility)
+            return _AcquisitionResult(acknowledge=False, permit=None)
         except Exception:
             return _AcquisitionResult(acknowledge=False, permit=None)
 
