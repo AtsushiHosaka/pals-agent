@@ -1637,9 +1637,13 @@ class SqsProofWorker:
                     proof_job = self.api_client.get_proof_job(proof_job_id)
                 except PalsApiError:
                     proof_job = None
-                if isinstance(proof_job, dict) and (
-                    proof_job.get("state") != "compiling"
-                    or not _has_pending_api_candidate(proof_job)
+                if (
+                    isinstance(proof_job, dict)
+                    and not _compile_settlement_in_flight(proof_job)
+                    and (
+                        proof_job.get("state") != "compiling"
+                        or not _has_pending_api_candidate(proof_job)
+                    )
                 ):
                     _note_verification_elapsed(proof_job)
                     return proof_job
@@ -3942,6 +3946,20 @@ def _candidate_poll_delay(waited_seconds: float, *, fast: bool = False) -> float
         if waited_seconds < until:
             return delay
     return _CANDIDATE_RECONCILIATION_POLL_SECONDS
+
+
+def _compile_settlement_in_flight(proof_job: dict[str, Any]) -> bool:
+    """True for a read that pairs a job still compiling with a candidate that already passed.
+
+    The API moves the job and its candidate together, but an older API reads them one after the
+    other, so a read that straddles that commit shows this pair. It is not a settled compile: the
+    job is about to appear in semantic review. Acting on it sent the worker down the generation
+    path, where it took a fresh one-hour claim on a job that needed no generation, and the review
+    waited for that lease to run out. Keep polling instead.
+    """
+    return proof_job.get("state") == "compiling" and proof_job.get(
+        "verification_candidate_state"
+    ) in {"semantic_review", "verified"}
 
 
 def _has_pending_api_candidate(proof_job: dict[str, Any]) -> bool:
