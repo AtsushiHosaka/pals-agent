@@ -9,6 +9,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, replace
 from typing import Protocol
 
+from pals_agent.decl_existence import declaration_existence_block, declaration_index_from_env
 from pals_agent.failure_brief import sanitised_failure_brief
 from pals_agent.linked_chat import selected_generation_model, selected_generation_reasoning_effort
 from pals_agent.math_task import DERIVE_ANSWER_INSTRUCTION
@@ -1662,6 +1663,10 @@ def _repair_guidance(feedback: GenerationFeedback | None) -> str:
             "complete candidate. Never add axioms, weaken assumptions or change the "
             "requested claim to silence an import error.\n"
         )
+    # Off by default; with the flag unset the prompt is exactly what it was before (pals#381).
+    unknown_identifier_guidance += declaration_existence_block(
+        unknown_identifiers, declaration_index_from_env()
+    )
     return f"""
 Previous attempt failed Lean validation or compilation.
 The selected DSP repair route is `{feedback.repair_route}`.
