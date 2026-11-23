@@ -168,6 +168,15 @@ INSTANCE_LATEST_START_SECONDS = 110.0
 INSTANCE_CANDIDATES = 3  # top-ranked Recipes considered for specialization
 QA_OUTPUT_TOKEN_LIMIT = 12000
 _LANGUAGES = {"en", "ja", "zh-Hans", "zh-Hant"}
+# CORE-017: PALS-authored learner-facing text follows the request's response language.
+# pals-api replaces this question with its catalog copy; the agent's own text must still not
+# be fixed to English.
+_CONVENTION_QUESTION = {
+    "en": "Which reading of {} applies?",
+    "ja": "{} はどの解釈で扱いますか。",
+    "zh-Hans": "{} 应采用哪种解释？",
+    "zh-Hant": "{} 應採用哪種解釋？",
+}
 
 
 class ProofReuseError(RuntimeError):
@@ -520,7 +529,7 @@ class ProofReuseRuntime:
                     evidence["convention_question"] = unknown[0]
                     return _non_answer(
                         {"action": "needs_input", "question": {
-                            "text": f"Which reading of {unknown[0]} applies?",
+                            "text": _CONVENTION_QUESTION[language].format(unknown[0]),
                             "options": [],
                             "convention_id": unknown[0],
                         }},

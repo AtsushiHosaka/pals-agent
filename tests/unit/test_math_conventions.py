@@ -82,6 +82,26 @@ def test_unknown_relevant_reading_is_asked_before_anything_else():
     assert readings["zero_ring_domain"] is None and set(readings) == set(SPEC_IDS)
 
 
+@pytest.mark.parametrize(
+    ("language", "text"),
+    [
+        ("en", "Which reading of zero_ring_domain applies?"),
+        ("ja", "zero_ring_domain はどの解釈で扱いますか。"),
+        ("zh-Hans", "zero_ring_domain 应采用哪种解释？"),
+        ("zh-Hant", "zero_ring_domain 應採用哪種解釋？"),
+    ],
+)
+def test_convention_question_follows_the_output_language(language, text):
+    """CORE-017: the agent's own wording is localized, not fixed to English."""
+    counterexample = dict(READY["premise_check"], counterexample="the zero ring",
+                          conventions=["zero_ring_domain"])
+    engine, _ = runtime([dict(READY, premise_check=counterexample)])
+    result = engine.answer(dict(with_conventions(), output_language=language))
+    assert result.outcome == "needs_input"
+    assert result.question["text"] == text
+    assert result.question["convention_id"] == "zero_ring_domain"
+
+
 def test_the_model_may_leave_the_convention_question_to_the_system():
     leave = relevant("natural_zero", action="needs_input", question=None)
     engine, _ = runtime([leave])
