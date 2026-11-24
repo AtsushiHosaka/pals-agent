@@ -120,8 +120,30 @@ def test_a_new_python_file_outside_the_graph_selects_all(repo: Path) -> None:
     assert selector.select(["other/x.py"], repo) == ["ALL"]
 
 
-def test_a_deleted_python_file_alone_selects_nothing(repo: Path) -> None:
-    assert selector.select(["pals_agent/gone.py"], repo) == []
+def test_a_deleted_python_file_selects_all(repo: Path) -> None:
+    assert selector.select(["pals_agent/gone.py"], repo) == ["ALL"]
+
+
+def test_a_script_imported_by_short_name_is_followed(repo: Path) -> None:
+    write(
+        repo,
+        {
+            "scripts/eval/short.py": "Z = 1\n",
+            "tests/unit/test_short.py": "import sys\nimport short\n",
+        },
+    )
+    assert selector.select(["scripts/eval/short.py"], repo) == ["tests/unit/test_short.py"]
+
+
+def test_a_file_loaded_by_path_is_followed(repo: Path) -> None:
+    write(
+        repo,
+        {
+            "scripts/loaded.py": "Z = 1\n",
+            "tests/unit/test_loaded.py": "P = ('scripts', 'loaded.py')\nQ = 'scripts/loaded.py'\n",
+        },
+    )
+    assert selector.select(["scripts/loaded.py"], repo) == ["tests/unit/test_loaded.py"]
 
 
 def test_main_prints_one_path_per_line(repo: Path, capsys: pytest.CaptureFixture[str]) -> None:

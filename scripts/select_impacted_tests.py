@@ -60,7 +60,26 @@ def project_files(root: Path) -> dict[str, Path]:
     return modules
 
 
-def _resolve(name: str, modules: dict[str, Path]) -> set[str]:
+def _aliases(modules: dict[str, Path]) -> dict[str, set[str]]:
+    """Short names that scripts and tests import after putting their directory on ``sys.path``.
+
+    ``scripts/eval/extract_dev_split.py`` is ``scripts.eval.extract_dev_split`` in the graph but
+    ``extract_dev_split`` to a test that adds ``scripts/eval`` to ``sys.path``. Every module under
+    ``scripts`` or ``tools`` is also known by each trailing part of its dotted name.
+    """
+    aliases: dict[str, set[str]] = {}
+    for name in modules:
+        parts = name.split(".")
+        if parts[0] not in ("scripts", "tools") or len(parts) < 2:
+            continue
+        for start in range(1, len(parts)):
+            aliases.setdefault(".".join(parts[start:]), set()).add(name)
+    return aliases
+
+
+def _resolve(
+    name: str, modules: dict[str, Path], aliases: dict[str, set[str]] | None = None
+) -> set[str]:
     """The project modules a dotted name refers to, with every parent package."""
     found: set[str] = set()
     parts = name.split(".")
@@ -68,10 +87,19 @@ def _resolve(name: str, modules: dict[str, Path]) -> set[str]:
         candidate = ".".join(parts[:end])
         if candidate in modules:
             found.add(candidate)
+        if aliases and candidate in aliases:
+            found |= aliases[candidate]
     return found
 
 
-def imports_of(path: Path, current: str, modules: dict[str, Path], root: Path) -> set[str]:
+def imports_of(
+    path: Path,
+    current: str,
+    modules: dict[str, Path],
+    root: Path,
+    aliases: dict[str, set[str]] | None = None,
+    basenames: dict[str, set[str]] | None = None,
+) -> set[str]:
     try:
         tree = ast.parse((root / path).read_text(encoding="utf-8"))
     except (SyntaxError, UnicodeDecodeError, OSError):
@@ -82,7 +110,7 @@ def imports_of(path: Path, current: str, modules: dict[str, Path], root: Path) -
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
-                found |= _resolve(alias.name, modules)
+                found |= _resolve(alias.name, modules, aliases)
         elif isinstance(node, ast.ImportFrom):
             if node.level:
                 base_parts = package.split(".") if package else []
@@ -92,13 +120,15 @@ def imports_of(path: Path, current: str, modules: dict[str, Path], root: Path) -
             else:
                 target = node.module or ""
             if target:
-                found |= _resolve(target, modules)
+                found |= _resolve(target, modules, aliases)
                 for alias in node.names:
-                    found |= _resolve(f"{target}.{alias.name}", modules)
-        elif (
-            isinstance(node, ast.Constant) and isinstance(node.value, str) and node.value in modules
-        ):
-            found.add(node.value)
+                    found |= _resolve(f"{target}.{alias.name}", modules, aliases)
+        elif isinstance(node, ast.Constant) and isinstance(node.value, str):
+            if node.value in modules:
+                found.add(node.value)
+            elif basenames and node.value.endswith(".py"):
+                # A file loaded by path (``spec_from_file_location``, ``runpy``, a subprocess).
+                found |= basenames.get(node.value.rsplit("/", 1)[-1], set())
     found.discard(current)
     return found
 
@@ -106,9 +136,13 @@ def imports_of(path: Path, current: str, modules: dict[str, Path], root: Path) -
 def build_graph(root: Path) -> tuple[dict[str, Path], dict[str, set[str]]]:
     """Return the module table and the reverse graph (module -> modules that import it)."""
     modules = project_files(root)
+    aliases = _aliases(modules)
+    basenames: dict[str, set[str]] = {}
+    for name, path in modules.items():
+        basenames.setdefault(path.name, set()).add(name)
     reverse: dict[str, set[str]] = {name: set() for name in modules}
     for name, path in modules.items():
-        for imported in imports_of(path, name, modules, root):
+        for imported in imports_of(path, name, modules, root, aliases, basenames):
             reverse[imported].add(name)
     return modules, reverse
 
@@ -141,10 +175,7 @@ def select(changed: list[str], root: Path) -> list[str]:
             return [ALL]
         if kind == "python":
             if path not in by_path:
-                if not (root / path).exists():
-                    # A deleted or moved file: whoever imported it is found by its own change.
-                    continue
-                return [ALL]
+                return [ALL]  # Deleted or unknown: importers cannot be recovered from the graph.
             seeds.add(by_path[path])
     reached = set(seeds)
     queue = list(seeds)
