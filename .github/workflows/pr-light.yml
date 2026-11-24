@@ -1,0 +1,43 @@
+name: PR light checks
+
+# Light checks only (pals#467). The full regression suite runs once on push to main / release/** on the pals-release runner.
+# pals#487 stage 3: the test selection below is a dry run. It prints which test files the import
+# graph says the pull request can affect, never fails, and gates nothing.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-light-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-light:
+    runs-on: [self-hosted, pals-pr]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Whitespace and conflict-marker check against the base
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: git diff --check "origin/$BASE_REF...HEAD"
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12.13"
+      - name: Print the selected test files (dry run)
+        continue-on-error: true
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set +e
+          python scripts/select_impacted_tests.py --git-diff "$BASE_SHA" > "$RUNNER_TEMP/selected.txt"
+          echo "selector exit status: $?"
+          echo "selected test files: $(grep -vc '^ALL$' "$RUNNER_TEMP/selected.txt")"
+          cat "$RUNNER_TEMP/selected.txt"
+          exit 0
