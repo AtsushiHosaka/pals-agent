@@ -10,7 +10,7 @@ from pathlib import Path
 
 _ROOT = Path(__file__).resolve().parents[2]
 _SPEC = importlib.util.spec_from_file_location(
-    "agent_regression_gate", _ROOT / "scripts" / "agent_regression_gate.py"
+    "agent_regression_gate", _ROOT / "tests" / "qualification" / "agent_regression_gate.py"
 )
 assert _SPEC and _SPEC.loader
 gate = importlib.util.module_from_spec(_SPEC)

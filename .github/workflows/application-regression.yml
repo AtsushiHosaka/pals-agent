@@ -63,7 +63,7 @@ jobs:
           test "$(git rev-parse "$RETAINED_VERIFIER_ANCHOR^{commit}")" = "$RETAINED_VERIFIER_ANCHOR"
           test "$(git cat-file commit "$RETAINED_VERIFIER_ANCHOR" | git hash-object -t commit --stdin)" = "$RETAINED_VERIFIER_ANCHOR"
           git merge-base --is-ancestor "$RETAINED_VERIFIER_ANCHOR" HEAD
-          cp scripts/agent_regression_gate.py tests/qualification/agent_regression_manifest.json "$RUNNER_TEMP/"
+          cp tests/qualification/agent_regression_gate.py tests/qualification/agent_regression_manifest.json "$RUNNER_TEMP/"
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12.13"
@@ -76,7 +76,7 @@ jobs:
       - name: Lint the qualification gate
         run: |
           uv run --no-sync ruff check \
-            scripts/agent_regression_gate.py \
+            tests/qualification/agent_regression_gate.py \
             tests/unit/test_agent_regression_gate.py
       - name: Run the full suite on the candidate source
         run: |
