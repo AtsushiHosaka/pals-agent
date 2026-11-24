@@ -1,0 +1,38 @@
+name: Test selection dry run
+
+# pals#487 stage 3: print which test files the import graph says a pull request can affect.
+# Advisory only. It never fails the pull request and gates nothing; the full regression in
+# application-regression.yml remains the gate. The log is used to count tests the selection
+# would have missed (selected set did not contain a test that the full run failed).
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-selection-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  select:
+    name: test-selection-dry-run
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Print the selected test files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set +e
+          python3 scripts/select_impacted_tests.py --git-diff "$BASE_SHA" > "$RUNNER_TEMP/selected.txt"
+          status=$?
+          echo "selector exit status: $status"
+          echo "selected test files: $(grep -vc '^ALL$' "$RUNNER_TEMP/selected.txt")"
+          cat "$RUNNER_TEMP/selected.txt"
+          exit 0
