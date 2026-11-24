@@ -1776,6 +1776,12 @@ class SqsProofWorker:
                 return False
         except ValueError:
             return False
+        # seq41 (pals#496): a Recipe attempt never enters proving, so show its source while the
+        # API holds the job in compiling. Best-effort and flag-gated like every preview.
+        self._send_progress_preview(
+            proof_job_id=proof_job_id, claim_id=mutation_claim_id, status="proving",
+            raw={}, lean_code=attempt.source, language="lean",
+        )
         reconciled = self._wait_for_candidate_reconciliation(
             proof_job_id=proof_job_id,
             extend_visibility=extend_visibility,
