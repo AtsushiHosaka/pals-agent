@@ -4,6 +4,7 @@
  "core_modules": [
   "tests/unit/test_pipeline.py",
   "tests/unit/test_pipeline_repair.py",
+  "tests/unit/test_pipeline_draft_context.py",
   "tests/unit/test_worker_credential_provider_binding.py",
   "tests/unit/test_proof_request_worker.py",
   "tests/unit/test_repair_runtime_spec.py",
