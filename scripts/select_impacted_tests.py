@@ -95,9 +95,10 @@ def imports_of(path: Path, current: str, modules: dict[str, Path], root: Path) -
                 found |= _resolve(target, modules)
                 for alias in node.names:
                     found |= _resolve(f"{target}.{alias.name}", modules)
-        elif isinstance(node, ast.Constant) and isinstance(node.value, str):
-            if node.value in modules:
-                found.add(node.value)
+        elif (
+            isinstance(node, ast.Constant) and isinstance(node.value, str) and node.value in modules
+        ):
+            found.add(node.value)
     found.discard(current)
     return found
 

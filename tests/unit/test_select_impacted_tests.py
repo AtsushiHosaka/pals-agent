@@ -39,7 +39,9 @@ def repo(tmp_path: Path) -> Path:
             "pals_agent/mid.py": "from pals_agent.base import X\n",
             "pals_agent/top.py": "from pals_agent import mid\n",
             "pals_agent/rel.py": "from .base import X\n",
-            "pals_agent/dyn.py": "import importlib\nm = importlib.import_module('pals_agent.base')\n",
+            "pals_agent/dyn.py": (
+                "import importlib\nm = importlib.import_module('pals_agent.base')\n"
+            ),
             "pals_agent/lonely.py": "Y = 2\n",
             "scripts/tool.py": "from pals_agent.lonely import Y\n",
             "tests/__init__.py": "",
