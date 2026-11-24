@@ -1206,6 +1206,11 @@ def test_selected_recipe_submits_exact_bytes_without_constructing_pipeline_or_re
             self.claims = 0
             self.retries = 0
             self.binding_reads = 0
+            self.previews: list[dict[str, Any]] = []
+
+        def put_progress_preview(self, **kwargs: Any) -> dict[str, Any]:
+            self.previews.append(kwargs)
+            return {"accepted": True}
 
         def get_proof_job(self, proof_job_id: str) -> dict[str, Any]:
             if self.recipe_submissions:
@@ -1309,6 +1314,7 @@ def test_selected_recipe_submits_exact_bytes_without_constructing_pipeline_or_re
             SimpleNamespace(
                 artifacts_bucket="pals-artifacts",
                 max_repair_attempts=12,
+                progress_preview_enabled=True,
             ),
         ),
         api_client=cast(Any, api),
@@ -1346,6 +1352,11 @@ def test_selected_recipe_submits_exact_bytes_without_constructing_pipeline_or_re
     assert not {"model", "provider", "raw_model_output", "repair_route"} & set(
         submission["candidate_source"]
     )
+    # seq41 (pals#496): the Recipe source is shown as the unverified Lean preview.
+    assert [(p["kind"], p["language"], p["text"]) for p in api.previews] == [
+        ("sketch_lean", "lean", _RECIPE_SOURCE)
+    ]
+    assert api.previews[0]["claim_id"] == "11111111-1111-4111-8111-111111111111"
 
 
 def test_recipe_not_selected_keeps_the_existing_generation_pipeline() -> None:
