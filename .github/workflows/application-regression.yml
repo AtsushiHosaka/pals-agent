@@ -3,15 +3,25 @@ name: Agent application regression
 on:
   pull_request:
   push:
+    branches: [main]
+  # A commit that is not on main and has no pull request (a release candidate branch) gets its run from here.
+  workflow_dispatch:
   merge_group:
     types: [checks_requested]
 
 permissions:
   contents: read
 
+# Why this shape (pals#505). The parent's sign gate requires that the LATEST `agent-regression` run on the candidate commit succeeded,
+# whatever event made it. So:
+#   * a run that is not a pull_request run is never cancelled: its group is its own commit (a later push cannot replace a pending run
+#     of an earlier commit, and `cancel-in-progress` is off for it);
+#   * only pull_request runs cancel, and only an older run of the same pull request (keyed by its number, so same-named branches of
+#     different forks never cancel each other; a newer commit of that PR makes the old commit's run pointless);
+#   * push runs exist for main only. Before, every branch push ran next to its pull_request run: the same commit twice, in two groups.
 concurrency:
-  group: agent-regression-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: agent-regression-${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('{0}-{1}', github.event_name, github.sha) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Worker qualification. The job name and this file path are the identity that the
 # parent repository's release-source-checks requires; do not rename either.
@@ -82,8 +92,11 @@ jobs:
         run: |
           # Exit 0 (all passed) and 1 (some tests failed) are the only outcomes that may
           # proceed; interrupted (2), internal error (3), usage (4) or no tests (5) block.
+          # --dist loadfile: the tests of one file run on one worker, in order. The isolated verifier binds the fixed port 18117
+          # (tests/unit/test_isolated_verifier_http_server.py starts it in many tests), and `xdist_group` would append
+          # `@group` to the test id, which the failure ledger and the anchor re-run (serial) compare by id.
           status=0
-          uv run --no-sync python -m pytest -p no:cacheprovider tests \
+          uv run --no-sync python -m pytest -p no:cacheprovider tests -n auto --dist loadfile \
             --junitxml="$RUNNER_TEMP/candidate.xml" || status=$?
           test "$status" -le 1
           test -s "$RUNNER_TEMP/candidate.xml"
