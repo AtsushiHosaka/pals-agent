@@ -40,6 +40,10 @@ from pals_agent.lean_verifier.http_server import (
 )
 from pals_agent.models import VerificationResult
 
+# The verifier binds the fixed port 18117 (a product constraint): these tests must not
+# run at the same time under pytest -n (--dist loadgroup keeps a group on one worker).
+pytestmark = pytest.mark.xdist_group("verifier-port-18117")
+
 _TRUE = """import Mathlib.Algebra.BigOperators.Intervals
 import Mathlib.Tactic.Ring
 theorem pals_sum_odd (n : ℕ) : ∑ i ∈ Finset.range n, (2 * i + 1) = n ^ 2 := by

@@ -93,7 +93,7 @@ jobs:
           # Exit 0 (all passed) and 1 (some tests failed) are the only outcomes that may
           # proceed; interrupted (2), internal error (3), usage (4) or no tests (5) block.
           status=0
-          uv run --no-sync python -m pytest -p no:cacheprovider tests -n auto \
+          uv run --no-sync python -m pytest -p no:cacheprovider tests -n auto --dist loadgroup \
             --junitxml="$RUNNER_TEMP/candidate.xml" || status=$?
           test "$status" -le 1
           test -s "$RUNNER_TEMP/candidate.xml"

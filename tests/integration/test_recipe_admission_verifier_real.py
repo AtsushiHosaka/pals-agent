@@ -28,6 +28,10 @@ from pals_agent.lean_verifier.http_server import (
     pinned_recipe_admission_context,
 )
 
+# The verifier binds the fixed port 18117 (a product constraint): these tests must not
+# run at the same time under pytest -n (--dist loadgroup keeps a group on one worker).
+pytestmark = pytest.mark.xdist_group("verifier-port-18117")
+
 _ROOT = Path(__file__).resolve().parents[2]
 _WORKSPACE = _ROOT / "lean-workspace"
 _RELEASE_ID = UUID("018a3b10-514d-4d6d-845e-3f322b74bca0")

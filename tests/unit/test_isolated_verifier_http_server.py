@@ -29,6 +29,10 @@ from pals_agent.lean_verifier.http_server import (
 )
 from pals_agent.models import Diagnostic, VerificationResult
 
+# The verifier binds the fixed port 18117 (a product constraint): these tests must not
+# run at the same time under pytest -n (--dist loadgroup keeps a group on one worker).
+pytestmark = pytest.mark.xdist_group("verifier-port-18117")
+
 _RELEASE_ID = UUID("018a3b10-514d-4d6d-845e-3f322b74bca0")
 _DEPLOYMENT_SHA = "a" * 64
 _ADMISSION_ID = UUID("e406e9fa-fd9f-4856-b5c4-18e9b3102128")
