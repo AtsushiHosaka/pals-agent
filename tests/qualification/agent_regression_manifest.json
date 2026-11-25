@@ -54,31 +54,6 @@
    "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
   },
   {
-   "id": "tests.story.test_worker_story::test_committed_import_transport_failure_keeps_exact_candidate_and_bounded_visibility[False]",
-   "cause": "stale_timing_expectation",
-   "reason": "The asserted fake-clock value (330) differs from the current retry schedule (2000); fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_complimentary_token_claim::test_acquired_qa_claim_works_with_global_flag_off_through_real_token_client",
-   "cause": "token_claim_expectation_mismatch",
-   "reason": "The complimentary token claim and its review disagree with the expectation in this test (failed instead of answered); fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_complimentary_token_claim::test_enabled_paid_token_claim_remains_compatible[marker0]",
-   "cause": "token_claim_expectation_mismatch",
-   "reason": "The complimentary token claim and its review disagree with the expectation in this test (failed instead of answered); fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_complimentary_token_claim::test_enabled_paid_token_claim_remains_compatible[False]",
-   "cause": "token_claim_expectation_mismatch",
-   "reason": "The complimentary token claim and its review disagree with the expectation in this test (failed instead of answered); fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_complimentary_token_claim::test_qa_exemption_preserves_independent_answer_review",
-   "cause": "token_claim_expectation_mismatch",
-   "reason": "The complimentary token claim and its review disagree with the expectation in this test (failed instead of answered); fails identically on the anchor."
-  },
-  {
    "id": "tests.unit.test_local_worker_boundary::test_only_local_worker_service_gets_privileged_startup",
    "cause": "cross_repository_fixture_missing",
    "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
@@ -87,26 +62,6 @@
    "id": "tests.unit.test_local_worker_boundary::test_healthcheck_keeps_pid_liveness_check_under_same_unprivileged_uid",
    "cause": "cross_repository_fixture_missing",
    "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_math_task_evaluation::test_ready_evaluation_captures_preflight_and_drafts_with_three_calls",
-   "cause": "stale_test_double",
-   "reason": "The test double lacks an attribute or response the production path now requires; fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_math_task_evaluation::test_ambiguous_evaluation_skips_draft_and_uses_two_calls",
-   "cause": "stale_test_double",
-   "reason": "The test double lacks an attribute or response the production path now requires; fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_math_task_evaluation::test_wrong_action_fails_even_when_semantic_judge_passes",
-   "cause": "stale_test_double",
-   "reason": "The test double lacks an attribute or response the production path now requires; fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_math_task_evaluation::test_invalid_preflight_is_rejected_before_draft_or_judgment",
-   "cause": "stale_test_double",
-   "reason": "The test double lacks an attribute or response the production path now requires; fails identically on the anchor."
   },
   {
    "id": "tests.unit.test_proof_flow_runtime_task6_red::test_pfi_ag_006_production_worker_has_explicit_database_network_deny",
@@ -127,11 +82,6 @@
    "id": "tests.unit.test_proof_flow_runtime_task6_red::test_pfi_ag_006_local_overlay_uses_distinct_database_network_and_auth_guard",
    "cause": "cross_repository_fixture_missing",
    "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_recipe_entry_review::test_entry_is_sealed_only_after_stateless_independent_actual_source_and_answer_review",
-   "cause": "stale_test_double",
-   "reason": "The test double lacks an attribute or response the production path now requires; fails identically on the anchor."
   },
   {
    "id": "tests.unit.test_typed_catalog_expansion::test_new_cards_do_not_collide_with_existing_typed_inventory",
@@ -174,37 +124,7 @@
    "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
   },
   {
-   "id": "tests.unit.test_typed_expansion_v2_integration::test_actual_v2_cards_use_pinned_profile_and_remain_authoring[typed-calculus-v2-calculus-v2-batch.json]",
-   "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_typed_expansion_v2_integration::test_actual_v2_cards_use_pinned_profile_and_remain_authoring[typed-linear-algebra-v2-linear-algebra-v2-batch.json]",
-   "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_typed_expansion_v2_integration::test_actual_v2_cards_use_pinned_profile_and_remain_authoring[typed-commalg-modules-v2-commalg-modules-v2-batch.json]",
-   "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
-  },
-  {
    "id": "tests.unit.test_typed_expansion_v2_integration::test_v2_cards_have_no_id_or_canonical_collision_with_existing_catalog",
-   "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_typed_expansion_v3_integration::test_v3_manifest_pins_its_profile_and_remains_local_authoring[typed-calculus-v3-calculus-v3-batch.json]",
-   "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_typed_expansion_v3_integration::test_v3_manifest_pins_its_profile_and_remains_local_authoring[typed-linear-algebra-v3-linear-algebra-v3-batch.json]",
-   "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_typed_expansion_v3_integration::test_v3_manifest_pins_its_profile_and_remains_local_authoring[typed-commalg-v3-commalg-v3-batch.json]",
    "cause": "stale_catalog_or_profile_expectation",
    "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
   },
@@ -214,37 +134,7 @@
    "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
   },
   {
-   "id": "tests.unit.test_typed_expansion_v4_integration::test_v4_manifest_pins_its_profile_and_remains_local_authoring[typed-calculus-v4-calculus-v4-batch.json]",
-   "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_typed_expansion_v4_integration::test_v4_manifest_pins_its_profile_and_remains_local_authoring[typed-linear-algebra-v4-linear-algebra-v4-batch.json]",
-   "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_typed_expansion_v4_integration::test_v4_manifest_pins_its_profile_and_remains_local_authoring[typed-commalg-v4-commalg-v4-batch.json]",
-   "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
-  },
-  {
    "id": "tests.unit.test_typed_expansion_v4_integration::test_v4_id_and_canonical_xml_differ_from_all_existing_typed_cards",
-   "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_typed_expansion_v5_integration::test_v5_manifest_pins_its_profile_and_remains_local_authoring[typed-calculus-v5-calculus-v5-batch.json]",
-   "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_typed_expansion_v5_integration::test_v5_manifest_pins_its_profile_and_remains_local_authoring[typed-linear-algebra-v5-linear-algebra-v5-batch.json]",
-   "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
-  },
-  {
-   "id": "tests.unit.test_typed_expansion_v5_integration::test_v5_manifest_pins_its_profile_and_remains_local_authoring[typed-multivariable-v5-multivariable-v5-batch.json]",
    "cause": "stale_catalog_or_profile_expectation",
    "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
   },
