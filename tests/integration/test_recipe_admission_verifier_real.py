@@ -15,6 +15,7 @@ from threading import Thread
 from typing import Any, cast
 from uuid import UUID
 
+import pytest
 import rfc8785
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
