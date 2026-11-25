@@ -15,7 +15,6 @@ from threading import Thread
 from typing import Any, cast
 from uuid import UUID
 
-import pytest
 import rfc8785
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
@@ -28,10 +27,6 @@ from pals_agent.lean_verifier.http_server import (
     create_server,
     pinned_recipe_admission_context,
 )
-
-# The verifier binds the fixed port 18117 (a product constraint): these tests must not
-# run at the same time under pytest -n (--dist loadgroup keeps a group on one worker).
-pytestmark = pytest.mark.xdist_group("verifier-port-18117")
 
 _ROOT = Path(__file__).resolve().parents[2]
 _WORKSPACE = _ROOT / "lean-workspace"

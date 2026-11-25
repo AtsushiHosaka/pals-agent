@@ -92,8 +92,11 @@ jobs:
         run: |
           # Exit 0 (all passed) and 1 (some tests failed) are the only outcomes that may
           # proceed; interrupted (2), internal error (3), usage (4) or no tests (5) block.
+          # --dist loadfile: the tests of one file run on one worker, in order. The isolated verifier binds the fixed port 18117
+          # (tests/unit/test_isolated_verifier_http_server.py starts it in many tests), and `xdist_group` would append
+          # `@group` to the test id, which the failure ledger and the anchor re-run (serial) compare by id.
           status=0
-          uv run --no-sync python -m pytest -p no:cacheprovider tests -n auto --dist loadgroup \
+          uv run --no-sync python -m pytest -p no:cacheprovider tests -n auto --dist loadfile \
             --junitxml="$RUNNER_TEMP/candidate.xml" || status=$?
           test "$status" -le 1
           test -s "$RUNNER_TEMP/candidate.xml"
