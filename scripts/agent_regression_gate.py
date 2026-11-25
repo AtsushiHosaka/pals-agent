@@ -12,6 +12,10 @@ on every test, with no unexplained failure, skip or unexecuted module:
 * the declared core runtime modules must execute with no failure and no unlisted skip;
 * a missing, unparsable or too-small report blocks.
 
+* every known failure carries an `expires` date (YYYY-MM-DD); on a later day the entry blocks
+  whether the test still fails or not, so a listed failure is a debt with a due date, not a
+  permanent exemption (pals#505). Fix the test, or move it to a place that runs it for real.
+
 Manifest entries that now pass are reported as stale but never excuse anything.
 """
 from __future__ import annotations
@@ -21,16 +25,16 @@ import json
 import re
 import sys
 import xml.etree.ElementTree as ET
+from datetime import date
 from pathlib import Path
 
 CAUSES = frozenset({
     "lean_toolchain_unavailable",
     "cross_repository_fixture_missing",
     "stale_catalog_or_profile_expectation",
-    "token_claim_expectation_mismatch",
-    "stale_test_double",
-    "stale_timing_expectation",
 })
+# No cause may say "the test is out of date" except the one still listed (a sealed manifest drift,
+# to be re-sealed): a stale test is fixed or deleted, not registered (pals#505).
 BAD = ("failure", "error")
 _PHASE = re.compile(r'^failed on (?:setup|teardown) with "')
 _SIGNATURE = re.compile(r"^([A-Za-z_][\w.]*)(?=:|\s|$)")
@@ -95,7 +99,9 @@ def evaluate(
     anchor: dict[str, dict[str, str]],
     manifest: dict,
     modules: set[str],
+    today: date | None = None,
 ) -> tuple[list[str], list[str]]:
+    today = today or date.today()
     problems: list[str] = []
     notes: list[str] = []
     core = {path.removesuffix(".py").replace("/", ".") for path in manifest["core_modules"]}
@@ -103,6 +109,15 @@ def evaluate(
     for entry in manifest["known_failures"]:
         if entry.get("cause") not in CAUSES or not entry.get("reason", "").strip():
             problems.append("manifest_entry_without_cause_or_reason:" + entry.get("id", "?"))
+        try:
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(entry.get("expires", ""))):
+                raise ValueError("expires is YYYY-MM-DD")
+            expires = date.fromisoformat(entry["expires"])
+        except ValueError:
+            problems.append("manifest_entry_without_expiry:" + entry.get("id", "?"))
+        else:
+            if today > expires:
+                problems.append("manifest_entry_expired:" + entry.get("id", "?"))
         known[entry["id"]] = entry
     skips = {entry["id"]: entry for entry in manifest["allowed_skips"]}
     if any(not entry.get("reason", "").strip() for entry in skips.values()):
