@@ -28,6 +28,9 @@ from pals_agent.lean_verifier.http_server import (
     pinned_recipe_admission_context,
 )
 
+# Serial only: the verifier binds the fixed port 18117, so this file must not run at the same
+# time as another file that starts it (CI: `pytest -n auto --dist loadfile`; skipped there).
+
 _ROOT = Path(__file__).resolve().parents[2]
 _WORKSPACE = _ROOT / "lean-workspace"
 _RELEASE_ID = UUID("018a3b10-514d-4d6d-845e-3f322b74bca0")

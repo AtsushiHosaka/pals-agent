@@ -365,11 +365,15 @@ def test_server_requires_the_admitted_reconciler_certificate(
         ),
         socket.create_connection(("127.0.0.1", 18117), timeout=2) as raw,
         untrusted_context.wrap_socket(raw, server_hostname="verifier.internal") as connection,
+        pytest.raises((ssl.SSLError, http.client.RemoteDisconnected, ConnectionError)),
     ):
+        # With TLS 1.3 the client's handshake completes before the server has checked the client
+        # certificate, so the server's refusal reaches the client at the send or at the read,
+        # depending on timing (pals#505: it failed at the send under parallel load). Either is the
+        # refusal; only an answer to the request is a failure.
         connection.sendall(b"GET /ready HTTP/1.1\r\n" + _headers() + b"\r\n")
         response = http.client.HTTPResponse(connection)
-        with pytest.raises((ssl.SSLError, http.client.RemoteDisconnected)):
-            response.begin()
+        response.begin()
 
 
 def test_busy_and_compiler_failure_use_the_closed_error_registry(

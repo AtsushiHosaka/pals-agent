@@ -2,6 +2,9 @@
 
 Set ``PALS_PARALLEL_REAL_PROJECT`` to the pinned workspace and ``PALS_PARALLEL_REAL_SCRATCH`` to a
 bounded scratch directory.  Nothing here is mocked: each compile is the verifier's own child.
+
+Serial only: the verifier binds the fixed port 18117, so this file must not run at the same time
+as another file that starts it (CI: `pytest -n auto --dist loadfile`; skipped there).
 """
 
 from __future__ import annotations
