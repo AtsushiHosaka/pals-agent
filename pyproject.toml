@@ -74,6 +74,10 @@ packages = ["pals_agent"]
 "pals_agent/lean_libraries/mathlib-archive.toml" = "pals_agent/lean_libraries/mathlib-archive.toml"
 
 [tool.pytest.ini_options]
+# Serial requirement (pals#505): the isolated verifier binds the fixed port 18117 (a product
+# constraint), so the tests that start it must run one at a time. CI runs `pytest -n auto
+# --dist loadfile` (one file per worker); do not run the real-Lean integration files and
+# tests/unit/test_isolated_verifier_http_server.py at the same time under `-n`.
 addopts = "-q"
 testpaths = ["tests"]
 

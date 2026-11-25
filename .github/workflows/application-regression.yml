@@ -16,11 +16,11 @@ permissions:
 # whatever event made it. So:
 #   * a run that is not a pull_request run is never cancelled: its group is its own commit (a later push cannot replace a pending run
 #     of an earlier commit, and `cancel-in-progress` is off for it);
-#   * only pull_request runs cancel, and only an older run of the same pull request branch (a newer commit of that branch makes the
-#     old commit's run pointless);
+#   * only pull_request runs cancel, and only an older run of the same pull request (keyed by its number, so same-named branches of
+#     different forks never cancel each other; a newer commit of that PR makes the old commit's run pointless);
 #   * push runs exist for main only. Before, every branch push ran next to its pull_request run: the same commit twice, in two groups.
 concurrency:
-  group: agent-regression-${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.head_ref) || format('{0}-{1}', github.event_name, github.sha) }}
+  group: agent-regression-${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('{0}-{1}', github.event_name, github.sha) }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Worker qualification. The job name and this file path are the identity that the
