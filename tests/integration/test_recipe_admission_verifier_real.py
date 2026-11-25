@@ -29,7 +29,7 @@ from pals_agent.lean_verifier.http_server import (
 )
 
 # Serial only: the verifier binds the fixed port 18117, so this file must not run at the same
-# time as another file that starts it (CI: `pytest -n auto --dist loadfile`; this file is skipped there).
+# time as another file that starts it (CI: `pytest -n auto --dist loadfile`; skipped there).
 
 _ROOT = Path(__file__).resolve().parents[2]
 _WORKSPACE = _ROOT / "lean-workspace"
