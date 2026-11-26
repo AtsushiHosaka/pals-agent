@@ -51,152 +51,182 @@
   {
    "id": "tests.integration.test_recipe_admission_verifier_real::test_pinned_recipe_admission_endpoint_compiles_over_mtls",
    "cause": "lean_toolchain_unavailable",
-   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_local_worker_boundary::test_only_local_worker_service_gets_privileged_startup",
    "cause": "cross_repository_fixture_missing",
-   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_local_worker_boundary::test_healthcheck_keeps_pid_liveness_check_under_same_unprivileged_uid",
    "cause": "cross_repository_fixture_missing",
-   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_proof_flow_runtime_task6_red::test_pfi_ag_006_production_worker_has_explicit_database_network_deny",
    "cause": "cross_repository_fixture_missing",
-   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_proof_flow_runtime_task6_red::test_pfi_ag_006_worker_environment_does_not_receive_database_credentials",
    "cause": "cross_repository_fixture_missing",
-   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_proof_flow_runtime_task6_red::test_pfi_ag_006_worker_has_no_host_profile_and_cannot_modify_session_mount",
    "cause": "cross_repository_fixture_missing",
-   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_proof_flow_runtime_task6_red::test_pfi_ag_006_local_overlay_uses_distinct_database_network_and_auth_guard",
    "cause": "cross_repository_fixture_missing",
-   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_catalog_expansion::test_new_cards_do_not_collide_with_existing_typed_inventory",
    "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_catalog_remaining_profiles::test_api_runtime_bindings_cover_exact_local_validator_bytes",
    "cause": "cross_repository_fixture_missing",
-   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_commutative_algebra::test_commutative_algebra_manifest_is_deterministic_generator_output",
    "cause": "lean_toolchain_unavailable",
-   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_commutative_algebra_chain_dimension::test_chain_dimension_manifest_is_deterministic_generator_output",
    "cause": "lean_toolchain_unavailable",
-   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_commutative_algebra_decomposition::test_generator_reseals_c14n_and_runs_pinned_lean_bundle",
    "cause": "lean_toolchain_unavailable",
-   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_commutative_algebra_integral::test_integral_manifest_generator_is_deterministic",
    "cause": "lean_toolchain_unavailable",
-   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_commutative_algebra_localization::test_generator_reseals_c14n_and_runs_the_pinned_lean_witnesses",
    "cause": "lean_toolchain_unavailable",
-   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_commutative_algebra_modules::test_module_manifest_generator_is_deterministic",
    "cause": "lean_toolchain_unavailable",
-   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_expansion_v2_integration::test_v2_cards_have_no_id_or_canonical_collision_with_existing_catalog",
    "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_expansion_v3_integration::test_v3_id_and_canonical_xml_differ_from_all_existing_typed_cards",
    "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_expansion_v4_integration::test_v4_id_and_canonical_xml_differ_from_all_existing_typed_cards",
    "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_expansion_v5_integration::test_v5_id_and_canonical_xml_differ_from_all_existing_typed_cards",
    "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_local_catalog::test_supported_manifests_revalidate_with_actual_profile_code",
    "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_local_catalog::test_plane_geometry_sql_is_profile_bound_and_never_executes_a_db_mutation",
    "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_local_catalog::test_every_supported_profile_generates_profile_bound_sql[manifest_path6-typed-plane-geometry-v1-5]",
    "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_local_catalog::test_ddl_only_defines_the_immutable_typed_schema",
    "cause": "cross_repository_fixture_missing",
-   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor."
+   "reason": "The test reads files of another repository (pals-infra, pals-api, pals-scripts, or a compose service) that the pinned parent fixture does not contain; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_multivariable_calculus::test_pinned_lean_witnesses_compile",
    "cause": "lean_toolchain_unavailable",
-   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_number_theory::test_number_theory_manifest_is_deterministic_generator_output",
    "cause": "lean_toolchain_unavailable",
-   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_ode::test_typed_ode_lean_witnesses_compile_in_the_pinned_workspace",
    "cause": "lean_toolchain_unavailable",
-   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor."
+   "reason": "The test runs the pinned Lean/Lake/Mathlib toolchain, which this runner does not install; fails identically on the retained verifier anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_plane_geometry::test_plane_geometry_profile_accepts_and_canonicalizes_every_sealed_card",
    "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_plane_geometry::test_plane_geometry_profile_does_not_widen_generic_or_existing_typed_profiles",
    "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_plane_geometry::test_plane_geometry_manifest_binds_current_design_registry_witness_and_generator",
    "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor.",
+   "expires": "2026-12-31"
   },
   {
    "id": "tests.unit.test_typed_plane_geometry::test_plane_geometry_manifest_rejects_resealed_stale_bindings",
    "cause": "stale_catalog_or_profile_expectation",
-   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor."
+   "reason": "The pinned plane-geometry artifact digest or the typed profile registry no longer matches what the test expects, directly or through the plane-geometry manifest check; fails identically on the anchor.",
+   "expires": "2026-12-31"
   }
  ],
  "allowed_skips": [

@@ -6,6 +6,7 @@ import copy
 import importlib.util
 import json
 import sys
+from datetime import date
 from pathlib import Path
 
 _ROOT = Path(__file__).resolve().parents[2]
@@ -23,7 +24,7 @@ MANIFEST = {
     "core_modules": ["tests/unit/test_core.py"],
     "known_failures": [
         {"id": "tests.unit.test_other::test_known", "cause": "lean_toolchain_unavailable",
-         "reason": "needs Lean"},
+         "reason": "needs Lean", "expires": "2026-12-31"},
     ],
     "allowed_skips": [
         {"id": "tests.unit.test_other::test_skip", "reason": "optional"},
@@ -90,7 +91,8 @@ def test_a_failure_in_a_core_module_is_never_excused() -> None:
     anchor["tests.unit.test_core::test_a"] = case("failure", "AssertionError")
     manifest = copy.deepcopy(MANIFEST)
     manifest["known_failures"].append(
-        {"id": "tests.unit.test_core::test_a", "cause": "stale_test_double", "reason": "x"}
+        {"id": "tests.unit.test_core::test_a", "cause": "lean_toolchain_unavailable", "reason": "x",
+         "expires": "2026-12-31"}
     )
     assert run(candidate, anchor, manifest) == ["core_module_failure:tests.unit.test_core::test_a"]
 
@@ -214,7 +216,8 @@ def test_a_teardown_failure_cannot_hide_a_changed_call_failure(tmp_path: Path) -
     assert candidate_case == {"outcome": "failure", "type": "AssertionError+RuntimeError"}
     manifest = copy.deepcopy(MANIFEST)
     manifest["known_failures"] = [
-        {"id": candidate_id, "cause": "stale_test_double", "reason": "x"}
+        {"id": candidate_id, "cause": "lean_toolchain_unavailable", "reason": "x",
+         "expires": "2026-12-31"}
     ]
     manifest["allowed_skips"] = []
     manifest["allowed_unexecuted_modules"] = []
@@ -224,3 +227,43 @@ def test_a_teardown_failure_cannot_hide_a_changed_call_failure(tmp_path: Path) -
     assert problems == [
         f"failure_changed_from_anchor:{candidate_id}:AssertionError->AssertionError+RuntimeError"
     ]
+
+
+def test_a_known_failure_blocks_after_its_expiry_date() -> None:
+    candidate, anchor = baseline()
+    manifest = copy.deepcopy(MANIFEST)
+    manifest["known_failures"][0]["expires"] = "2026-12-31"
+    on_the_day = gate.evaluate(candidate, anchor, manifest, MODULES, today=date(2026, 12, 31))[0]
+    after = gate.evaluate(candidate, anchor, manifest, MODULES, today=date(2027, 1, 1))[0]
+    assert on_the_day == []
+    assert after == ["manifest_entry_expired:tests.unit.test_other::test_known"]
+
+
+def test_an_expired_entry_blocks_even_when_the_test_now_passes() -> None:
+    candidate, anchor = baseline()
+    candidate["tests.unit.test_other::test_known"] = case()
+    manifest = copy.deepcopy(MANIFEST)
+    manifest["known_failures"][0]["expires"] = "2026-01-01"
+    problems, notes = gate.evaluate(candidate, anchor, manifest, MODULES, today=date(2026, 6, 1))
+    assert problems == ["manifest_entry_expired:tests.unit.test_other::test_known"]
+    assert notes == ["stale_baseline_entry_now_not_failing:tests.unit.test_other::test_known"]
+
+
+def test_a_known_failure_without_a_valid_expiry_is_blocked() -> None:
+    candidate, anchor = baseline()
+    for bad in (None, "", "soon", "2026-13-01", 20261231):
+        manifest = copy.deepcopy(MANIFEST)
+        if bad is None:
+            del manifest["known_failures"][0]["expires"]
+        else:
+            manifest["known_failures"][0]["expires"] = bad
+        problems = gate.evaluate(candidate, anchor, manifest, MODULES, today=date(2026, 6, 1))[0]
+        assert problems == ["manifest_entry_without_expiry:tests.unit.test_other::test_known"], bad
+
+
+def test_the_committed_manifest_has_no_expired_or_undated_entry_and_no_stale_cause() -> None:
+    path = _ROOT / "tests" / "qualification" / "agent_regression_manifest.json"
+    manifest = json.loads(path.read_text())
+    for entry in manifest["known_failures"]:
+        assert date.fromisoformat(entry["expires"]) >= date(2026, 11, 26), entry["id"]
+        assert entry["cause"] in gate.CAUSES, entry["id"]
