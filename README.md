@@ -1,380 +1,117 @@
 # pals-agent
 
-Public OSS LangGraph agent toolkit for PALS.
+pals-agentは、[PALS](https://github.com/AtsushiHosaka/pals)で数学の質問を処理するエージェントと、Lean 4の検証サービスを収めた公開リポジトリです。質問の種類を判定し、検証済みの証明を再利用するか、Leanコードを新しく生成します。検証を通った証明から解説を作り、回答をAPIに返します。
 
-`pals-agent` contains the proof-generation agent, tool interfaces, and Lean
-verification runtime used by PALS. The repository is designed to work without
-private PALS infrastructure. It may include public/local integration adapters
-for the documented proof-job worker protocol; deployment-specific endpoints,
-credentials, and production prompts must live outside this public boundary.
+## エージェントの構成
 
-## Scope
+```mermaid
+flowchart TD
+    Q["質問"] --> A{"回答の経路を選ぶ"}
+    A -->|"通常の説明"| C["説明を生成"]
+    A -->|"再利用できる"| R["保存済みの証明・解説"]
+    A -->|"新しい証明が必要"| P["Leanコードを生成"]
+    P --> V{"Leanで検証"}
+    V -->|"失敗・修正へ"| P
+    V -->|"通過"| E["命題と解説を審査"]
+    C --> Z["APIに回答を返す"]
+    R --> Z
+    E --> Z
+```
 
-- LangGraph proof-generation workflow
-- Lean compile tool interface
-- Lean verifier runtime and diagnostics parser
-- Provider adapters for local and hosted LLMs
-- Evaluation fixtures that are safe to publish
-- Local SQS worker, public proof-job protocol adapter, and benchmark runner for
-  `.local` development
+### 質問の評価
 
-## Repository Boundaries
+assessment workerは、SQSの評価キューから要求を受け取り、APIから質問や前提を取得します。質問に応じて、説明を返すか、検証済みの証明と解説をまとめたRecipeを照合します。再利用の条件は、入力の前提・結論・指定された証明方法が候補と対応することです。新しい形式証明が必要な場合は、APIが証明のジョブを作ります。
 
-This repository must not contain:
+### 証明の生成
 
-- API keys or provider credentials
-- private or production PALS API endpoint values
-- AWS account IDs or production configuration
-- private prompts or private datasets
-- files under `.claude/`, `.codex/`, or `.env.*`
+proof workerは、証明の方針を立てるDraft、中間命題を含む骨格を作るSketch、各証明を埋めるProveを進めます。検索で得たDraftは、構成に応じて新しい証明の参考資料です。エラーが出た候補は診断と一緒に記録し、該当する段階から修復します。
 
-Lean verification code lives here because it is a first-class agent tool. The
-credentialed worker does not contain Lean, Lake, Elan, or a local compiler
-fallback. All untrusted Lean executes in the dedicated verifier image.
+### 検証と回答
 
-## Isolated Lean Verifier
+proof workerがLeanコードと成果物をAPIに登録し、API側のReconcilerが隔離されたLean verifierに検証を依頼します。workerが結果を受け取る窓口はAPIです。コンパイル後は証明した命題が質問に対応するかを照合し、検証済みコードから作った解説も審査します。
 
-Build the separate verifier and worker images:
+モデルの既定値は[model_roles.py](pals_agent/model_roles.py)にあります。Draft・Sketch・Prove・RepairはGPT-6.1 Terraのmedium、OpenMath・修復先の選択・ランキング・解説・審査はGPT-6 Lunaのlowです。利用者がLean生成モデルを指定した場合は再試行でもその指定を使います。
+
+## コードの入口
+
+| 探しているもの | 参照先 |
+| --- | --- |
+| PALSの全体構成とWeb画面を含むローカル起動 | [親リポジトリ](https://github.com/AtsushiHosaka/pals) |
+| 質問の判定・既存の証明の再利用 | [chat_runtime.py](pals_agent/chat_runtime.py) · [proof_reuse.py](pals_agent/proof_reuse.py) |
+| 新しい証明の生成と修復 | [pipeline.py](pals_agent/pipeline.py) · [worker.py](pals_agent/worker.py) |
+| Leanを実行するサービス | [lean_verifier](pals_agent/lean_verifier/) · [検証器のDockerfile](docker/lean-verifier.Dockerfile) |
+| テストと評価 | [tests](tests/) · [testdata](testdata/) · [CLI](pals_agent/cli.py) |
+
+## ローカルで始める
+
+CLIと単体テストは、PALSの非公開リポジトリを取得せずに使えます。必要なのはPython 3.12以上と[uv](https://docs.astral.sh/uv/)です。リポジトリのルートで次を実行すると、固定された依存関係をインストールし、CLIの使い方を確認できます。
+
+```bash
+uv sync --locked --extra dev
+uv run --no-sync pals-agent --help
+```
+
+単体テストを実行する例です。Leanやデータベースなどを使う統合試験の前提は、テストごとの設定と[GitHub Actionsの回帰ワークフロー](.github/workflows/application-regression.yml)を参照してください。
+
+```bash
+uv run --no-sync python -m pytest tests/unit
+```
+
+Web・API・LocalStack・worker・Lean verifierをそろえて動かす場合は、親リポジトリの `make pals-up` を使います。親から `make agent-test` を実行すると、テストに加えてruffとmypyも実行します。モデルを実際に呼ぶベンチマークには、モデルの接続設定などが必要です。サブコマンドの引数は `uv run --no-sync pals-agent benchmark --help` で確認できます。
+
+## WorkerとLean verifier
+
+workerと検証器は別のイメージにします。コンパイルは専用verifierで行い、モデルやデータベースの認証情報はコンパイラへ渡しません。verifierのアプリケーション呼び出し元はAPI側のReconcilerです。プライベートなTLS 1.3の相互認証をポート18117で受け付け、証明書・ツールチェーン・実行環境の検査に失敗すると起動を中止します。
 
 ```bash
 docker build -f docker/lean-verifier.Dockerfile -t pals-lean-verifier .
 docker build -t pals-agent-worker .
 ```
 
-The verifier accepts only private TLS 1.3 mTLS requests on port `18117`. It has
-no Unix socket, plaintext listener, or Worker client. The API-owned verified
-reconciler is its only application caller. The Worker submits a persisted
-candidate, then reads the API's authoritative `verified` or failed result.
+verifier起動時の証明書・鍵・CAは、インフラが用意するSecretBinaryの完全ARNと不変のVersionIdで指定します。設定と配置の担当は親リポジトリのインフラです。[Lake実行環境の再利用](tools/lean_acceleration/README.md)は既定で無効です。有効時も新しい証明ごとにコンパイルを行い、Recipeの登録審査では検証記録に結び付いたコンパイルを使います。
 
-Verifier startup consumes only Infra-published full-ARN plus immutable-VersionId
-SecretBinary references for its server certificate, private key, and CA. It
-starts fail-closed when trust, resource, filesystem, process-boundary, or
-toolchain checks fail. The compiler receives no Worker, API, model, database,
-or cloud credential.
+| 本番サービス | 利用するイメージと起動条件 |
+| --- | --- |
+| 評価worker | [Dockerfile.natural-production](Dockerfile.natural-production)と[起動スクリプト](scripts/start-worker-with-credentials.sh)。`PALS_PROOF_CAPABILITY=natural-only`、`--lane assessment` |
+| 証明worker | [Dockerfile.full-production](Dockerfile.full-production)。`PALS_PROOF_CAPABILITY=full`、`--lane proof` |
+| 両サービスで同じ署名済みイメージを使う場合 | fullイメージでサービスごとにcapabilityとコマンドを指定。評価workerのコマンドは `sh /app/scripts/start-worker-with-credentials.sh --lane assessment` |
 
-Optional, measured [Lake environment reuse](tools/lean_acceleration/README.md)
-is disabled by default. It retains fresh compilation for every proof and keeps
-Recipe admission on its receipt-bound compiler command.
+本番では `PALS_ENV=prod`、`PALS_TOKEN_ACCOUNTING_ENABLED=true` を設定し、`PALS_PROOF_REQUESTS_QUEUE_URL` と `PALS_PROOF_JOBS_QUEUE_URL` を別々のキューに向けます。キュー設定には `PALS_SQS_*` の別名も使用できます。起動時に検査するのは、定期更新されるworker資格情報と固定の本番リージョンです。
 
-## Production Worker Lanes
+ローカルworkerは、LocalStack上のキュー、PALS API、モデルの接続先、成果物保存先を使います。主な設定は[settings.py](pals_agent/settings.py)を参照してください。モデルの出力上限は `PALS_OPENAI_MAX_OUTPUT_TOKENS`、修復回数は `PALS_MAX_REPAIR_ATTEMPTS` で設定します。既定の修復回数は初回生成に続く6回です。
 
-The production assessment service uses `Dockerfile.natural-production` and
-`start-worker-with-credentials.sh`, which require `natural-only` capability.
-The separate formal proof service uses `Dockerfile.full-production`:
+`verified` 状態をAPIへ送る際は、空でないLeanコードと成果物URIに加え、検証器の証跡を添えます。証跡は `pals.verifier-attestation.v1` のスキーマ版、ジョブID、LeanのUTF-8バイト列のSHA-256、同じ成果物URI、検証成功フラグで構成します。中間・失敗・取消状態ではこの証跡を送信しません。[APIクライアント](pals_agent/api_client.py)
 
-```bash
-docker build -f Dockerfile.full-production -t pals-agent-proof-worker .
-```
+## 証明方針の検索と評価
 
-Its launcher requires `PALS_ENV=prod`, `PALS_PROOF_CAPABILITY=full`,
-`PALS_TOKEN_ACCOUNTING_ENABLED=true`, and an explicit `--lane proof` (the image
-command supplies it). Set both `PALS_PROOF_JOBS_QUEUE_URL` and
-`PALS_PROOF_REQUESTS_QUEUE_URL` to distinct queues; the `PALS_SQS_*` aliases are
-also supported. The existing assessment service continues consuming its
-dedicated queue. Both launchers scrub ambient AWS credentials and endpoint
-overrides, pin the production region, and validate the same rotating worker
-credential handoff before startup.
+Proof Flow Indexは、OpenMathで表した命題から関連する証明方針を取る機能です。workerは正規化した質問からベクトルと照合用の指紋を作り、認証されたAPIに検索を依頼します。データベースへのアクセスとカタログ公開の担当はAPIです。候補は厳密なスキーマで審査し、検索に使う埋め込みの設定や版を照合できる場合だけ利用します。[実行経路](pals_agent/proof_flow_runtime.py) · [再ランキング](pals_agent/proof_flow_reranker.py)
 
-For a shared signed worker image, `Dockerfile.full-production` also includes
-the unchanged natural-only launcher. Run the assessment service from that same
-image with `PALS_PROOF_CAPABILITY=natural-only`, `PALS_ENV=prod`, token accounting
-enabled, and both distinct queue URLs. Override its command with:
+署名済みworkerイメージを作るときは、承認済みのソースを固定します。次のコマンドはベースイメージのXMLライブラリを計測し、生成したseedとイメージ内の来歴情報が一致するかを検査します。ビルドディレクトリ `build/proof-flow-index/` が存在しない状態で実行してください。
 
 ```bash
-sh /app/scripts/start-worker-with-credentials.sh --lane assessment
+uv run --no-sync pals-agent build-pfi-worker-image \
+  --source-commit '<40桁のコミットSHA>' --tag pals-agent-worker
 ```
 
-The shared image defaults to the full proof service; each service must select
-its own capability and command explicitly.
+公開seedの単位は、定理文、OpenMath命題、方針、順序付きのSketch手順です。標準のOpenMath辞書に加え、PALS固有の位相・線形代数の記号は[辞書pals1](pals_agent/content_dictionaries/pals1.ocd)に定義します。実行時は、記号の識別子、引数の個数、許可された構文を検査します。
 
-The full image supports direct generation followed by API-owned Lean
-reconciliation. Provision its API worker secret, model provider configuration,
-artifact bucket, credential/policy mounts, and token accounting, together with
-the API reconciler and isolated verifier. It needs no Lean compiler in the
-credentialed worker. An unconfigured PFI runtime retains direct generation;
-this image supplies no Draft seed or PFI provenance. Enabling PFI requires the
-existing provenance-verified seed/image build and a pinned runtime configuration,
-not guessed provenance values.
+- [手動のリリース評価](pals_agent/proof_flow_release_evaluator.py)では、承認済みコーパス、公開中の世代、マニフェスト、埋め込み設定を有料呼び出し前に照合します。記録には入力やモデル出力を含めず、暗号化と保持・削除要件を満たす専用ストアを使います。
+- [意味評価器](pals_agent/semantic_evaluation.py)は任意です。利用する場合は `PALS_SEMANTIC_EVALUATOR_PROVIDER`、`PALS_SEMANTIC_EVALUATOR_MODEL`、`PALS_SEMANTIC_EVALUATOR_REVISION`、`PALS_SEMANTIC_EVALUATOR_BASE_URL` の4つを設定します。生成とは異なるprovider/modelの組を固定し、未設定時は評価結果を `not_evaluated` と記録します。
+- 評価履歴の旧形式を移行する場合は `pals-agent evaluation-history-migrate --help` を参照してください。通常の読み込みは記録の不整合で停止します。明示的な移行には元ファイルのSHA-256が必要で、元の内容を権限0600のバックアップに残します。
 
-## Local Worker
+## 品質と任意の機能
 
-The worker is API-reconciliation-first:
+[品質イベント](pals_agent/quality_events.py)は既定で無効です。`PALS_QUALITY_EVENTS_ENABLED=true` を指定すると、証明要求・コンパイル試行・解説失敗・評価の結果をCloudWatch EMFの `PALS/ProofQuality` 名前空間に記録します。質問文、Leanソース、モデル出力、利用者識別子、認証情報はイベントの対象外です。環境や送信方式は `PALS_QUALITY_EVENTS_ENVIRONMENT`、`PALS_QUALITY_EVENTS_TRANSPORT`、`PALS_QUALITY_EVENTS_AGENT_ENDPOINT`、`PALS_QUALITY_EVENTS_FILE`、`PALS_QUALITY_EVENTS_REVISION` で指定します。
 
-- reads proof job ids from LocalStack SQS,
-- fetches job input from the PALS API,
-- asks the configured LLM provider for a Lean attempt,
-- rejects `sorry` / `admit`,
-- submits the generated candidate to the API under its claim,
-- reads verifier diagnostics only after API-owned reconciliation,
-- asks the configured LLM provider whether repair should resume from draft,
-  sketch, or prove,
-- stores generated code, model output, diagnostics, timings, and artifacts.
-
-Release roles are code-owned in `pals_agent/model_roles.py`. Lean Draft, Sketch,
-Prove, and Repair use `gpt-6.1-terra` with medium reasoning. OpenMath, route selection,
-retrieval ranking, explanations, and independent review use `gpt-6-luna` with low
-reasoning. A user-selected Lean model remains selected throughout its retries;
-explanations keep their separate cheaper model. Compiler failures do not switch
-the selected model or reasoning effort, and there is no automatic Sol or Astra
-fallback.
-
-Configure the release client's credentials and bounded output budget:
+[幾何の実験用CLI](pals_agent/synthetic_geometry.py)は、二等辺三角形の頂点と底辺の中点を結ぶ線が底辺と直交することを、明示的な構造化入力からLeanで検証します。[入力例](testdata/synthetic-geometry-v1/isosceles-request.json)と固定したツールチェーンを使い、自然言語の解釈と図の描画は別に扱います。
 
 ```bash
-OPENAI_API_KEY=sk-...
-PALS_OPENAI_BASE_URL=https://api.openai.com/v1
-PALS_OPENAI_MAX_OUTPUT_TOKENS=16384
-
-# Bounded Lean diagnostic repair loop
-PALS_MAX_REPAIR_ATTEMPTS=6
-
-# API-only Proof Flow Index retrieval
-PALS_API_BASE_URL=http://localhost:8000
-PALS_WORKER_SHARED_SECRET=...
-OPENAI_API_KEY=sk-...
-PALS_DRAFT_EMBEDDING_DIM=384
-```
-
-Each failed repairable candidate is checkpointed before another LLM-selected
-`draft`, `sketch`, or `prove` route. Route selection makes at most three real
-calls and never invents a fallback route. The default budget permits six
-repair generations after the initial candidate.
-
-## Verified Worker Updates
-
-For `state=verified`, the worker sends nonblank Lean and result artifact URI
-plus this exact evidence object:
-
-```json
-{
-  "schema_version": "pals.verifier-attestation.v1",
-  "proof_job_id": "<proof job id>",
-  "lean_sha256": "<lowercase SHA-256 of the exact Lean UTF-8 bytes>",
-  "result_artifact_uri": "<the same URI as the update>",
-  "verification_succeeded": true
-}
-```
-
-The API client validates all five keys, types, identities, and values before
-HTTP. Intermediate, failed, and canceled wire payloads omit
-`verifier_attestation`; supplying one for those states fails before transport.
-
-## Semantic Evaluation
-
-Deterministic evaluation remains canonical. A live semantic judge is optional
-and has no generation-model fallback. Configure all four variables or none:
-
-```bash
-PALS_SEMANTIC_EVALUATOR_PROVIDER=openai
-PALS_SEMANTIC_EVALUATOR_MODEL=gpt-evaluator-2026-07
-PALS_SEMANTIC_EVALUATOR_REVISION=deploy:sha256-abc
-PALS_SEMANTIC_EVALUATOR_BASE_URL=https://evaluator.example/v1
-```
-
-`PALS_SEMANTIC_EVALUATOR_PROVIDER` is exactly `openai` or `ollama`. Model and
-revision are pinned ASCII identity tokens. The base URL must be absolute HTTP(S)
-without userinfo, query, or fragment. The evaluator provider/model must differ
-from the active generation provider/model. OpenAI evaluation uses the existing
-OpenAI credential only for transport; evaluator endpoint, credential, prompts,
-outputs, and errors are not persisted. With all four variables absent,
-`--semantic-judge` makes zero judge calls and records explicit
-`not_evaluated` metrics with unconfigured provenance.
-
-## Evaluation History Migration
-
-Ordinary `evaluation-history` loading is strict and never edits, skips, or
-quarantines a malformed record automatically. The only legacy schema-v2 repair
-is the explicit, source-digest-pinned operation:
-
-```bash
-.venv/bin/python -m pals_agent.cli evaluation-history-migrate \
-  --migration semantic-comments-v2 \
-  --history .pals-agent-artifacts/evaluations/history.jsonl \
-  --expected-sha256 b32d19c0a6f66b5140c37d161d83bf291a1fa969a82b5e59d5bcdc07c43879fa
-```
-
-It creates an immutable mode-`0600`, digest-named byte-exact backup, changes
-only legacy non-null semantic comments to null, validates all records, and uses
-file and directory fsync around atomic replacement. Its JSON report contains
-digests/counts, not comment content. A wrong digest, unrelated invalidity,
-backup mismatch, or migration/recovery fence fails closed. On any extant fence,
-stop writers and inspect the source, backup, and fence; startup/load never
-restores or migrates automatically. Application rollback retains the migrated
-history and its source backup.
-
-The packaged seed catalog is only signed-worker build input. Runtime Draft
-retrieval validates and alpha-canonicalizes the query, embeds it once, and sends
-one vector/fingerprint-only request to the worker-authenticated API private port.
-The Agent has no direct storage driver, credential, configuration, migration, or
-fallback catalog. Before retrieval, the OpenMath structuring role uses the
-code-owned `gpt-6-luna` default through `OPENAI_API_KEY` and
-`PALS_OPENAI_BASE_URL`; there is no environment model selector for this role.
-Release startup rejects provider/model override variables such as
-`PALS_LLM_PROVIDER`, `PALS_OPENAI_MODEL`, and `OPENAI_MODEL`.
-
-The packaged bootstrap catalog currently contains 31 Drafts. Thirty are
-continuity examples spanning direct Lipschitz estimates, closure constructions,
-powers and polynomials, absolute-value compositions, and rational functions with
-positive denominators. Each record stores only an id, a human-readable theorem statement, a
-theorem-level OpenMath proposition, a proof strategy, and ordered Sketch steps. Lean
-targets, OMDoc wrappers, aliases, status labels, and unconnected quality counters are
-not Draft data. A request such as "prove continuity
-by epsilon-delta" is structured as a continuity proposition; the proof-method phrase
-is consumed by Draft/Sketch/Prove and is never expanded into the retrieval proposition.
-Real coefficient membership and real-valued function image constraints are encoded in
-OpenMath rather than inferred from display text.
-
-The standard OpenMath dictionaries cover arithmetic, logic, sets, functions,
-and quantifiers. PALS-specific topology and linear-algebra symbols are defined
-in the packaged `pals_agent/content_dictionaries/pals1.ocd` Content Dictionary.
-OpenMath symbol identity includes `cdbase`, `cd`, and `name`; `pals1` uses the
-versioned base `urn:pals:openmath:cd:v1`. The validator accepts only the
-documented profile and checks each symbol's construction role and arity.
-Unknown external Content Dictionaries are rejected as well; every OMS must resolve to
-an explicitly supported `(cdbase, cd, name)` identity. Packaged seeds run through the
-same natural-language/OpenMath semantic validator used for runtime structuring.
-
-The API returns at most eight ordered active-snapshot candidates. Agent computes
-vector and structural evidence without selecting, filtering, or reordering them,
-then sends one strict-schema request to the pinned Draft reranker. The reranker
-selects zero through four candidate IDs; zero is a typed no-match. The embedding
-fingerprint includes provider, model, endpoint, deployment identity, immutable
-revision, dimension, and canonicalizer version. Any compatibility or transport
-failure closes the retrieval path without a fallback.
-
-The Agent creates the signed-worker seed input and then builds the worker image;
-API release tooling owns catalog publication and the private candidate port:
-
-```bash
-cd pals-agent && .venv/bin/python -m pals_agent.cli build-pfi-worker-image \
-  --source-commit <40-lowercase-hex> --tag pals-agent-worker
-```
-
-The command first reads `ElementTree.py` from the same `python:3.12.13-slim`
-container used by the final image. It then generates `build/proof-flow-index/`,
-passes the generated provenance labels to Docker, and rejects the image unless its
-labels, packaged seed hash, and in-image `ElementTree.py` path/hash all match. The
-seed directory must not exist before the command starts. The command removes that
-command-owned generated directory after either success or failure.
-
-### PFI manual release evidence
-
-The cost-bearing release evaluation is manual and is not part of normal proof
-jobs. `load_governed_release_corpus` accepts only the byte-exact approved
-six-query corpus. `ProofFlowIndexReleaseEvaluator` checks the admitted API
-generation, manifest, eligible count, runtime provenance, fingerprint, exact
-canonical OpenMath, and all eight candidate IDs before each paid call. It then
-makes one strict reranker call per query, requires the exact ordered selection
-and aggregate metrics, and verifies that the external store contains exactly
-one record for every governed query. A partial prior run blocks the next run
-before any provider call.
-
-The reranker parser accepts only the exact content-free token-usage object.
-`DraftRerankerReleaseEvidenceWriter` uses only the embedded
-`openai-gpt-5.4-mini-2026-07-27` USD price snapshot and integer rational
-arithmetic; it does not read a provider dashboard or use floating point.
-
-Release tooling must supply the admitted publication witness and a production
-external evidence-store adapter. Before the first paid call, the adapter must
-prove TLS, at-rest encryption, active exact retention/deletion scheduling, no
-overdue record, no incomplete prior corpus run, immutability through expiry, no
-dataset replication, and exactly these readable roles:
-`pals_release_operator` and `pals_release_auditor`. Each record is content-free
-and carries the exact expiry of 15,552,000 seconds after observation and a
-deletion deadline 86,400 seconds later. Any absent control, mismatched receipt,
-incomplete run, or overdue retained record blocks the release. Never put these records, provider
-envelopes, prompts, IDs outside the governed inventory, or token usage in the
-repository, corpus, normal runtime DTOs, logs, traces, metrics labels, or external workspaces.
-
-Run the test gate:
-
-```bash
-make agent-test
-```
-
-From the parent repository, run the honest model-attempt benchmark:
-
-```bash
-make agent-benchmark
-```
-
-This exits non-zero when the local model attempt fails. To produce verified
-benchmark artifacts, the model-generated Lean itself must satisfy the hidden
-benchmark target and proof-method requirements, pass safety validation, and pass
-Lean verification. Hidden targets are evaluator-only and are never included in
-generation prompts. For normal jobs, a catalog Draft is context rather than a
-trusted harness; semantic verification requires an independently supplied user
-formal statement. The verifier rejects code-executing Lean forms, `#` commands,
-native evaluation and unlisted attributes and options before compiling. Because a
-Lean command can exit the compiler with status 0, an accepted compile is not enough:
-a separate process replays the compiled module through the kernel and allows only
-the `propext`, `Classical.choice` and `Quot.sound` axioms. There is no deterministic
-verified template fallback.
-
-## Quality events (CloudWatch EMF, disabled by default)
-
-`pals_agent/quality_events.py` can write one single-line CloudWatch Embedded Metric
-Format event per terminal proof request, Lean attempt on the verifier, terminal
-explanation failure and evaluation run. Metrics go to the `PALS/ProofQuality`
-namespace; `FailureClass` and `FailureCode` are the tag and code of the parent
-repository's failure taxonomy. Nothing is built, sent or logged unless
-`PALS_QUALITY_EVENTS_ENABLED=true`, so the default behavior and log output are
-unchanged.
-
-| Variable | Meaning |
-|---|---|
-| `PALS_QUALITY_EVENTS_ENABLED` | `true` or `1` enables emission |
-| `PALS_QUALITY_EVENTS_ENVIRONMENT` | `Environment` dimension (`prod`, `staging`, `dev`, `local`, `probe`); falls back to `PALS_ENV` |
-| `PALS_QUALITY_EVENTS_TRANSPORT` | `agent` (default): UDP datagram to the CloudWatch agent; `file`: append to a file |
-| `PALS_QUALITY_EVENTS_AGENT_ENDPOINT` | `udp://host:port` for `agent` |
-| `PALS_QUALITY_EVENTS_FILE` | absolute path for `file` |
-| `PALS_QUALITY_EVENTS_REVISION` | optional software revision for the log field |
-
-Only an allow-list of fields, dimensions and metrics is emitted. Question text,
-model output, Lean source, diagnostic messages, user identity and secrets are
-rejected: a prose-like or secret-shaped value discards the whole event and counts a
-drop (reported as `QualityEventsDropped` on the next event that is sent). Emission
-never raises and never blocks a request. `emit_eval_run` is the entry point for the
-evaluation ledger's append helper.
-
-## Opt-in synthetic geometry domain
-
-`pals-geometry` checks the explicitly structured
-`isosceles-midpoint-perpendicular-v1` family: ABC is non-collinear, AB = AC,
-and M is the midpoint of BC. It proves both line directions are nonzero and
-orthogonal using Mathlib's perpendicular-bisector theorems. See
-[testdata/synthetic-geometry-v1/isosceles-request.json](testdata/synthetic-geometry-v1/isosceles-request.json)
-for the closed input schema.
-
-```bash
-pals-geometry testdata/synthetic-geometry-v1/isosceles-request.json \
+uv run --no-sync pals-geometry testdata/synthetic-geometry-v1/isosceles-request.json \
   --lean-workspace "$PALS_GEOMETRY_LEAN_WORKSPACE"
 ```
 
-The workspace must match the pinned Lean toolchain, complete Lake manifest,
-and clean dependency source revisions. Supply `--lean`, `--lake`, `--elan-home`,
-and `--child-path` for a local installation that differs from the verifier image.
-The command runs the existing resource-limited verifier and a trusted fixed-source
-transitive-axiom audit. Its JSON contains original input, exact source, ordered
-step dependencies, source ranges and digests, toolchain identities, and axioms.
-Only `propext`, `Classical.choice`, and `Quot.sound` are allowed.
+## 貢献とライセンス
 
-The caller supplies the structured interpretation and its exact text spans.
-This does not establish natural-language equivalence. Existing immutable OCR
-snapshots and figure metadata are retained; OCR propositions require the existing
-exact confirmation turn. Consequential ambiguity returns `needs_input` before
-Lean runs. Drawing coordinates cannot supply hypotheses. Diagram payloads consume
-the working `pals.diagram.v1` contract and remain `prepared_unrendered` until
-rendered elsewhere; unsupported labels or inconsistent drawings report diagram
-unavailability while retaining the checked proof.
+公開リポジトリでは、公開可能な実装・アダプター・評価データだけを管理します。APIキー、本番や非公開の接続先、AWSアカウント情報、非公開のプロンプトやデータ、ローカル環境ファイルはコミット対象外です。貢献前に[CONTRIBUTING.md](CONTRIBUTING.md)、脆弱性の報告先は[SECURITY.md](SECURITY.md)を参照してください。
 
-This entry point is an opt-in domain tool. The existing worker, catalog admission,
-semantic review, chat persistence and rendering flows keep their current contracts.
-Operator-provisioned Lean executables and compiled dependencies remain trusted;
-source/version checks do not attest compiled artifact provenance. Exit 0 means
-this structured family was checked; exit 2 means clarification or verification
-failure; malformed input, environment mismatch and audit errors exit 1.
-
-## License
-
-Apache License 2.0.
+[Apache License 2.0](LICENSE)
